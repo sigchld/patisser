@@ -1,0 +1,58 @@
+{% extends "table.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% load staticfiles %}
+{% endfilter %}
+{% block title%}Main menu{% endblock %}
+{% block head %}Liste des Preparations{% endblock %}
+{% block content %}
+{% if preparations %}
+<table style="border:0;" id="liste">
+<div class="pagination">
+  <span class="step-links">
+    {% if preparations.has_previous %}
+    <a href="?page={{ preparations.previous_page_number }}">previous</a>
+    {% endif %}
+    <span class="current">
+      Page {{ preparations.number }} of {{ preparations.paginator.num_pages }}.
+    </span>
+    {% if preparations.has_next %}
+    <a href="?page={{ preparations.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+
+  {% for preparation in preparations %}
+  <tr style="height: 100px;">
+    <td width="20%"><a href="/preparations/detail/{{ preparation.id }}">{{preparation.description}}</a></td>
+    <td width="20%"><img src="{{ preparation.photo.get_absolute_url }}"></td>
+    <td width="78%"></td>
+  </tr>
+  {% endfor %}
+  
+  {% for idx in nb_line %}
+  {% if  preparations|length <= idx %}
+  <tr style="height: 100px;">
+   <td width="20%"></td>
+   <td width="20%"></td>
+   <td width="78%"></td>
+  </tr>
+ {% endif %}
+{% endfor %}
+</table>
+<div class="pagination">
+  <span class="step-links">
+    {% if preparations.has_previous %}
+    <a href="?page={{ preparations.previous_page_number }}">previous</a>
+    {% endif %}
+    <span class="current">
+      Page {{ preparations.number }} of {{ preparations.paginator.num_pages }}.
+    </span>
+    {% if preparations.has_next %}
+    <a href="?page={{ preparations.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+</div>
+{% else %}
+<p>Il n'y a pas de preparations.</p>
+{% endif %}
+{% endblock %}

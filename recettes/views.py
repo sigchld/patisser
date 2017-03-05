@@ -8,6 +8,7 @@ from PIL import Image
 from fees import settings
 from .models import Recette
 from .models import Ingredient
+from .models import Preparation
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -82,6 +83,28 @@ def detail_ingredient(request, ingredient_id):
     ingredients = Ingredient.objects.get(ingredient_id)
     return HttpResponse(template.render({'ingredients' : ingredients}))
 
+
+def list_preparations(request):
+    template = loader.get_template('preparationlist.html')
+    preparation_list = Preparation.objects.all()
+    nb_elem= 10
+    paginator = Paginator(preparation_list, nb_elem)
+
+    page  = request.GET.get('page')
+    try:
+        preparations = paginator.page(page)
+    except PageNotAnInteger:
+        preparations = paginator.page(1)
+    except EmptyPage:
+        preparations = paginator.page(paginator_num_pages)
+        
+    return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}))
+
+
+def detail_preparation(request, premaration_id):
+    template = loader.get_template('preparationdetail.html')
+    preparation = Preparation.objects.get(ingredient_id)
+    return HttpResponse(template.render({'preparation' : preparation}))
 
 
 
