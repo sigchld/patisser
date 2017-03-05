@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block table %}
+
+<script  type="text/javascript">
+  $(document).ready (function () {
+  $("#liste tr:even").addClass("eventr");
+  $("#liste tr:odd").addClass("oddtr");
+  $('.delete').click (function () {
+  return confirm ("Voulez-vous supprimer cet élément : " + $(this).attr ("title") + "?") ;
+  }) ; 
+}) ;
+</script>
+
+
+{% endblock %} 

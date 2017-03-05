@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+<html>
+<head>
+
+<meta http-equiv="cache-control" content="max-age=0" />
+<meta http-equiv="cache-control" content="no-store" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="pragma" content="no-cache" />
+
+
+<title> Paystore | {% block title %}{% endblock %}</title>
+{% load staticfiles %}
+<link rel="stylesheet" href="{% static "style.css" %}" type="text/css" />
+<script type="text/javascript" src="{% static "jquery.js" %}"></script>
+<script type="text/javascript" src="{% static "jqueryui.js" %}"></script>
+<script type="text/javascript" src="{% static "modernizr.js" %}"></script>
+</head>
+<body>
+<h1>{% block head %}{% endblock %}</h1>
+<!-- Emplacement du menu -->           
+<nav id="topNav">
+        <ul>
+          <li><a href="/" title="">Accueil</a></li>
+          <li><a href="#" title="">Recettes</a>
+	    <ul>
+              <li><a href="/recettes/list" title="">Lister</a></li>
+              <li><a href="/recettes/new" title="">Cr&eacute;er</a></li>
+	    </ul>
+	  </li>
+<!--
+          <li><a href="#" title="">Liste noire</a>
+            <ul>
+              <li><a href="/paystore/oppo/list" title="">Lister</a></li>
+              <li><a href="/paystore/oppo/add" title="">Ajouter</a></li>
+            </ul>
+          </li>
+          <li><a href="#" title="">Sessions</a>
+	    <ul>
+              <li><a href="/paystore/sessions/list" title="">Lister</a></li>
+              <li><a href="/paystore/sessions/crypto" title="">D&eacute;chiffrer pin</a></li>
+	    </ul>
+	  </li>
+          <li><a href="#" title="">Cumuls</a>
+	    <ul>
+              <li><a href="/paystore/cumuls/list" title="">Lister</a></li>
+              <li><a href="/paystore/cumuls/add" title="">Ajouter</a></li>
+	    </ul>
+	  </li>
+          <li><a href="#" title="">Administration</a>
+	    <ul>
+              <li><a href="/paystore/adm/logs_ing" title="">Logs Ingenious</a></li>
+              <li><a href="/paystore/adm/logs_fime" title="">Logs FIME</a></li>
+              <li><a href="/paystore/adm/restart" title="">Relancer Ingenious</a></li>
+              <li><a href="/paystore/adm/revo_one" title="">Remplir liste de r&eacute;vocation(1)</a></li>
+              <li><a href="/paystore/adm/revo_all" title="">Remplir liste de r&eacute;vocation(all)</a></li>
+              <li><a href="/paystore/adm/revo_off" title="">Vider liste de r&eacute;vocation</a></li>
+              <li><a href="/paystore/adm/bad_ca" title="">Copier CA erron&eacute;e</a></li>
+              <li><a href="/paystore/adm/good_ca" title="">Copier CA valide</a></li>
+	    </ul>
+	  </li>
+-->
+        </ul>
+</nav>
+
+{% block content %}{% endblock %}
+{% block table %}{% endblock %}
+
+<div class="txt_error">
+   <div >{%if msg_error %}{{ msg_error }}{%endif%}</div>
+</div>
+<div id="btn_up">
+   <img alt="Retour en haut" title="Retour en haut" src="{%static "images/fleche.png" %}" width="40" />
+</div>
+
+<!-- Initialisation de la fonction -->  
+<script>
+  var el = document.getElementsByTagName("body")[0];
+  el.className = "";
+
+  (function($){
+  var nav = $("#topNav");
+  nav.find("li").each(function() {
+  if ($(this).find("ul").length > 0) {
+  $("<span>").text("^").appendTo($(this).children(":first"));
+    $(this).mouseenter(function() {
+    $(this).find("ul").stop(true, true).delay(100).slideDown(0);});
+    $(this).mouseleave(function() {
+    $(this).find("ul").stop(true, true).delay(100).slideUp(0);});
+    }
+    });
+    })(jQuery);
+  </script>
+  
+  <script type="text/javascript">
+
+    $(function(){
+        $('#btn_up').click(function() {
+          $('html,body').animate({scrollTop: 0}, 'slow');
+        });
+    });				
+  </script>
+  
+</body>
+</html>
