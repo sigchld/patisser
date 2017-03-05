@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% endfilter %}
+
+{% block title%}Main menu{% endblock %}
+{% block head %}Copie Mod&egrave;le de terminal{% endblock %}
+{% block content %}
+
+<form action="/paystore/term/init" method="post">
+    {% csrf_token %}
+    <ul>
+    {{ form.as_ul }}
+    </ul>
+    <input type="submit" value="Enregistrer" />
+
+</form>
+{% endblock %}

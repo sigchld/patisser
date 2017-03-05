@@ -30,6 +30,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'recettes.apps.RecettesConfig',
+    'ingredients.apps.IngredientsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -118,7 +119,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-MEDIA_ROOT = '/photos/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'photos/')
+MAX_UPLOAD_SIZE=10000000
+
 #STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 print os.path.join(BASE_DIR, "static/")
