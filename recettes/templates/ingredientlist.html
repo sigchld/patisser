@@ -1,0 +1,58 @@
+{% extends "table.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% load staticfiles %}
+{% endfilter %}
+{% block title%}Main menu{% endblock %}
+{% block head %}Liste des Ingredients{% endblock %}
+{% block content %}
+{% if ingredients %}
+<table style="border:0;" id="liste">
+<div class="pagination">
+  <span class="step-links">
+    {% if ingredients.has_previous %}
+    <a href="?page={{ ingredients.previous_page_number }}">previous</a>
+    {% endif %}
+    <span class="current">
+      Page {{ ingredients.number }} of {{ ingredients.paginator.num_pages }}.
+    </span>
+    {% if ingredients.has_next %}
+    <a href="?page={{ ingredients.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+
+  {% for ingredient in ingredients %}
+  <tr style="height: 100px;">
+    <td width="20%"><a href="/ingredients/detail/{{ ingredient.id }}">{{ingredient.description}}</a></td>
+    <td width="20%"><img src="{{ ingredient.photo.get_absolute_url }}"></td>
+    <td width="78%"></td>
+  </tr>
+  {% endfor %}
+  
+  {% for idx in nb_line %}
+  {% if  ingredients|length <= idx %}
+  <tr style="height: 100px;">
+   <td width="20%"></td>
+   <td width="20%"></td>
+   <td width="78%"></td>
+  </tr>
+ {% endif %}
+{% endfor %}
+</table>
+<div class="pagination">
+  <span class="step-links">
+    {% if ingredients.has_previous %}
+    <a href="?page={{ ingredients.previous_page_number }}">previous</a>
+    {% endif %}
+    <span class="current">
+      Page {{ ingredients.number }} of {{ ingredients.paginator.num_pages }}.
+    </span>
+    {% if ingredients.has_next %}
+    <a href="?page={{ ingredients.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+</div>
+{% else %}
+<p>Il n'y a pas de ingredients.</p>
+{% endif %}
+{% endblock %}

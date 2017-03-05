@@ -7,6 +7,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from PIL import Image
 from fees import settings
 from .models import Recette
+from .models import Ingredient
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ def photo(request, photo_id):
     return response
 
 
-def list(request):
+def list_recettes(request):
     template = loader.get_template('recettelist.html')
     recette_list = Recette.objects.all()
     nb_elem= 10
@@ -53,10 +54,33 @@ def list(request):
     return HttpResponse(template.render({'recettes' : recettes, 'nb_line': range(nb_elem)}))
 
 
-def detail(request, recette_id):
+def detail_recette(request, recette_id):
     template = loader.get_template('recettedetail.html')
     recettes = Recette.objects.get(recette_id)
     return HttpResponse(template.render({'recette' : recettes}))
+
+
+def list_ingredients(request):
+    template = loader.get_template('ingredientlist.html')
+    ingredient_list = Ingredient.objects.all()
+    nb_elem= 10
+    paginator = Paginator(ingredient_list, nb_elem)
+
+    page  = request.GET.get('page')
+    try:
+        ingredients = paginator.page(page)
+    except PageNotAnInteger:
+        ingredients = paginator.page(1)
+    except EmptyPage:
+        ingredients = paginator.page(paginator_num_pages)
+        
+    return HttpResponse(template.render({'ingredients' : ingredients, 'nb_line': range(nb_elem)}))
+
+
+def detail_ingredient(request, ingredient_id):
+    template = loader.get_template('ingredientdetail.html')
+    ingredients = Ingredient.objects.get(ingredient_id)
+    return HttpResponse(template.render({'ingredients' : ingredients}))
 
 
 
