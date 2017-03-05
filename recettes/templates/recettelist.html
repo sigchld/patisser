@@ -1,0 +1,23 @@
+{% extends "table.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% load staticfiles %}
+{% endfilter %}
+{% block title%}Main menu{% endblock %}
+{% block head %}Liste des Recettes{% endblock %}
+{% block content %}
+{% if recettes %}
+    <table style="border:0;" id="liste">
+    {% for recette in recettes %}
+        <tr>
+	  <td width="20%" ><a href="/recettes/detail/{{ recette.id }}">{{recette.description}}</a></td>
+	  <td width="20%"><img src="{{ recette.photo.get_absolute_url }}"></td>
+	  <td width="78%"></td>
+	</tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>Il n'y a pas de recettes.</p>
+{% endif %}
+ 
+{% endblock %}

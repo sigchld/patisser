@@ -1,8 +1,9 @@
 import logging
 from django.shortcuts import render
+from django.template import RequestContext, loader
 from PIL import Image
 from fees import settings
-
+from .models import Recette
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -11,7 +12,9 @@ logger = logging.getLogger(__name__)
 from django.http import HttpResponse
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the recettes index.")
+    template = loader.get_template('index.html')
+    return HttpResponse(template.render({}))
+
 
 def photo(request, photo_id):
     try:
@@ -29,4 +32,10 @@ def photo(request, photo_id):
         red.save(response, "JPEG")
     return response
 
+def list(request):
+    template = loader.get_template('recettelist.html')
+    recettes = Recette.objects.all()
+    return HttpResponse(template.render({'recettes' : recettes}))
+
+    return None
 
