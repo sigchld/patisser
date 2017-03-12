@@ -23,9 +23,9 @@
 
   {% for recette in recettes %}
   <tr style="height: 100px;">
-    <td width="20%"><a href="/recettes/detail/{{ recette.id }}">{{recette.description}}</a></td>
+    <td width="20%"><a href="/mesrecettes/detailr/{{ recette.id }}">{{recette.titre}}</a></td>
     <td width="20%"><img src="{{ recette.photo.get_absolute_url }}"></td>
-    <td width="78%"></td>
+    <td width="78%">{{ recette.description }}</td>
   </tr>
   {% endfor %}
   
@@ -53,6 +53,6 @@
   </span>
 </div>
 {% else %}
-<p>Il n'y a pas de recettes.</p>
+<p>Il n'yr a pas de recettes.</p>
 {% endif %}
 {% endblock %}

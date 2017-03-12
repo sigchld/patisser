@@ -56,8 +56,9 @@ def list_recettes(request):
 
 
 def detail_recette(request, recette_id):
+    logger.debug("--------------------------- recette id :{}".format(recette_id))
     template = loader.get_template('recettedetail.html')
-    recettes = Recette.objects.get(recette_id)
+    recettes = Recette.objects.get(id=recette_id)
     return HttpResponse(template.render({'recette' : recettes}))
 
 

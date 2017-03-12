@@ -1,0 +1,30 @@
+{% extends "table.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% load staticfiles %}
+{% endfilter %}
+{% block title%}Main menu{% endblock %}
+{% block head %}Liste des Recettes{% endblock %}
+{% block content %}
+{% if recette %}
+<div class="recette">
+<h1>{{ recette.titre }}</h1>
+<p>Catégorie {{ recette.categorie.description }}</p>
+<p>Nombre de portions {{ recette.portion }}</p>
+<p>Difficulté {{ recette.difficulte }}</p>
+<img src="{{ recette.photo.get_absolute_url }}" width=200 height=200 />
+{% for preparationRecette in recette.preparations.all %}
+<div class="preparation">
+<h2>{{ preparationRecette.preparation.description }}</h2>
+{% for etape in preparationRecette.preparation.etapes.all  %}
+<div>
+<h2>{{ etape.description }}</h2>
+</div>
+{% endfor %}
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p>Il n'y a pas de recettes.</p>
+{% endif %}
+{% endblock %}

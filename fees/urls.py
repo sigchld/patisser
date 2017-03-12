@@ -14,6 +14,6 @@ urlpatterns = [
     # Examples:
     url(r'^$', views.index, name='index'),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^recettes/', include('recettes.urls')),
+    url(r'^mesrecettes/', include('recettes.urls')),
 ]
 
