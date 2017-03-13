@@ -55,11 +55,40 @@ def list_recettes(request):
     return HttpResponse(template.render({'recettes' : recettes, 'nb_line': range(nb_elem)}))
 
 
+def calculIngredientsRecette(recette):
+    ingredients = {}
+    allergene = False
+    energie = 0
+    preparations = recette.preparations.all()
+    for preparationRecette in recette.preparations.all():
+        preparation = preparationRecette.preparation
+        quantite = preparationRecette.quantite
+
+        for element in preparation.elements.all():
+            ingredient = element.ingredient
+            allergene = allergene or ingredient.allergene
+            energie += quantite * ((element.quantite/100) * ingredient.calorie)
+            tmp = ingredients.get(ingredient.id)
+            if tmp is None:
+                tmp = {}
+                tmp['quantite'] = 0
+                tmp['nom'] = ingredient.description
+                ingredients[ingredient.id] = tmp;
+
+            tmp['quantite'] += element.quantite
+            #logger.debug("ingredient :{}".format(tmp['nom']))
+    return (energie, allergene, ingredients.values(), preparations)
+
 def detail_recette(request, recette_id):
     logger.debug("--------------------------- recette id :{}".format(recette_id))
     template = loader.get_template('recettedetail.html')
-    recettes = Recette.objects.get(id=recette_id)
-    return HttpResponse(template.render({'recette' : recettes}))
+    recette = Recette.objects.get(id=recette_id)
+    energie, allergene, ingredients, preparations = calculIngredientsRecette(recette)
+    return HttpResponse(template.render({'recette' : recette, 
+                                         'ingredients' : ingredients,
+                                         'preparations': preparations,
+                                         'energie' : energie,
+                                         'allergene' : allergene}))
 
 
 def list_ingredients(request):

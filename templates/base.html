@@ -12,11 +12,16 @@
 <title> Paystore | {% block title %}{% endblock %}</title>
 {% load staticfiles %}
 <link rel="stylesheet" href="{% static "style.css" %}" type="text/css" />
-<script type="text/javascript" src="{% static "jquery.js" %}"></script>
-<script type="text/javascript" src="{% static "jqueryui.js" %}"></script>
-<script type="text/javascript" src="{% static "modernizr.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/main-full.css" %}">
+
+
+<script type="text/javascript" src="{% static "js/vendor/modernizr-2.8.3.min.js" %}"></script>
 </head>
 <body>
+  <!--[if lt IE 8]>
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+      <![endif]-->
+  
 <h1>{% block head %}{% endblock %}</h1>
 <!-- Emplacement du menu -->           
 <nav id="topNav">
@@ -45,40 +50,7 @@
 	      <li><a href="/mesrecettes/searchi" title="">Rechercherer</a></li>	      
 	    </ul>
 	  </li>
-	  <li><a href="/admin" title="">Admin</a></li>
-	  
-<!--
-          <li><a href="#" title="">Liste noire</a>
-            <ul>
-              <li><a href="/paystore/oppo/list" title="">Lister</a></li>
-              <li><a href="/paystore/oppo/add" title="">Ajouter</a></li>
-            </ul>
-          </li>
-          <li><a href="#" title="">Sessions</a>
-	    <ul>
-              <li><a href="/paystore/sessions/list" title="">Lister</a></li>
-              <li><a href="/paystore/sessions/crypto" title="">D&eacute;chiffrer pin</a></li>
-	    </ul>
-	  </li>
-          <li><a href="#" title="">Cumuls</a>
-	    <ul>
-              <li><a href="/paystore/cumuls/list" title="">Lister</a></li>
-              <li><a href="/paystore/cumuls/add" title="">Ajouter</a></li>
-	    </ul>
-	  </li>
-          <li><a href="#" title="">Administration</a>
-	    <ul>
-              <li><a href="/paystore/adm/logs_ing" title="">Logs Ingenious</a></li>
-              <li><a href="/paystore/adm/logs_fime" title="">Logs FIME</a></li>
-              <li><a href="/paystore/adm/restart" title="">Relancer Ingenious</a></li>
-              <li><a href="/paystore/adm/revo_one" title="">Remplir liste de r&eacute;vocation(1)</a></li>
-              <li><a href="/paystore/adm/revo_all" title="">Remplir liste de r&eacute;vocation(all)</a></li>
-              <li><a href="/paystore/adm/revo_off" title="">Vider liste de r&eacute;vocation</a></li>
-              <li><a href="/paystore/adm/bad_ca" title="">Copier CA erron&eacute;e</a></li>
-              <li><a href="/paystore/adm/good_ca" title="">Copier CA valide</a></li>
-	    </ul>
-	  </li>
--->
+	  <li><a href="/admin" title="">Admin</a></li>	  
         </ul>
 </nav>
 
@@ -91,6 +63,20 @@
 <div id="btn_up">
    <img alt="Retour en haut" title="Retour en haut" src="{%static "images/fleche.png" %}" width="40" />
 </div>
+
+
+  <script type="text/javascript" src="{% static "js/vendor/jquery-1.12.0.min.js" %}"></script>      
+  <script type="text/javascript" src="{% static "jqueryui.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jquery.easing.min.js" %}"></script>
+
+  <script type="text/javascript" src="{% static "js/vendor/bootstrap.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/jquery.fancybox.js" %}"></script>
+  
+  <script type="text/javascript" src="{% static "js/plugins.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/main.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/souscription.js" %}"></script>  
+  <script type="text/javascript" src="{% static "js/header_manage.js" %}"></script>         
+
 
 <!-- Initialisation de la fonction -->  
 <script>
@@ -119,6 +105,7 @@
         });
     });				
   </script>
+  
   
 </body>
 </html>

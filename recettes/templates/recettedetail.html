@@ -4,27 +4,100 @@
 {% load staticfiles %}
 {% endfilter %}
 {% block title%}Main menu{% endblock %}
-{% block head %}Liste des Recettes{% endblock %}
+{% block head %} Recettes {% endblock %}
 {% block content %}
 {% if recette %}
-<div class="recette">
-<h1>{{ recette.titre }}</h1>
-<p>Catégorie {{ recette.categorie.description }}</p>
-<p>Nombre de portions {{ recette.portion }}</p>
-<p>Difficulté {{ recette.difficulte }}</p>
-<img src="{{ recette.photo.get_absolute_url }}" width=200 height=200 />
-{% for preparationRecette in recette.preparations.all %}
-<div class="preparation">
-<h2>{{ preparationRecette.preparation.description }}</h2>
-{% for etape in preparationRecette.preparation.etapes.all  %}
-<div>
-<h2>{{ etape.description }}</h2>
-</div>
+
+<section class="container panel">
+  <h2>{{ recette.titre }}</h2>
+  <div class="row row-marges panel-content">
+      <img src="{{ recette.photo.get_absolute_url }}" class="img-rounded img-thumbnail float-left" alt="" >
+    <div class="col-lg-18 col-sm-4">
+      <div class="bg">
+        <div class="row">
+          <div class="col-xs-6"><strong>Catégorie</strong></div>
+          <div class="col-xs-6">{{recette.categorie.description}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Portions</strong></div>
+          <div class="col-xs-6">{{ recette.portion }}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Difficulté</strong></div>
+          <div class="col-xs-6">{{ recette.difficulte }}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Allergene</strong></div>
+          <div class="col-xs-6">{{ allergene }}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Energie</strong></div>
+          <div class="col-xs-6">{{ energie }}</div>
+        </div>
+	<div class="row">
+          <div class="col-xs-6"><strong>Description</strong></div>
+          <div class="col-xs-12">{{ recette.description }}</div>
+        </div>
+      </div>
+    </div>
+</section>
+
+
+<section class="container panel openable opened">        
+  <h2>Ingredients</h2>
+  <div class="row row-marges panel-content">
+    {% for ingredient in ingredients %}
+    <div class="col-lg-18 col-sm-4">
+      <div class="bg">
+        <div class="row">
+          <div class="col-xs-6"><strong>Nom</strong></div>
+          <div class="col-xs-6">{{ingredient.nom}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Quantité</strong></div>
+          <div class="col-xs-6">{{ ingredient.quantite }} g</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+</section>
+
+
+<section class="container panel openable opened">        
+  <h2>Préparations</h2>
+  {% for elementRecette in preparations %}
+    <div class="row row-marges panel-content">
+    <h3>{{elementRecette.preparation.titre}}</h3>
+      <div class="col-lg-18 col-sm-4">
+	<div class="bg">
+          <div class="row">
+            <div class="col-xs-6"><strong>Nom</strong></div>
+            <div class="col-xs-6">{{elementRecette.preparation.description}}</div>
+          </div>
+          <div class="row">
+            <div class="col-xs-6"><strong>Quantité utilisée</strong></div>
+            <div class="col-xs-6">{{ elementRecette.quantite }} %</div>
+          </div>
+	</div>
+      </div>
+    </div>
+
+    {% for elem in elementRecette.preparation.elements.all %}
+    <div class="col-lg-18 col-sm-4">
+      <div class="bg">
+        <div class="row">
+          <div class="col-xs-6"><strong>Nom</strong></div>
+          <div class="col-xs-6">{{elem.ingredient.description}}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Quantité</strong></div>
+          <div class="col-xs-6">{{ elem.quantite }} g</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
 {% endfor %}
-</div>
-{% endfor %}
-</div>
-{% else %}
-<p>Il n'y a pas de recettes.</p>
+</section>
 {% endif %}
 {% endblock %}

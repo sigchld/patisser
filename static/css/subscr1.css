@@ -1,0 +1,357 @@
+	
+
+/*Font de la page*/
+body
+{
+    font-family: Arial;
+}
+
+h4
+{
+    font-weight: bold;
+}
+
+Label
+{
+    font-weight: normal;
+}
+
+/*Div de gauche*/
+.DivGauche
+{
+    float:left;
+    margin-right:80px;
+    margin-left:60px;
+    width:480px;
+    font-family: Arial;
+}
+
+/*Div de droite*/
+.DiVDroite
+{
+    float:left;
+    width:500px;
+}
+
+/*Div de séparation*/
+.DivSeparation
+{
+    height:30px;
+}
+
+Table TD
+{
+    padding: 4px;
+}
+
+/*TD des Label*/
+.TDLabel
+{
+    width: 230px;
+}
+
+/*TD de séparation*/
+.TDSeparation
+{
+    width:20px;
+}
+
+/*TD des échéances*/
+.TDEcheance
+{
+    vertical-align:top;
+}
+
+/*TR de séparation*/
+.TRSeparation
+{
+    height: 20px;
+}
+
+/*Label titre dans Div*/
+.LabelTitre
+{
+    font-weight: bold;
+}
+
+/*Label valeur dans Div*/
+.LabelValeur
+{
+    color: grey;
+    font-size: 14;
+}
+
+/*Label Details projet financier*/
+.LabelDetailsFin
+{
+    font-size: 12;
+    color: grey;
+}
+
+/*Image Interrogation*/
+.ImgInterrogation
+{
+    height:25px;
+    width:15px;
+    color:#088A08;
+}
+
+/*Textbox normal*/
+.TextBoxNormal
+{
+    width:180px;
+    height: 30px;
+    color: #999;
+    font-size:14;
+    font-style: italic;
+}
+
+/*Textbox small*/
+.TextBoxSmall
+{
+    width:50px;
+    height: 30px;
+    color: #999;
+    font-style: italic;
+    font-size:12;
+    padding: 5px;
+}
+
+
+
+/*input:focus:invalid { 
+background: #fff url(images/invalid.png) no-repeat 98% center;
+box-shadow: 0 0 5px red;
+border-color: red
+}
+input:required:valid { 
+background: #fff url(images/valid.png) no-repeat 98% center;
+box-shadow: 0 0 5px #5cd053;
+border-color: #28921f;*/
+
+input:required:valid {
+    background-image: url(../images/valid2.png);
+    background-position: right center;
+    background-repeat: no-repeat;
+}
+
+/*Label Lien small*/
+.LabelLienSmall
+{
+    font-size:12;
+    color: #999;
+}
+
+/*Label Lien normal*/
+.LabelLienNormal
+{
+    font-size:12;
+}
+
+/*Label Mention - checkbox*/
+.LabelMention
+{
+    font-size:14;
+}
+
+/*Label Mention - checkbox*/
+.LabelMention2
+{
+    font-size:12;
+    color: #999;
+}
+
+input, select { 
+    border:1px solid #aaa;
+    box-shadow: 0px 0px 3px #ccc, 0 10px 15px #eee inset;
+    border-radius:5px;
+}
+input:focus {
+    background: #fff; 
+    border:1px solid #555; 
+    box-shadow: 0 0 3px #aaa; 
+}
+
+.btnValider
+{
+    border: none; 
+    height: 40px;
+    width:150px;
+    font-size: 16px;
+    font-weight: bold;
+    background: #00CC33;
+    box-shadow: 0px 0px 0px #ccc, 0 10px 15px #A9F5BC inset;
+}
+.btnPayer
+{
+    border: none; 
+    height: 40px;
+    width:300px;
+    font-size: 16px;
+    font-weight: bold;
+    background: #00CC33;
+    box-shadow: 0px 0px 0px #ccc, 0 10px 15px #A9F5BC inset;
+}
+
+input[type="checkbox"] {
+    outline: thin dotted;
+    outline: 5px auto;
+    outline-offset: -2px;
+    line-height: thin;
+}
+
+/* ----------------------------------- Timeline ------------------------------------ */
+.multistep .multistep-step {
+    padding: 0;
+    position: relative;
+}
+
+.multistep .multistep-step .multistep-stepname {
+    margin-bottom: 16px;
+    color: #595959;
+    font-size: 1.6rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.multistep .multistep-step .multistep-dot {
+    position: absolute;
+    right: 50%;
+    left: 50%;
+    width: 32px;
+    height: 32px;
+    display: block;
+    margin-top: -16px;
+    margin-left: -15.5px;
+    border-radius: 50%;
+    background: #A8A8A8;
+    /* Inner Dot */
+}
+
+.multistep .multistep-step .multistep-dot:after {
+    content: ' ';
+    border-radius: 50px;
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: #787878; /*#e0e0e0;*/
+}
+
+.multistep .multistep-step .progress {
+    position: absolute;
+    width: 100%;
+    height: 10.56px;
+    margin-top: -5.28px;
+    box-shadow: none;
+    border-radius: 0;
+    background: #B0B0B0 ;
+}
+
+.multistep .multistep-step .progress .progress-bar {
+    width: 0px;
+    box-shadow: none;
+    background: #A9F5BC;
+}
+
+.multistep .multistep-step:first-child > .progress {
+    left: 50%;
+    width: 50%;
+}
+
+.multistep .multistep-step:last-child > .progress {
+    width: 50%;
+}
+
+.multistep .multistep-step.complete .multistep-dot {
+    background: #A9F5BC;
+}
+
+.multistep .multistep-step.complete .multistep-dot:after {
+    background: #088A08;
+}
+
+.multistep .multistep-step.complete .progress > .progress-bar {
+    width: 100%;
+}
+
+.multistep .multistep-step.next:hover .multistep-dot {
+    background: #A9F5BC;
+}
+
+.multistep .multistep-step.next:hover .multistep-dot:after {
+    background: #088A08;
+}
+
+.multistep .multistep-step.current .multistep-dot {
+    background: #A9F5BC;
+}
+
+.multistep .multistep-step.current .multistep-dot:after {
+    background: #088A08;
+}
+
+.multistep .multistep-step.current .progress > .progress-bar {
+    width: 50%;
+}
+
+.multistep .multistep-step.current:first-child > .progress > .progress-bar {
+    width: 0%;
+}
+
+.multistep .multistep-step.current:last-child > .progress > .progress-bar {
+    width: 100%;
+}
+
+.multistep .multistep-step a.multistep-dot {
+    pointer-events: none;
+}
+
+.multistep .multistep-step.next a.multistep-dot {
+    pointer-events: all;
+}
+
+.msg {
+    background: #F0F0F0; /*#fefefe;*/
+    /* width: 1000px; */
+    /* margin-left:80px; */
+    color: #666666;
+    font-weight: bold;
+    font-size: small;
+    padding: 12px;
+    padding-left: 16px;
+    border-top: solid 3px #CCCCCC;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    -webkit-box-shadow: 5px 10px 10px -5px rgba(0,0,0,.08);
+    -moz-box-shadow: 5px 10px 10px -5px rgba(0,0,0,.08);
+    box-shadow: 5px 10px 10px -5px rgba(0,0,0,.08);
+}
+
+.error2 {
+    box-shadow: 0 0 3px #CC0000; margin: 10px 
+}
+
+.error {
+    border:1px solid red;
+}
+
+.spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -50px; /* half width of the spinner gif */
+    margin-top: -50px; /* half height of the spinner gif */
+    text-align:center;
+    z-index:1234;
+    overflow: auto;
+    width: 100px; /* width of the spinner gif */
+    height: 102px; /*hight of the spinner gif +2px to fix IE8 issue */
+}
+
+.sup-ok{
+    margin-left: 10px; 
+    vertical-align:super; 
+    color:#088A08;
+}
