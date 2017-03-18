@@ -1,0 +1,67 @@
+h2 {
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  margin-top: 0;
+  font-size: 20px;
+}
+
+.bg {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  line-height: 1.6;
+}
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.1;
+  color: inherit;
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3 {
+  margin-top: 21px;
+  margin-bottom: 10.5px;
+}
+
+.panel {
+border:0;
+}
+
+.panel-borderless {
+border:0;
+box-shadow:none;
+}
+
+.titre {
+  font-weight: bold;	
+}
+
+.number {
+  text-align: right;
+}
+

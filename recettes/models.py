@@ -26,7 +26,7 @@ class Ingredient(models.Model):
     description = models.CharField(max_length=200)
     bonasavoir = models.TextField(max_length=5000, default='')
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
-    calorie = models.DecimalField(default=0, max_digits=9, decimal_places=4)
+    calorie = models.IntegerField(default=0)
     photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
     allergene = models.BooleanField(default=False)
 

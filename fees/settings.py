@@ -130,3 +130,28 @@ print os.path.join(BASE_DIR, "static/")
 STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, "static"),
 ]
+
+LOGGING = {
+    'version' : 1,
+    'disable_existing_logger' : False,
+    'handlers' :{ 
+        'console' : {
+            'class' : 'logging.StreamHandler',
+            },
+        },
+    'loggers' : {
+        'django' : {
+            'handlers' : ['console'],
+            'level' : 'DEBUG',
+            'propagate' : True
+            },
+        'fees' : {
+            'handlers' : ['console'],
+            'level' : 'DEBUG',
+            'propagate' : True
+            }
+        }
+    }
+
+    
+    

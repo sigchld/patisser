@@ -4,54 +4,33 @@
 {% load staticfiles %}
 {% endfilter %}
 {% block title%}Main menu{% endblock %}
-{% block head %} Recettes {% endblock %}
+{% block head %} Préparation {% endblock %}
 {% block content %}
-{% if recette %}
-
+{% if preparation %}
 
 <section class="container">
   <div class="panel panel-primary panel-borderless">
     <div class="panel-heading">
-      <h2>{{ recette.titre }}</h2>
+      <h2>{{ preparation.titre }}</h2>
     </div>
     <div class="row row-marges panel-content">
-      <img src="{{ recette.photo.get_absolute_url }}" class="img-rounded img-thumbnail float-left" alt="" >
+      <img src="{{ preparation.photo.get_absolute_url }}" class="img-rounded img-thumbnail float-left" alt="" >
     <div class="col-lg-18 col-sm-4">
       <div class="bg">
-        <div class="row">
-          <div class="col-xs-6"><strong>Catégorie</strong></div>
-          <div class="col-xs-6">{{recette.categorie.description}}</div>
-        </div>
-        <div class="row">
-          <div class="col-xs-6"><strong>Portions</strong></div>
-          <div class="col-xs-6">{{ recette.portion }}</div>
-        </div>
-        <div class="row">
-          <div class="col-xs-6"><strong>Difficulté</strong></div>
-          <div class="col-xs-6">{{ recette.difficulte }}</div>
-        </div>
         <div class="row">
           <div class="col-xs-6"><strong>Allergene</strong></div>
           <div class="col-xs-6">{{ allergene }}</div>
         </div>
         <div class="row">
-          <div class="col-xs-6"><strong>Energie totale</strong></div>
+          <div class="col-xs-6"><strong>Energie</strong></div>
           <div class="col-xs-6">{{ energie }}</div>
         </div>
         <div class="row">
-          <div class="col-xs-6"><strong>Energie portion</strong></div>
-          <div class="col-xs-6">{{ energie_portion }}</div>
-        </div>
-        <div class="row">
-          <div class="col-xs-6"><strong>Coût total</strong></div>
-          <div class="col-xs-6">{{ cout_total }}</div>
-        </div>
-        <div class="row">
-          <div class="col-xs-6"><strong>Coût portion</strong></div>
-          <div class="col-xs-6">{{ cout_portion }}</div>
+          <div class="col-xs-6"><strong>Coût</strong></div>
+          <div class="col-xs-6">{{ cout }}</div>
         </div>
 	<div class="row">
-          <div class="col-xs-12">{{ recette.description }}</div>
+          <div class="col-xs-12">{{ preparation.description }}</div>
         </div>
       </div>
     </div>
@@ -82,39 +61,17 @@
   </div>
 </section>
 
-
-
 <section class="container">
   <div class="panel panel-primary panel-borderless">
     <div class="panel-heading">
       <button class="btn btn-default glyphicon glyphicon-plus pull-right" data-toggle="collapse" data-target="#preparations"></button>
-      <h2>Préparations</h2>
+      <h2>Etapes</h2>
     </div>
     <div id="preparations" class="collapse bg">
-      {% for elementRecette in preparations %}
-      <div class="row row-marges panel-content">
-	<h3>{{elementRecette.preparation.titre}}</h3>
-	<div class="col-lg-12">
-	  <div>
-            <div class="row">
-            <div class="col-xs-6">{{elementRecette.preparation.description}}. Utilisation : {{ elementRecette.quantite }} %</div>
-            </div>
-	  </div>
-	</div>
-      </div>
-      
       <div class="row row-marges panel-content">
 	<div class="col-lg-12">
-	  <div class="col-lg-4">
-	    {% for elem in elementRecette.preparation.elements.all %}
-            <div class="row">
-	      <div class="col-xs-3 number">{{ elem.quantite }} g</div>
-	      <div class="col-xs-6">{{elem.ingredient.description}}</div>
-            </div>
-	    {% endfor %}
-	  </div>
 	  <div class="col-lg-8">
-	    {% for elem in elementRecette.preparation.etapes.all %}
+	    {% for elem in preparation.etapes.all %}
 	    <div class="row">
               <p><span class="titre" >{{elem.titre}}</span> {{ elem.description }}</p>
 	    </div>
@@ -122,7 +79,6 @@
 	  </div>
 	</div>
       </div>
-{% endfor %}
 </section>
 {% endif %}
 {% endblock %}

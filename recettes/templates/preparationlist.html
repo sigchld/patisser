@@ -23,7 +23,7 @@
 
   {% for preparation in preparations %}
   <tr style="height: 100px;">
-    <td width="20%"><a href="/preparations/detail/{{ preparation.id }}">{{preparation.description}}</a></td>
+    <td width="20%"><a href="/mesrecettes/detailp/{{ preparation.id }}">{{preparation.description}}</a></td>
     <td width="20%"><img src="{{ preparation.photo.get_absolute_url }}"></td>
     <td width="78%"></td>
   </tr>

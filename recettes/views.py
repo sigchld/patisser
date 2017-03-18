@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 
 from django.shortcuts import render
@@ -11,7 +13,7 @@ from .models import Ingredient
 from .models import Preparation
 
 # Get an instance of a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('fees')
 
 # Create your views here.
 from django.http import HttpResponse
@@ -55,10 +57,46 @@ def list_recettes(request):
     return HttpResponse(template.render({'recettes' : recettes, 'nb_line': range(nb_elem)}))
 
 
-def calculIngredientsRecette(recette):
+#
+# calcul cout ingredient allergene pour une preparation
+#
+def calculIngredientsPreparation(preparation):
+    from decimal import Decimal, getcontext
+    getcontext().prec=4
     ingredients = {}
     allergene = False
     energie = 0
+    cout = Decimal(0)
+
+    for element in preparation.elements.all():
+        ingredient = element.ingredient
+        allergene = allergene or ingredient.allergene
+        
+        cout += ((element.quantite * ingredient.pu)/Decimal(1000))
+        energie_ingredient =  (((element.quantite)/Decimal(100)) * ingredient.calorie)
+        energie += energie_ingredient
+
+        tmp = ingredients.get(ingredient.id)
+        if tmp is None:
+            tmp = {}
+            tmp['quantite'] = 0
+            tmp['energie'] = 0
+            tmp['nom'] = ingredient.description
+            ingredients[ingredient.id] = tmp;
+            
+        tmp['quantite'] += element.quantite
+        tmp['energie'] += energie_ingredient
+
+    return (energie, allergene, ingredients.values() , cout)
+
+
+def calculIngredientsRecette(recette):
+    from decimal import Decimal, getcontext
+    getcontext().prec=4
+    ingredients = {}
+    allergene = False
+    energie = 0
+    cout = Decimal(0)
     preparations = recette.preparations.all()
     for preparationRecette in recette.preparations.all():
         preparation = preparationRecette.preparation
@@ -67,27 +105,41 @@ def calculIngredientsRecette(recette):
         for element in preparation.elements.all():
             ingredient = element.ingredient
             allergene = allergene or ingredient.allergene
-            energie += quantite * ((element.quantite/100) * ingredient.calorie)
+
+            cout += (quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))
+            energie_ingredient = (quantite/Decimal(100)) * (((element.quantite)/Decimal(100)) * ingredient.calorie)
+            energie += energie_ingredient
+
+            logger.debug(u"----------------------- ingredient :{}/{}/{}/{}".format(ingredient.description,ingredient.pu,element.quantite,(quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))))
             tmp = ingredients.get(ingredient.id)
             if tmp is None:
                 tmp = {}
                 tmp['quantite'] = 0
+                tmp['energie'] = 0
                 tmp['nom'] = ingredient.description
                 ingredients[ingredient.id] = tmp;
 
             tmp['quantite'] += element.quantite
-            #logger.debug("ingredient :{}".format(tmp['nom']))
-    return (energie, allergene, ingredients.values(), preparations)
+            tmp['energie'] += energie_ingredient
+
+    return (energie, allergene, ingredients.values(), preparations, cout)
 
 def detail_recette(request, recette_id):
-    logger.debug("--------------------------- recette id :{}".format(recette_id))
+    from decimal import getcontext
+    getcontext().prec=2
+
     template = loader.get_template('recettedetail.html')
     recette = Recette.objects.get(id=recette_id)
-    energie, allergene, ingredients, preparations = calculIngredientsRecette(recette)
+    energie, allergene, ingredients, preparations, cout_total = calculIngredientsRecette(recette)
+    energie_portion = energie / recette.portion
+    cout_portion = cout_total / recette.portion
     return HttpResponse(template.render({'recette' : recette, 
                                          'ingredients' : ingredients,
                                          'preparations': preparations,
                                          'energie' : energie,
+                                         'energie_portion' : energie_portion,
+                                         'cout_total' : cout_total,
+                                         'cout_portion' : cout_portion,
                                          'allergene' : allergene}))
 
 
@@ -110,8 +162,8 @@ def list_ingredients(request):
 
 def detail_ingredient(request, ingredient_id):
     template = loader.get_template('ingredientdetail.html')
-    ingredients = Ingredient.objects.get(ingredient_id)
-    return HttpResponse(template.render({'ingredients' : ingredients}))
+    ingredient = Ingredient.objects.get(id=ingredient_id)
+    return HttpResponse(template.render({'ingredient' : ingredient}))
 
 
 def list_preparations(request):
@@ -131,10 +183,15 @@ def list_preparations(request):
     return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}))
 
 
-def detail_preparation(request, premaration_id):
+def detail_preparation(request, preparation_id):
     template = loader.get_template('preparationdetail.html')
-    preparation = Preparation.objects.get(ingredient_id)
-    return HttpResponse(template.render({'preparation' : preparation}))
+    preparation = Preparation.objects.get(id=preparation_id)
+    energie, allergene, ingredients, cout = calculIngredientsPreparation(preparation)
+    return HttpResponse(template.render({'preparation' : preparation, 
+                                         'ingredients' : ingredients,
+                                         'energie' : energie,
+                                         'cout' : cout,
+                                         'allergene' : allergene}))
 
 
 

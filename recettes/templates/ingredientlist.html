@@ -23,7 +23,7 @@
 
   {% for ingredient in ingredients %}
   <tr style="height: 100px;">
-    <td width="20%"><a href="/ingredients/detail/{{ ingredient.id }}">{{ingredient.description}}</a></td>
+    <td width="20%"><a href="/mesrecettes/detaili/{{ ingredient.id }}">{{ingredient.description}}</a></td>
     <td width="20%"><img src="{{ ingredient.photo.get_absolute_url }}"></td>
     <td width="78%"></td>
   </tr>

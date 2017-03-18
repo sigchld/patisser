@@ -1,0 +1,39 @@
+{% extends "table.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% load staticfiles %}
+{% endfilter %}
+{% block title%}Main menu{% endblock %}
+{% block head %} Ingredient {% endblock %}
+{% block content %}
+{% if ingredient %}
+
+<section class="container">
+  <div class="panel panel-primary panel-borderless">
+    <div class="panel-heading">
+      <h2>{{ ingredient.code }}</h2>
+    </div>
+    <div class="row row-marges panel-content">
+      <img src="{{ ingredient.photo.get_absolute_url }}" class="img-rounded img-thumbnail float-left" alt="" >
+    <div class="col-lg-18 col-sm-4">
+      <div class="bg">
+        <div class="row">
+          <div class="col-xs-6"><strong>Allergene</strong></div>
+          <div class="col-xs-6">{{ ingredient.allergene }}</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Energie</strong></div>
+          <div class="col-xs-6">{{ ingredient.calorie }} kcal</div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6"><strong>Coût</strong></div>
+          <div class="col-xs-6">{{ ingredient.pu }}</div>
+        </div>
+	<div class="row">
+          <div class="col-xs-12">{{ ingredient.description }}</div>
+        </div>
+      </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
