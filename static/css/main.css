@@ -226,10 +226,6 @@ th {
     display: none;
   }
 
-  #navbar  > .li {
-   z-index: -1;
- }
-
   .btn > .caret,
   .dropup > .btn > .caret {
     border-top-color: #000 !important;

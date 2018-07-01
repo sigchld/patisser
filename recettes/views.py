@@ -25,6 +25,7 @@ def index(request):
 
 def photo(request, photo_id):
     try:
+        logger.debug("Loadig {}/photos/{}".format(settings.BASE_DIR,photo_id))
         img = Image.open("{}/photos/{}".format(settings.BASE_DIR,photo_id))
 	size = (128, 128)
         img.thumbnail(size)
@@ -36,7 +37,7 @@ def photo(request, photo_id):
     except IOError:
         red = Image.new('RGBA', (1, 1), (255,0,0,0))
         response = HttpResponse(content_type="image/jpeg")
-        red.save(response, "JPEG")
+        red.save(response, "PNG")
     return response
 
 
@@ -157,7 +158,7 @@ def list_ingredients(request):
     except EmptyPage:
         ingredients = paginator.page(paginator_num_pages)
         
-    return HttpResponse(template.render({'ingredients' : ingredients, 'nb_line': range(nb_elem)}))
+    return HttpResponse(template.render({'ingredients' : ingredients, 'nb_line': range(nb_elem), 'msg_error' : ''}))
 
 
 def detail_ingredient(request, ingredient_id):

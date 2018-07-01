@@ -8,9 +8,10 @@ class Photo(models.Model):
     DEFAULT_PK = 1
     code = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
-    photo = models.ImageField(upload_to='photos',default='blank.png')
+    #photo = models.ImageField(upload_to='photos',default='blank.png')
+    photo = models.ImageField(default='blank.png')
     def get_absolute_url(self):
-        return "/mesrecettes/{}".format(self.photo.name)
+        return "/mesrecettes/photos/{}".format(self.photo.name)
     def __unicode__(self):
         return "%s-%s" % (self.code, self.description)
 
@@ -24,7 +25,7 @@ class Categorie(models.Model):
 class Ingredient(models.Model):
     code = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
-    bonasavoir = models.TextField(max_length=5000, default='')
+    bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     calorie = models.IntegerField(default=0)
     photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
@@ -51,7 +52,7 @@ class Preparation(models.Model):
     code = models.CharField(max_length=50)
     titre =  models.CharField(max_length=200, default='')
     description = models.CharField(max_length=200, default='')
-    bonasavoir = models.TextField(max_length=5000, default='')
+    bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
     def __unicode__(self):
         return self.description 
@@ -74,7 +75,7 @@ class Recette(models.Model):
     code = models.CharField(max_length=50)
     titre = models.CharField(max_length=200)
     description = models.TextField(max_length=5000, default='')
-    bonasavoir = models.TextField(max_length=5000, default='')
+    bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     difficulte = models.IntegerField(default=0)
     categorie = models.ForeignKey(Categorie, default=Categorie.DEFAULT_PK)
     portion = models.IntegerField(default=1)

@@ -9,49 +9,55 @@
 <meta http-equiv="pragma" content="no-cache" />
 
 
-<title> Paystore | {% block title %}{% endblock %}</title>
+<title>Mes recettes{% block title %}{% endblock %}</title>
 {% load staticfiles %}
-<link rel="stylesheet" href="{% static "style.css" %}" type="text/css" />
-<link rel="stylesheet" href="{% static "css/main-full.css" %}">
-
-
 <script type="text/javascript" src="{% static "js/vendor/modernizr-2.8.3.min.js" %}"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="{% static "css/new-main.css" %}" -->
 </head>
 <body>
   <!--[if lt IE 8]>
       <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
       <![endif]-->
-  
-<h1>{% block head %}{% endblock %}</h1>
-<!-- Emplacement du menu -->           
-<nav id="topNav">
-        <ul>
-          <li><a href="/" title="">Accueil</a></li>
-          <li><a href="#" title="">Recettes</a>
-	    <ul>
-              <li><a href="/mesrecettes/listr" title="">Lister</a></li>
-              <li><a href="/mesrecettes/newr" title="">Cr&eacute;er</a></li>
-	      <li><a href="/mesrecettes/searchr" title="">Rechercherer</a></li>
-	    </ul>
-	  </li>
 
-          <li><a href="#" title="">Pr&eacute;parations</a>
-	    <ul>
-              <li><a href="/mesrecettes/listp" title="">Lister</a></li>
-              <li><a href="/mesrecettes/newp" title="">Cr&eacute;er</a></li>
-	      <li><a href="/mesrecettes/searchp" title="">Rechercherer</a></li>	      
-	    </ul>
-	  </li>
+<!-- h1>{% block head %}{% endblock %}</h1 -->
 
-          <li><a href="#" title="">Ingr&eacute;dients</a>
-	    <ul>
-              <li><a href="/mesrecettes/listi" title="">Lister</a></li>
-              <li><a href="/mesrecettes/newi" title="">Cr&eacute;er</a></li>
-	      <li><a href="/mesrecettes/searchi" title="">Rechercherer</a></li>	      
-	    </ul>
-	  </li>
-	  <li><a href="/admin" title="">Admin</a></li>	  
+<nav id="topnavbar"  class="navbar navbar-inverse navbar-fixed-top">  
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/mesrecettes">Acceuil</a>
+    </div>
+      <div class="navbar-header">
+	<a class="navbar-brand" href="/mesrecettes/listr" id="recettes_m">Recettes</a>
+      </div>
+      <div class="navbar-header">
+	<a class="navbar-brand" href="/mesrecettes/listp" id="preparations_m">Préparations</a>
+      </div>
+      <div class="navbar-header">
+	<a class="navbar-brand" href="/mesrecettes/listi" id="ingredients_m">Ingredients</a>
+      </div>
+      <form class="navbar-form navbar-right" id="myForm" action="#">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+          </div>
+          <button type="submit" id="searchButton" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+	</form>
+    <!-- ul class="nav navbar-nav">
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Recette
+        <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          <li><a href="/mesrecettes/listr">Litser</a></li>
+          <li><a href="/mesrecettes/listr">Créer</a></li>
+          <li><a href="/mesrecettes/listr">Rechercher</a></li>
         </ul>
+      </li>
+    </ul -->
+  </div>
 </nav>
 
 {% block content %}{% endblock %}
@@ -60,52 +66,31 @@
 <div class="txt_error">
    <div >{%if msg_error %}{{ msg_error }}{%endif%}</div>
 </div>
-<div id="btn_up">
-   <img alt="Retour en haut" title="Retour en haut" src="{%static "images/fleche.png" %}" width="40" />
-</div>
 
+<script type="text/javascript" src="{% static "js/jquery.easing.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/plugins.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fees.js" %}"></script>
+<!-- script type="text/javascript" src="{% static "js/header_manage.js" %}"></script -->         
 
-  <script type="text/javascript" src="{% static "js/vendor/jquery-1.12.0.min.js" %}"></script>      
-  <script type="text/javascript" src="{% static "jqueryui.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/jquery.easing.min.js" %}"></script>
+<script type="text/javascript">
+// FAT le 25 jui 18
+//console.log("base.html");
+$('.collapse').on('shown.bs.collapse', function(){
+console.log("base.html - show ");
+$(this).parent().find(".glyphicon-plus").removeClass("glyphicon-plus").addClass("glyphicon-minus");
+}).on('hidden.bs.collapse', function(){
+console.log("base.html - hide ");
+$(this).parent().find(".glyphicon-minus").removeClass("glyphicon-minus").addClass("glyphicon-plus");
+});
 
-  <script type="text/javascript" src="{% static "js/vendor/bootstrap.min.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/jquery.fancybox.js" %}"></script>
-  
-  <script type="text/javascript" src="{% static "js/plugins.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/main.js" %}"></script>
-  <script type="text/javascript" src="{% static "js/souscription.js" %}"></script>  
-  <script type="text/javascript" src="{% static "js/header_manage.js" %}"></script>         
+$(document).ready(function(){
+$(document.body).css('padding-top', $('#topnavbar').height() + 10);
+$(window).resize(function(){
+$(document.body).css('padding-top', $('#topnavbar').height() + 10);
 
+});
+});
 
-<!-- Initialisation de la fonction -->  
-<script>
-  var el = document.getElementsByTagName("body")[0];
-  el.className = "";
-
-  (function($){
-  var nav = $("#topNav");
-  nav.find("li").each(function() {
-  if ($(this).find("ul").length > 0) {
-  $("<span>").text("^").appendTo($(this).children(":first"));
-    $(this).mouseenter(function() {
-    $(this).find("ul").stop(true, true).delay(100).slideDown(0);});
-    $(this).mouseleave(function() {
-    $(this).find("ul").stop(true, true).delay(100).slideUp(0);});
-    }
-    });
-    })(jQuery);
-  </script>
-  
-  <script type="text/javascript">
-
-    $(function(){
-        $('#btn_up').click(function() {
-          $('html,body').animate({scrollTop: 0}, 'slow');
-        });
-    });				
-  </script>
-  
-  
+</script>
 </body>
 </html>

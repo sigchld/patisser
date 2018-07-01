@@ -131,11 +131,22 @@ STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, "static"),
 ]
 
+#https://docs.djangoproject.com/fr/2.0/topics/logging/
+
 LOGGING = {
     'version' : 1,
     'disable_existing_logger' : False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)-5.5s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)-5.5s %(asctime)s %(message)s'
+        },
+    },
     'handlers' :{ 
         'console' : {
+            'formatter': 'simple',
             'class' : 'logging.StreamHandler',
             },
         },
