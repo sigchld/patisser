@@ -1,0 +1,7 @@
+ 1180  ~/.local/bin/virtualenv --system-site-packages --python=python2.7 feesenv
+ 1181  source feesenv/bin/activate
+ 1183  pip install 
+ 1184  pip install django-imagekit
+ 1185  cd fees
+ 1187  python manage.py runserver 127.0.0.1:8000 #192.168.1.96:8080
+ 1188  nohup python manage.py runserver 127.0.0.1:8000 & 
