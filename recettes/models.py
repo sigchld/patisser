@@ -1,14 +1,18 @@
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 class Photo(models.Model):
     DEFAULT_PK = 1
     code = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='username')
+    #user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
+    #user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model() , on_delete=models.CASCADE, null=False, to_field='username', default=User.objects.get(username='anonyme').username)
     #photo = models.ImageField(upload_to='photos',default='blank.png')
     photo = models.ImageField(default='blank.png')
     def get_absolute_url(self):
@@ -29,7 +33,9 @@ class Ingredient(models.Model):
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     calorie = models.IntegerField(default=0)
-    photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
+    #pas de default quand on ajoute un champ a Photo
+    #photo = models.ForeignKey('Photo')
+    photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
     allergene = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -54,6 +60,8 @@ class Preparation(models.Model):
     titre =  models.CharField(max_length=200, default='')
     description = models.CharField(max_length=200, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
+    #pas de default quand on ajoute un champ a Photo
+    #photo = models.ForeignKey(Photo)
     photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
     def __unicode__(self):
         return self.description 
@@ -80,6 +88,8 @@ class Recette(models.Model):
     difficulte = models.IntegerField(default=0)
     categorie = models.ForeignKey(Categorie, default=Categorie.DEFAULT_PK)
     portion = models.IntegerField(default=1)
+    #pas de default quand on ajoute un champ a Photo
+    #photo = models.ForeignKey(Photo)
     photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
 
     def image_tag(self):

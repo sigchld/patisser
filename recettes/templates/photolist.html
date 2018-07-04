@@ -1,0 +1,63 @@
+{% extends "table.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% load staticfiles %}
+{% endfilter %}
+{% block title%}Main menu{% endblock %}
+{% block head %}Liste des Photos{% endblock %}
+{% block content %}
+{% if photos %}
+<table class="table" id="liste">
+    <colgroup>
+      <col class="col-xs-2"></col>
+      <col class="col-xs-4"></col>
+      <col class="col-xs-2"></col>
+    <col class="col-xs-4"></col>
+  </colgroup>
+<div class="pagination">
+  <span class="step-links">
+    {% if photos.has_previous %}
+    <a href="?page={{ photos.previous_page_number }}">previous</a>
+    {% endif %}
+    <span class="current">
+      Page {{ photoss.number }} of {{ photos.paginator.num_pages }}.
+    </span>
+    {% if photos.has_next %}
+    <a href="?page={{ photos.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+
+  <tr>
+    <th>code</th>
+    <th>description</th>
+    <th>propri&egrave;taire</th>
+    <th></th>
+  </tr>
+  {% for photo in photos %}
+  <tr>
+    <td>{{photo.code}}</td>
+    <td>{{photo.description}}</td>
+    <td>{{photo.user.username}}</td>
+    <td><img src="{{ photo.get_absolute_url }}"</td>
+  </tr>
+  {% endfor %}
+  
+
+</table>
+<div class="pagination">
+  <span class="step-links">
+    {% if photos.has_previous %}
+    <a href="?page={{ photos.previous_page_number }}">previous</a>
+    {% endif %}
+    <span class="current">
+      Page {{ photos.number }} of {{ photos.paginator.num_pages }}.
+    </span>
+    {% if photos.has_next %}
+    <a href="?page={{ photos.next_page_number }}">next</a>
+    {% endif %}
+  </span>
+</div>
+{% else %}
+<p>Il n'y a pas de photos.</p>
+{% endif %}
+{% endblock %}

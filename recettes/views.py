@@ -11,6 +11,7 @@ from fees import settings
 from .models import Recette
 from .models import Ingredient
 from .models import Preparation
+from .models import Photo
 
 # Get an instance of a logger
 logger = logging.getLogger('fees')
@@ -39,6 +40,26 @@ def photo(request, photo_id):
         response = HttpResponse(content_type="image/jpeg")
         red.save(response, "PNG")
     return response
+
+def list_photos(request):
+    template = loader.get_template('photolist.html')
+    if request.user.is_authenticated:
+        photo_list = Photo.objects.filter(user = request.user.username)
+    else:
+        photo_list = Photo.objects.filter(user = 'anonyme')
+        
+    nb_elem= 10
+    paginator = Paginator(photo_list, nb_elem)
+
+    page  = request.GET.get('page')
+    try:
+        photos = paginator.page(page)
+    except PageNotAnInteger:
+        photos = paginator.page(1)
+    except EmptyPage:
+        photos = paginator.page(paginator_num_pages)
+        
+    return HttpResponse(template.render({'photos' : photos, 'nb_line': range(nb_elem)}, request))
 
 
 def list_recettes(request):
