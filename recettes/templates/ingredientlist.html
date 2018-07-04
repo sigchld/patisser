@@ -7,7 +7,11 @@
 {% block head %}Liste des Ingredients{% endblock %}
 {% block content %}
 {% if ingredients %}
-<table style="border:0;" id="liste">
+<table class="table table-condensed" id="liste">
+  <colgroup>
+    <col class="col-xs-1"></col>
+    <col class="col-xs-11"></col>
+  </colgroup>
 <div class="pagination">
   <span class="step-links">
     {% if ingredients.has_previous %}
@@ -22,22 +26,12 @@
   </span>
 
   {% for ingredient in ingredients %}
-  <tr style="height: 100px;">
-    <td width="20%"><a href="/mesrecettes/detaili/{{ ingredient.id }}">{{ingredient.description}}</a></td>
-    <td width="20%"><a href="/mesrecettes/detaili/{{ ingredient.id }}"><img src="{{ ingredient.photo.get_absolute_url }}"></td>
-    <td width="78%"></td>
+  <tr>
+    <td><a href="/mesrecettes/detaili/{{ ingredient.id }}"><img src="{{ ingredient.photo.get_absolute_url }}"></td>
+    <td><a href="/mesrecettes/detaili/{{ ingredient.id }}">{{ingredient.description}}</a></td>
   </tr>
   {% endfor %}
   
-  {% for idx in nb_line %}
-  {% if  ingredients|length <= idx %}
-  <tr style="height: 100px;">
-   <td width="20%"></td>
-   <td width="20%"></td>
-   <td width="78%"></td>
-  </tr>
- {% endif %}
-{% endfor %}
 </table>
 <div class="pagination">
   <span class="step-links">

@@ -55,7 +55,7 @@ def list_recettes(request):
     except EmptyPage:
         recetes = paginator.page(paginator_num_pages)
         
-    return HttpResponse(template.render({'recettes' : recettes, 'nb_line': range(nb_elem)}))
+    return HttpResponse(template.render({'recettes' : recettes, 'nb_line': range(nb_elem)}, request))
 
 
 #
@@ -141,7 +141,7 @@ def detail_recette(request, recette_id):
                                          'energie_portion' : energie_portion,
                                          'cout_total' : cout_total,
                                          'cout_portion' : cout_portion,
-                                         'allergene' : allergene}))
+                                         'allergene' : allergene}, request))
 
 
 def list_ingredients(request):
@@ -158,13 +158,13 @@ def list_ingredients(request):
     except EmptyPage:
         ingredients = paginator.page(paginator_num_pages)
         
-    return HttpResponse(template.render({'ingredients' : ingredients, 'nb_line': range(nb_elem), 'msg_error' : ''}))
+    return HttpResponse(template.render({'ingredients' : ingredients, 'nb_line': range(nb_elem), 'msg_error' : ''}, request))
 
 
 def detail_ingredient(request, ingredient_id):
     template = loader.get_template('ingredientdetail.html')
     ingredient = Ingredient.objects.get(id=ingredient_id)
-    return HttpResponse(template.render({'ingredient' : ingredient}))
+    return HttpResponse(template.render({'ingredient' : ingredient}, request))
 
 
 def list_preparations(request):
@@ -181,7 +181,7 @@ def list_preparations(request):
     except EmptyPage:
         preparations = paginator.page(paginator_num_pages)
         
-    return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}))
+    return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}, request))
 
 
 def detail_preparation(request, preparation_id):
@@ -192,7 +192,7 @@ def detail_preparation(request, preparation_id):
                                          'ingredients' : ingredients,
                                          'energie' : energie,
                                          'cout' : cout,
-                                         'allergene' : allergene}))
+                                         'allergene' : allergene}, request))
 
 
 

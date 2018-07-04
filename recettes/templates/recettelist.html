@@ -7,7 +7,7 @@
 {% block head %}Liste des Recettes{% endblock %}
 {% block content %}
 {% if recettes %}
-<table style="border:0;" id="liste">
+<table class="table" id="liste">
 <div class="pagination">
   <span class="step-links">
     {% if recettes.has_previous %}
@@ -22,22 +22,24 @@
   </span>
 
   {% for recette in recettes %}
-  <tr style="height: 100px;">
-    <td width="20%"><a href="/mesrecettes/detailr/{{ recette.id }}">{{recette.titre}}</a></td>
-    <td width="20%"><a href="/mesrecettes/detailr/{{ recette.id }}"><img src="{{ recette.photo.get_absolute_url }}"></a></td>
-    <td width="78%">{{ recette.description }}</td>
+  <tr>
+    <td><a href="/mesrecettes/detailr/{{ recette.id }}"><img src="{{ recette.photo.get_absolute_url }}"></a></td>
+    <td><a href="/mesrecettes/detailr/{{ recette.id }}">{{recette.titre}}</a></td>
+    <td>{{ recette.description }}</td>
   </tr>
   {% endfor %}
-  
+
+  <!-- 
   {% for idx in nb_line %}
   {% if  recettes|length <= idx %}
   <tr style="height: 100px;">
-   <td width="20%"></td>
-   <td width="20%"></td>
-   <td width="78%"></td>
+   <td></td>
+   <td></td>
+   <td></td>
   </tr>
  {% endif %}
 {% endfor %}
+-->
 </table>
 <div class="pagination">
   <span class="step-links">

@@ -2,6 +2,8 @@ from django.conf.urls import include, url
 from django.conf import settings
 from . import views
 from django.contrib import admin
+from django.contrib.auth import urls
+
 
 admin.autodiscover()
 
@@ -12,6 +14,7 @@ admin.autodiscover()
 
 urlpatterns = [
     # Examples:
+    url('^mesrecettes/', include('django.contrib.auth.urls')),
     url(r'^$', views.index, name='index'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^mesrecettes/', include('recettes.urls')),

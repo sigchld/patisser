@@ -7,7 +7,11 @@
 {% block head %}Liste des Preparations{% endblock %}
 {% block content %}
 {% if preparations %}
-<table style="border:0;" id="liste">
+<table class="table" id="liste">
+    <colgroup>
+    <col class="col-xs-1"></col>
+    <col class="col-xs-11"></col>
+  </colgroup>
 <div class="pagination">
   <span class="step-links">
     {% if preparations.has_previous %}
@@ -22,19 +26,19 @@
   </span>
 
   {% for preparation in preparations %}
-  <tr style="height: 100px;">
-    <td width="20%"><a href="/mesrecettes/detailp/{{ preparation.id }}">{{preparation.description}}</a></td>
-    <td width="20%">,<a href="/mesrecettes/detailp/{{ preparation.id }}"><img src="{{ preparation.photo.get_absolute_url }}"></a></td>
-    <td width="78%"></td>
+  <tr">
+    <td><a href="/mesrecettes/detailp/{{ preparation.id }}"><img src="{{ preparation.photo.get_absolute_url }}"></a></td>
+    <td><a href="/mesrecettes/detailp/{{ preparation.id }}">{{preparation.description}}</a></td>
+    <td"></td>
   </tr>
   {% endfor %}
   
   {% for idx in nb_line %}
   {% if  preparations|length <= idx %}
-  <tr style="height: 100px;">
-   <td width="20%"></td>
-   <td width="20%"></td>
-   <td width="78%"></td>
+  <tr">
+   <td></td>
+   <td></td>
+   <td></td>
   </tr>
  {% endif %}
 {% endfor %}

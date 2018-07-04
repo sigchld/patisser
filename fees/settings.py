@@ -121,11 +121,13 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'photos/')
 MAX_UPLOAD_SIZE=10000000
 
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 #STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-
-print os.path.join(BASE_DIR, "static/")
-
 #STATIC_ROOT=os.path.join(BASE_DIR, "static")
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 5 * 60 #
 
 STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, "static"),
