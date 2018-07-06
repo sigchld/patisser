@@ -1,0 +1,14 @@
+{% extends "table.html" %}
+{% load custom_filters %}
+{% filter sort %}
+{% load staticfiles %}
+{% endfilter %}
+{% block title%}Main menu{% endblock %}
+{% block head %}Liste des Photos{% endblock %}
+{% block content %}
+    <h1>Nouvelle Photo</h1>
+    <form enctype="multipart/form-data" method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+{% endblock %}

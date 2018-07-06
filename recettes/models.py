@@ -6,6 +6,12 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 
+ACCES = (
+    ('PUB', 'public'),
+    ('PRIV', 'privé')
+)
+
+
 
 class Photo(models.Model):
     DEFAULT_PK = 1
@@ -13,6 +19,7 @@ class Photo(models.Model):
     description = models.CharField(max_length=200)
     owner = models.ForeignKey(get_user_model() , on_delete=models.CASCADE, null=False, to_field='username', default=User.objects.get(username='anonyme').username)
     photo = models.ImageField(default='blank.png')
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
     def get_absolute_url(self):
         return "/mesrecettes/photos/{}".format(self.photo.name)
@@ -64,8 +71,8 @@ class Ingredient(models.Model):
     sel = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     
     #pas de default quand on ajoute un champ a Photo
-    #photo = models.ForeignKey('Photo')
-    photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
+    photo = models.ForeignKey('Photo')
+    #photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
     allergene = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -91,8 +98,8 @@ class Preparation(models.Model):
     description = models.CharField(max_length=200, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     #pas de default quand on ajoute un champ a Photo
-    #photo = models.ForeignKey(Photo)
-    photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
+    photo = models.ForeignKey(Photo)
+    #photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
     def __unicode__(self):
         return self.description 
 
@@ -119,8 +126,8 @@ class Recette(models.Model):
     categorie = models.ForeignKey(Categorie, default=Categorie.DEFAULT_PK)
     portion = models.IntegerField(default=1)
     #pas de default quand on ajoute un champ a Photo
-    #photo = models.ForeignKey(Photo)
-    photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
+    photo = models.ForeignKey(Photo)
+    #photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
 
     def image_tag(self):
         from django.utils.html import format_html

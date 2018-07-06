@@ -15,40 +15,106 @@
        <col class="col-xs-6"></col>
   </colgroup -->
 
-<thead>
-<tr>
-<td colspan="3"><p>Liste photos</td>
-</td>
+  <thead>
+    <tr>
+    {% if request.user.is_authenticated %}
+      <td><p>Liste photos</td>
+      <td>
+	<a href="{% url 'photo_new' %}"><span class="glyphicon glyphicon-plus"> ajouter</span></a>
+      </td>
+      <td>
+      </td>
+      <td>
+      </td>
+
+      {% else %}
+      <td colspan="4"><p>Liste photos</td>
+      {% endif %}
+
 <td>
-<div class="pagination">
+  <div class="pagination">
   <span class="step-links">
     {% if photos.has_previous %}
-    <a href="?page={{ photos.previous_page_number }}">previous</a>
+    <a href="?page={{ photos.previous_page_number }}"><span class="glyphicon glyphicon-arrow-left"</span></a>
     {% endif %}
     <span class="current">
       Page {{ photos.number }} of {{ photos.paginator.num_pages }}
     </span>
     {% if photos.has_next %}
-    <a href="?page={{ photos.next_page_number }}">next</a>
+    <a href="?page={{ photos.next_page_number }}"><span class="glyphicon glyphicon-arrow-right"</span></a>
     {% endif %}
   </span>
 </div>
 </td>
 </tr>
   <tr>
-    <th>code</th>
+    <th>code acces={{ acces }}, owner={{ owner}}</th>
     <th>description</th>
     <th>propri&egrave;taire</th>
-    <th></th>
+    <th colspan="3">accès</th>
   </tr>
+  {% if request.user.is_authenticated %}
+  <tr>
+    <td colspan="2">&nbsp</td>
+    <td >
+      {% if owner is None or owner == 'mine' %}
+        <span class="glyphicon glyphicon-filter">moi</span>
+	<a href="{% url 'list_photos_owner' 'others' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
+	<a href="{% url 'list_photos_owner' 'all' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
+      {% endif %}
+	
+      {% if owner == 'others' %}
+	<a href="{% url 'list_photos_owner' 'mine' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
+	<span class="glyphicon glyphicon-filter">les autres</span>
+	<a href="{% url 'list_photos_owner' 'all' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>	
+	{% endif %}
+	
+	{% if owner == 'all' %}
+	<a href="{% url 'list_photos_owner' 'mine' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
+	<a href="{% url 'list_photos_owner' 'others' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
+	<span class="glyphicon glyphicon-filter">indifférent</span>
+
+	{% endif %}
+    </td>
+    
+    <td colspan="3">
+      {% if acces == 'public' or acces == 'all' %}
+      <a href="{% url 'list_photos_acces' 'private' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">privé</span></a>
+      {% else %}
+      <span class="glyphicon glyphicon-filter">privé</span>
+      {% endif %}
+
+      {% if acces == 'private' or acces == 'all' %}
+      <a href="{% url 'list_photos_acces' 'public' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">public</span></a>
+      {% else %}
+      <span class="glyphicon glyphicon-filter">public</span>
+      {% endif %}
+
+      {% if acces == 'public' or acces == 'private' %}
+      <a href="{% url 'list_photos_acces' 'all' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
+      {% else %}
+      <span class="glyphicon glyphicon-filter">indifférent</span>
+      {% endif %}
+    </td>
+    
+  </tr>
+  {% endif %}
 </thead>
+
 <tbody>
   {% for photo in photos %}
   <tr>
-    <td>{{photo.code}}</td>
+    <td>
+      {% if request.user.username == photo.owner.username %}      
+      <a href="" ><span class="glyphicon glyphicon-trash"></span></a>
+      <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
+      {% endif %}
+      {{photo.code}} 
+</td>
     <td>{{photo.description}}</td>
-    <td>{{photo.user.username}}</td>
-    <td><img src="{{ photo.get_absolute_url }}"</td>
+    <td>{{photo.owner.username}}</td>
+    <td>{{photo.get_acces_display}}</td>
+    <td><img src="{{ photo.get_absolute_url }}"></td>
   </tr>
   {% endfor %}
  
@@ -56,19 +122,19 @@
 
 <tfoot>
 <tr>
-<td colspan="3"><p>Liste photos</td>
+<td colspan="4"><p>Liste photos</td>
 </td>
 <td>
 <div class="pagination">
   <span class="step-links">
     {% if photos.has_previous %}
-    <a href="?page={{ photos.previous_page_number }}">previous</a>
+    <a href="?page={{ photos.previous_page_number }}"><span class="glyphicon glyphicon-arrow-left"</span></a>
     {% endif %}
     <span class="current">
       Page {{ photos.number }} of {{ photos.paginator.num_pages }}
     </span>
     {% if photos.has_next %}
-    <a href="?page={{ photos.next_page_number }}">next</a>
+    <a href="?page={{ photos.next_page_number }}"><span class="glyphicon glyphicon-arrow-right"</span></a>
     {% endif %}
   </span>
 </div>
@@ -89,8 +155,9 @@ $('#liste_photos').DataTable({
 "autoWidth":true,
   "columnDefs": [
 { "width": "10%", "targets": 0 },
-{ "width": "30%", "targets": 1 },
-{ "width": "20%", "targets": 2 }
+{ "width": "20%", "targets": 1 },
+{ "width": "30%", "targets": 2 },
+{ "width": "30%", "targets": 2 }
 ]
 });
 } );

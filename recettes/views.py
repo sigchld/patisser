@@ -3,8 +3,11 @@
 import logging
 
 from django.shortcuts import render
+from django.shortcuts import redirect
 from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
+from django.core.files.storage import FileSystemStorage
 
 from PIL import Image
 from fees import settings
@@ -12,6 +15,8 @@ from .models import Recette
 from .models import Ingredient
 from .models import Preparation
 from .models import Photo
+
+from .forms import PhotoForm
 
 # Get an instance of a logger
 logger = logging.getLogger('fees')
@@ -41,12 +46,54 @@ def photo(request, photo_id):
         red.save(response, "PNG")
     return response
 
-def list_photos(request):
+#
+# Appelé pour retrouver les photos
+# owner = mine ou others ou all
+
+def lis_photos_owner(request, owner):
+    list_photos(request, owner=owner)
+    
+#
+# Appelé pour retrouver les photos
+# acces = private ou public
+def lis_photos_acces(request, acces):
+    list_photos(request, acces=acces)
+
+#
+# Appelé pour retrouver les photos
+# owner = mine  que les miennes publiques ou privées
+# owner = others photos publiques sauf les miennes
+# owner = all les miennes et celles des autres qui sont publiques
+#
+# acces = public les miennes publiques
+# acces = private les miennes privées
+#
+# plus d'informations sur le Q ici
+# https://docs.djangoproject.com/fr/1.11/topics/db/queries/
+def list_photos(request,owner=None,acces=None):
     template = loader.get_template('photolist.html')
     if request.user.is_authenticated:
-        photo_list = Photo.objects.filter(user = request.user.username)
+        if owner == 'all':
+            photo_list = Photo.objects.filter((~Q(owner = request.user.username) & Q(acces = 'PUB'))| Q(owner = request.user.username)).order_by('code')
+            acces = None
+        elif owner == "mine":
+            photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
+            acces = 'all'
+        elif owner == "others":
+            photo_list = Photo.objects.filter(~Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
+            acces = None
+        elif acces == "private":
+            photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PRIV')).order_by('code')
+            owner = 'mine'
+        elif acces == "public":
+            photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
+            owner = 'mine'
+        else:
+            photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
+            owner = 'mine'
+            acces = 'all'
     else:
-        photo_list = Photo.objects.filter(user = 'anonyme')
+        photo_list = Photo.objects.filter(owner='anonyme').order_by('code')
         
     nb_elem= 10
     paginator = Paginator(photo_list, nb_elem)
@@ -59,7 +106,7 @@ def list_photos(request):
     except EmptyPage:
         photos = paginator.page(paginator_num_pages)
         
-    return HttpResponse(template.render({'photos' : photos, 'nb_line': range(nb_elem)}, request))
+    return HttpResponse(template.render({'photos' : photos, 'nb_line': range(nb_elem), 'owner': owner, 'acces' : acces}, request))
 
 
 def list_recettes(request):
@@ -215,5 +262,27 @@ def detail_preparation(request, preparation_id):
                                          'cout' : cout,
                                          'allergene' : allergene}, request))
 
-
-
+#
+# nouvelle photo
+# info sur le multipart/form :
+# https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
+def photo_new(request):
+    if not request.user.is_authenticated:
+        return redirect('/')
+        
+    if request.method == "POST" and request.FILES['photo']:
+        form = PhotoForm(request.POST)
+        if form.is_valid():
+            myfile = request.FILES['photo']
+            name = myfile.name #[1:-1]
+            logger.debug("PhotoFileName {}".format(name))
+            fs = FileSystemStorage()
+            filename = fs.save(name, myfile)
+            photo = form.save(commit=False)
+            photo.photo = filename
+            photo.owner = request.user
+            photo.save()
+            return redirect('/mesrecettes/listphotos')
+    else:
+        form = PhotoForm()
+        return render(request, 'photo_edit.html', {'form': form})
