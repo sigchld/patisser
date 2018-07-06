@@ -7,32 +7,42 @@
 {% block head %}Liste des Photos{% endblock %}
 {% block content %}
 {% if photos %}
-<table class="table" id="liste">
-    <colgroup>
-      <col class="col-xs-2"></col>
-      <col class="col-xs-4"></col>
-      <col class="col-xs-2"></col>
-    <col class="col-xs-4"></col>
-  </colgroup>
+<table class="table-striped"  id="liste_photos">
+  <!-- colgroup>
+       <col class="col-xs-1"></col>
+       <col class="col-xs-4"></col>
+       <col class="col-xs-1"></col>
+       <col class="col-xs-6"></col>
+  </colgroup -->
+
+<thead>
+<tr>
+<td colspan="3"><p>Liste photos</td>
+</td>
+<td>
 <div class="pagination">
   <span class="step-links">
     {% if photos.has_previous %}
     <a href="?page={{ photos.previous_page_number }}">previous</a>
     {% endif %}
     <span class="current">
-      Page {{ photoss.number }} of {{ photos.paginator.num_pages }}.
+      Page {{ photos.number }} of {{ photos.paginator.num_pages }}
     </span>
     {% if photos.has_next %}
     <a href="?page={{ photos.next_page_number }}">next</a>
     {% endif %}
   </span>
-
+</div>
+</td>
+</tr>
   <tr>
     <th>code</th>
     <th>description</th>
     <th>propri&egrave;taire</th>
     <th></th>
   </tr>
+</thead>
+<tbody>
   {% for photo in photos %}
   <tr>
     <td>{{photo.code}}</td>
@@ -41,23 +51,48 @@
     <td><img src="{{ photo.get_absolute_url }}"</td>
   </tr>
   {% endfor %}
-  
+ 
+</tbody> 
 
-</table>
+<tfoot>
+<tr>
+<td colspan="3"><p>Liste photos</td>
+</td>
+<td>
 <div class="pagination">
   <span class="step-links">
     {% if photos.has_previous %}
     <a href="?page={{ photos.previous_page_number }}">previous</a>
     {% endif %}
     <span class="current">
-      Page {{ photos.number }} of {{ photos.paginator.num_pages }}.
+      Page {{ photos.number }} of {{ photos.paginator.num_pages }}
     </span>
     {% if photos.has_next %}
     <a href="?page={{ photos.next_page_number }}">next</a>
     {% endif %}
   </span>
 </div>
+</td>
+</foot>
+</table>
 {% else %}
 <p>Il n'y a pas de photos.</p>
 {% endif %}
+
+<script  type="text/javascript">
+$(document).ready( function () {
+$('#liste_photos').DataTable({
+"paging":false,
+"searching":false,
+"info":false,
+"ordering":false,
+"autoWidth":true,
+  "columnDefs": [
+{ "width": "10%", "targets": 0 },
+{ "width": "30%", "targets": 1 },
+{ "width": "20%", "targets": 2 }
+]
+});
+} );
+</script>
 {% endblock %}

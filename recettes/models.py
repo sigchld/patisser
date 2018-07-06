@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 from django.conf import settings
@@ -10,15 +11,15 @@ class Photo(models.Model):
     DEFAULT_PK = 1
     code = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
-    #user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='username')
-    #user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    user = models.ForeignKey(get_user_model() , on_delete=models.CASCADE, null=False, to_field='username', default=User.objects.get(username='anonyme').username)
-    #photo = models.ImageField(upload_to='photos',default='blank.png')
+    owner = models.ForeignKey(get_user_model() , on_delete=models.CASCADE, null=False, to_field='username', default=User.objects.get(username='anonyme').username)
     photo = models.ImageField(default='blank.png')
+
     def get_absolute_url(self):
         return "/mesrecettes/photos/{}".format(self.photo.name)
     def __unicode__(self):
         return "%s-%s" % (self.code, self.description)
+    class Meta:
+        unique_together = (("owner", "code"),)
 
 class Categorie(models.Model):
     DEFAULT_PK = 1
@@ -27,12 +28,41 @@ class Categorie(models.Model):
     def __unicode__(self):
         return "%s" % (self.description)
 
+
+    
 class Ingredient(models.Model):
     code = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
+
+    # ancien champ
     calorie = models.IntegerField(default=0)
+
+    # nouveaux champs
+    kcalories = models.IntegerField("Kilo calories", default=0)
+    kjoules = models.IntegerField("Kilo joules", default=0);
+
+    # détail de la composition de l'ingeédient
+    # xx_inferieures indique valeur très faible non mesurable
+
+    matieges_grasses_inferieures  = models.BooleanField(default=False)
+    matieres_grasses = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    matieres_grasses_saturees = models.DecimalField("Dont acides gras saturés", max_digits=7, decimal_places=2, default=0)
+
+    glucides_inferieures = models.BooleanField(default=False)
+    glucides = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    glucides_dont_sucres = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+
+    fibres_inferieur = models.BooleanField(default=False)
+    fibres_alimentaires = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+
+    proteines_inferieur = models.BooleanField(default=False)
+    proteines = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+
+    sel_inferieur = models.BooleanField(default=False)
+    sel = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    
     #pas de default quand on ajoute un champ a Photo
     #photo = models.ForeignKey('Photo')
     photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
