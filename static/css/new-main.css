@@ -220,6 +220,44 @@ body {
 }
 */
 
-#currentmenu {
+
+/* https://css-tricks.com/styling-underlines-web/ */
+#currentmenu
+{
     color : white;
+    text-decoration: none ;
+    
+    /*
+    background-image: linear-gradient(to right, blue 75%, transparent 75%);
+  background-position: 0 1.04em;
+  background-repeat: repeat-x;
+  background-size: 8px 3px;
+
+  
+  
+    color : white;
+    border-bottom: 2px red solid;
+    display: inline-block;
+  line-height: 0.85;
+
+  text-decoration: underline ;
+    background-color: #FFFF00; 
+color: green; */
 }
+
+body {
+
+    background: #edeff0;
+}
+/*
+    table.dataTable tr.odd { background-color: #f5cee7;  border:1px lightgrey;}
+    table.dataTable td.even { background-color: red; border:1px lightgrey; }
+    table.dataTable td { background-color: #f0e2e2;  border:1px lightgrey;}
+    table.dataTable tr { background-color: #f0e2e2;  border:1px lightgrey;}
+
+table.dataTable td.sorting_1{ background-color: white; border:1px lightgrey; }
+table.dataTable td{ background-color: white;  border:1px lightgrey;}
+*/
+   table.dataTable tr.odd { background-color: #faf5f5;  border:1px lightgrey;}
+    table.dataTable tr.even{ background-color: white; border:1px lightgrey; }
+

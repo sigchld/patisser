@@ -30,17 +30,26 @@
 
 <nav id="topnavbar"  class="navbar navbar-inverse navbar-fixed-top">  
   <div class="container-fluid">
+
     <div class="navbar-header">
-      <a class="navbar-brand" href="/mesrecettes">P&acirc;tisser</a>
+      <a class="navbar-brand" href="/mesrecettes">PATISSER</a>
     </div>
+    
     <ul class="nav navbar-nav">
-      <li><a class="navbar-brand menu-selectionne " href="/mesrecettes/listr" id="id_recettes_m">Recettes</a></li>
-      <li><a class="navbar-brand" href="/mesrecettes/listp" id="id_preparations_m">Préparations</a></a></li>
-      <li><a class="navbar-brand" href="/mesrecettes/listi" id="id_ingredients_m">Ingr&eacute;dients</a></li>
-      <li><a class="navbar-brand" href="/mesrecettes/listphotos" id="id_photos_m">Photos</a></li>
+      <li><a class="navbar" href="/mesrecettes/listr" id="id_recettes_m">Recettes</a></li>
+      <li><a class="navbar" href="/mesrecettes/listp" id="id_preparations_m">Préparations</a></a></li>
+      <li><a class="navbar" href="/mesrecettes/listi" id="id_ingredients_m">Ingr&eacute;dients</a></li>
+      <li><a class="navbar" href="/mesrecettes/listphotos" id="id_photos_m">Photos</a></li>
+  </ul>
+  
+    <ul class="nav navbar-nav navbar-right">
+      {% if user.is_authenticated %}
+      <li><a class="navbar" href="/mesrecettes/logout" id="logout_m"><span class="glyphicon glyphicon-log-out"> {{user.email}}</span></a></li>
+      {% else %}
+      <li><a class="navbar" href="#myModal" class="trigger-btn" data-toggle="modal"><span class="glyphicon glyphicon-log-in"> Login</span></a></li>
+      {% endif %}
     </ul>
 
-	
     <form class="navbar-form navbar-right" method="GET" id="myForm" action="{% url 'search' %}">      
       <div class="form-group">
 	{% if request.session.filter %}
@@ -57,29 +66,6 @@
         <button type="submit" id="searchButton" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
       </div>
     </form>
-      
-      
-    <ul class="nav navbar-nav navbar-right">
-      {% if user.is_authenticated %}
-      <li><a class="navbar-brand" href="/mesrecettes/logout" id="logout_m"><span class="glyphicon glyphicon-log-out"></span></a></li>
-      <li><p class="navbar-text">{{user.email}}</p></li>
-      {% else %}
-      <li><a class="navbar-brand" href="#myModal" class="trigger-btn" data-toggle="modal"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-      {% endif %}
-    </ul>
-
-
-      <!-- ul class="nav navbar-nav">
-      <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Recette
-        <span class="caret"></span></a>
-        <ul class="dropdown-menu">
-          <li><a href="/mesrecettes/listr">Litser</a></li>
-          <li><a href="/mesrecettes/listr">Créer</a></li>
-          <li><a href="/mesrecettes/listr">Rechercher</a></li>
-        </ul>
-      </li>
-    </ul -->
   </div>
 </nav>
 
@@ -165,6 +151,7 @@ $(document).ready(function(){
 // menu actif
 {% if request.session.current_page %}
 $("#{{ request.session.current_page }}").prop('id', 'currentmenu');
+//$("#currentmenu").addClass('navbar-inverse')
 {% endif %}
 
 // Gestion du login

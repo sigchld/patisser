@@ -35,24 +35,24 @@
     {% if owner == 'me' %}
 	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
 		<option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres publiques</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">les miennes et les autres</option>
 	      </select>
     {% endif %}
     
     {% if owner == 'others' %}
 	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
 		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres publiques</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">les miennes et les autres</option>
 	      </select>
     {% endif %}
     
     {% if owner == 'all' %}
 	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
 		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}" selected>toutes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres publiques</option>
+		<option value="{% url 'list_photos_owner' 'all' %}" selected>les miennes et les autres</option>
 	      </select>
      {% endif %}
 	  
@@ -65,15 +65,15 @@
       {% if acces == 'public' %}
       <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
       <option value="{% url 'list_photos_acces' 'public' %}" selected>publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques ou privées</option>
       {% elif acces == 'private' %}
       <option value="{% url 'list_photos_acces' 'private' %}" selected>privées</option>
       <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques ou privées</option>
       {% else %}
       <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
       <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques privées</option>
+      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques ou privées</option>
       {% endif %}
     </select>
     
@@ -110,77 +110,16 @@
 </td>
 </tr>
 
-{% if detail or request.user.is_authenticated %}
+{% if detail %}
 <tr>
-  {% if detail %}
   <th>code</th>
   <th>description</th>
-  {% else %}
-  <th></th>
-  <th></th>
-  {% endif %}
-
-  {% if detail or request.user.is_authenticated%}
   <th>
-    {% if request.user.is_authenticated %}
-    <!--span class="glyphicon glyphicon-filter"></span -->
-    {% if owner == 'me' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
-		<option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
-	      </select>
-    {% endif %}
-    
-    {% if owner == 'others' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
-		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
-	      </select>
-    {% endif %}
-    
-    {% if owner == 'all' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
-		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}" selected>toutes</option>
-	      </select>
-     {% endif %}
-     {% else %}
-	      propri&egrave;taire
-    {% endif %}
+    propriétaire
   </th>
 
-  <th colspan="3">
-    {% if request.user.is_authenticated and owner == 'me' %}
-    <!-- span class="glyphicon glyphicon-filter"></span -->
-    <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
-      {% if acces == 'public' %}
-      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
-      <option value="{% url 'list_photos_acces' 'public' %}" selected>publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
-      {% elif acces == 'private' %}
-      <option value="{% url 'list_photos_acces' 'private' %}" selected>privées</option>
-      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
-      {% else %}
-      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
-      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques privées</option>      
-      {% endif %}
-    </select>
-    {% else %}
-    {% if detail %}
+  <th colspan="2">
     accès
-    {% endif %}
-    {% endif %}
-</th>
-    
-  {% else %}
-  <th></th>
-  <th colspan="3"></th>
-  {% endif %}
 </tr>
 {% endif %}
 
@@ -280,6 +219,12 @@
 
     </td>
     {% if forloop.last %}
+    {%if not forloop.counter|divisibleby:"5" %}
+    {% for i in remplissage %}
+      <td></td>     
+    {% endfor %}
+
+    {% endif %}
       </tr>
       {% endif %}
   {% endfor %}
@@ -382,8 +327,33 @@
 
 {% endif %}
 
-  <script  type="text/javascript">
-    $(document).ready(
+<script  type="text/javascript">
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+};
+
+function ask_delete_photo(id) {
+    $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
+    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
+    $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
+    $('#id_delete_photo_id').text(id);
+    $('#delete_photo').modal('show')
+    };
+    
+
+$(document).ready(
     function () {
 
 
@@ -417,10 +387,8 @@ $('#id_acces_sel').on('change', function (e) {
 });
 
     
-
-    $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
-    });
+
     
     $('#liste_photos').DataTable({
     "compact":true,
@@ -455,22 +423,9 @@ $('#id_acces_sel').on('change', function (e) {
       $("#id_loader").css("display","block");
       return true;
     });
+    
 
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-};
+    
 			    
     $("#id_delete_photo").click(
     function(){
@@ -500,18 +455,8 @@ function getCookie(name) {
     });
     
     
-    }
+}); // fin document ready
 
-    ); // document ready
-
-    function ask_delete_photo(id) {
-    $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
-    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
-    $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-    $('#id_delete_photo_id').text(id);
-    $('#delete_photo').modal('show')
-    };
-    
-  </script>
+</script>
 </div>
 {% endblock %}

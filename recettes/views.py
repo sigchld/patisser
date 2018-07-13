@@ -152,7 +152,9 @@ def list_photos(request,owner='me',acces=None,filter=None):
         photos = paginator.page(paginator_num_pages)
         
     request.session['current_page'] = 'id_photos_m'
-    return HttpResponse(template.render({'photos' : photos, 'nb_line': range(nb_elem), 'owner': owner, 'acces' : acces, 'detail' : detail}, request))
+    logger.debug("list_photos/len/{}]".format(len(photos)))
+    # remplissage sert a papier pb template 
+    return HttpResponse(template.render({'photos' : photos, 'remplissage': range(5 -(len(photos) % 5)), 'owner': owner, 'acces' : acces, 'detail' : detail}, request))
 
 
 def list_recettes(request, filter=None):
