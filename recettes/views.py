@@ -92,31 +92,33 @@ def lis_photos_acces(request, acces):
 #
 # plus d'informations sur le Q ici
 # https://docs.djangoproject.com/fr/1.11/topics/db/queries/
-def list_photos(request,owner=None,acces=None,filter=None):
+def list_photos(request,owner='me',acces=None,filter=None):
     detail = request.GET.dict().get('detail', 'true').lower() == "true"
-    
+    logger.debug("list_photos/acces/{}/owner/{}/auth/{}".format(acces, owner,request.user.is_authenticated))            
     template = loader.get_template('photolist.html')
     if request.user.is_authenticated:
         if owner == 'all':
             photo_list = Photo.objects.filter((~Q(owner = request.user.username) & Q(acces = 'PUB'))| Q(owner = request.user.username)).order_by('code')
             acces = None
-        elif owner == "me":
-            photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
-            acces = 'all'
         elif owner == "others":
             photo_list = Photo.objects.filter(~Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
             acces = None
-        elif acces == "private":
-            photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PRIV')).order_by('code')
-            owner = 'me'
-        elif acces == "public":
-            photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
-            owner = 'me'
+        elif owner == "me":
+            if acces == 'all':
+                photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
+            elif acces == 'private':
+                photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PRIV')).order_by('code')
+            elif acces == 'public':
+                photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
+            else:
+                photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
+                acces = 'all'
         else:
             photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
-            owner = 'me'
             acces = 'all'
-
+            owner = 'me'
+            
+        logger.debug("list_photos/acces/{}]".format(acces))            
         if filter is None:
             filter = request.session.get('filter', None)
 

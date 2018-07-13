@@ -18,7 +18,7 @@
     <thead>
       <tr>
 	{% if request.user.is_authenticated %}
-	<td colspan="4">
+	<td colspan="2">
 	 
 	  Liste photos
 	  &nbsp;
@@ -28,10 +28,57 @@
 	  <a href="{% url 'list_photos' %}?detail=true"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 	  &nbsp;&nbsp;
-	  <!-- a href="{% url 'photo_new' %}"><span class="glyphicon glyphicon-plus">ajouter</span></a -->
 	  <a href="#modalAddPhoto" data-toggle="modal"><span class="glyphicon glyphicon-plus"></span> ajouter</a>
-	</td>
+	  </td>
 
+	<td>
+    {% if owner == 'me' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+		<option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
+	      </select>
+    {% endif %}
+    
+    {% if owner == 'others' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
+	      </select>
+    {% endif %}
+    
+    {% if owner == 'all' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}" selected>toutes</option>
+	      </select>
+     {% endif %}
+	  
+	  </td>
+
+	<td>
+	{% if owner == 'me' %}
+    <!-- span class="glyphicon glyphicon-filter"></span -->
+    <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+      {% if acces == 'public' %}
+      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
+      <option value="{% url 'list_photos_acces' 'public' %}" selected>publiques</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      {% elif acces == 'private' %}
+      <option value="{% url 'list_photos_acces' 'private' %}" selected>privées</option>
+      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      {% else %}
+      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
+      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
+      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques privées</option>
+      {% endif %}
+    </select>
+    
+{% endif %}
+	</td>
 	{% else %}
 	<td colspan="4">
 	  Liste photos&nbsp;&nbsp;
@@ -61,86 +108,137 @@
 </div>
 {% endif %}
 </td>
-
 </tr>
+
+{% if detail or request.user.is_authenticated %}
 <tr>
+  {% if detail %}
   <th>code</th>
   <th>description</th>
-  <th>propri&egrave;taire</th>
-  <th colspan="3">accès</th>
+  {% else %}
+  <th></th>
+  <th></th>
+  {% endif %}
+
+  {% if detail or request.user.is_authenticated%}
+  <th>
+    {% if request.user.is_authenticated %}
+    <!--span class="glyphicon glyphicon-filter"></span -->
+    {% if owner == 'me' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+		<option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
+	      </select>
+    {% endif %}
+    
+    {% if owner == 'others' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">toutes</option>
+	      </select>
+    {% endif %}
+    
+    {% if owner == 'all' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}" selected>toutes</option>
+	      </select>
+     {% endif %}
+     {% else %}
+	      propri&egrave;taire
+    {% endif %}
+  </th>
+
+  <th colspan="3">
+    {% if request.user.is_authenticated and owner == 'me' %}
+    <!-- span class="glyphicon glyphicon-filter"></span -->
+    <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+      {% if acces == 'public' %}
+      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
+      <option value="{% url 'list_photos_acces' 'public' %}" selected>publiques</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      {% elif acces == 'private' %}
+      <option value="{% url 'list_photos_acces' 'private' %}" selected>privées</option>
+      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      {% else %}
+      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
+      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
+      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques privées</option>      
+      {% endif %}
+    </select>
+    {% else %}
+    {% if detail %}
+    accès
+    {% endif %}
+    {% endif %}
+</th>
+    
+  {% else %}
+  <th></th>
+  <th colspan="3"></th>
+  {% endif %}
 </tr>
+{% endif %}
 
-
+{% comment %}
 {% if request.user.is_authenticated %}
 <tr>
   <td colspan="2">&nbsp</td>
   <td >
-    <span class="glyphicon glyphicon-filter" />
-    {% if owner is None or owner == 'me' %}
-	      <select name="acces" id="id_owner_sel">
-		<option value="{% url 'list_photos_owner' 'mine' %}?detail={{ detail }}" selected>moi</option> 
-		<option value="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}">indifférent</option>
+    <!-- span class="glyphicon glyphicon-filter"></span -->
+    {% if owner == 'me' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+		<option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">publiques privées</option>
 	      </select>
-
-<!--
-    <span class="glyphicon glyphicon-filter"></span>
-    <a href="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
-    <a href="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
--->
     {% endif %}
     
-{% if owner == 'others' %}
-
-	      <select name="acces" id="id_owner_sel">
-		<option value="{% url 'list_photos_owner' 'mine' %}?detail={{ detail }}">moi</option>
-		<option value="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}" selected>les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}">indifférent</option>
+    {% if owner == 'others' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}">publiques privées</option>
 	      </select>
-<!--
-    <a href="{% url 'list_photos_owner' 'me' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
-    <span class="glyphicon glyphicon-filter">les autres</span>
-    <a href="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>	
--->
     {% endif %}
     
-{% if owner == 'all' %}
-	      <select name="acces" id="id_owner_sel">
-		<option value="{% url 'list_photos_owner' 'mine' %}?detail={{ detail }}" selected>moi</option>
-		<option value="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}?detail={{ detail }} selected">indifférent</option>
+    {% if owner == 'all' %}
+	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}" selected>publiques privées</option>
 	      </select>
-
-<!--
-    <a href="{% url 'list_photos_owner' 'me' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
-    <a href="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
-    <span class="glyphicon glyphicon-filter">indifférent</span>
--->
     {% endif %}
   </td>
   
   <td colspan="3">
-    {% if acces == 'public' or acces == 'all' %}
-    <a href="{% url 'list_photos_acces' 'private' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">privé</span></a>
-    {% else %}
-    <span class="glyphicon glyphicon-filter">privé</span>
+    {% if owner == 'me' %}
+    <!-- span class="glyphicon glyphicon-filter"></span -->
+    <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+      {% if acces == 'public' %}
+      <option value="{% url 'list_photos_acces' 'private' %}">privé</option>      
+      <option value="{% url 'list_photos_acces' 'public' %}" selected>public</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      {% elif acces == 'private' %}
+      <option value="{% url 'list_photos_acces' 'private' %}" selected>privé</option>
+      <option value="{% url 'list_photos_acces' 'public' %}">public</option>
+      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+      {% else %}
+      <option value="{% url 'list_photos_acces' 'private' %}">privé</option>      
+      <option value="{% url 'list_photos_acces' 'public' %}">public</option>
+      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques privées</option>      
+      {% endif %}
+    </select>
     {% endif %}
-
-    {% if acces == 'private' or acces == 'all' %}
-    <a href="{% url 'list_photos_acces' 'public' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">public</span></a>
-    {% else %}
-    <span class="glyphicon glyphicon-filter">public</span>
-    {% endif %}
-
-    {% if acces == 'public' or acces == 'private' %}
-    <a href="{% url 'list_photos_acces' 'all' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
-    {% else %}
-    <span class="glyphicon glyphicon-filter">indifférent</span>
-    {% endif %}
-  </td>
+</td>
   
 </tr>
 {% endif %}
+{% endcomment %}
 </thead>
 
 <tbody>
@@ -232,7 +330,7 @@
 	    </div>
 	    <div class="form-group">
 	      <label for="code">Description:</label>
-	      <input type="text" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200">
+	      <textarea rows="5" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
 	    </div>
 	    <div class="form-group">
 	      <label for="code">Accès:</label>
@@ -294,23 +392,32 @@ $('#id_owner_sel').on('change', function (e) {
     var valueSelected = this.value;
     var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
 
-    /*
-     $("<input type='submit' />")
-     .attr("name", "goHomeTimeout")
-     .val("Cliquez ici si vouns n'êtes pas redirigé vers le site marchand")
-     .appendTo(myForm);
-     
-     
-     */
-
+    $("<input type='hidden' />")
+            .attr("name", "detail")
+            .val("{{ detail}}")
+            .appendTo(myForm);
+    
     $('#id_loader').append(myForm);
     $('#selectForm').submit();
 
 });
 
+$('#id_acces_sel').on('change', function (e) {
+    var optionSelected = $("option:selected", this);
+    var valueSelected = this.value;
+    var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
 
-//    $('#id_owner_sel').addEventListener("change", myScript);
+    $("<input type='hidden' />")
+            .attr("name", "detail")
+            .val("{{ detail}}")
+            .appendTo(myForm);
+
+    $('#id_loader').append(myForm);
+    $('#selectForm').submit();
+});
+
     
+
     $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
     });
@@ -326,8 +433,8 @@ $('#id_owner_sel').on('change', function (e) {
 {% if detail %}
     "columnDefs": [
     { "width": "10%", "targets": 0 },
-    { "width": "20%", "targets": 1 },
-    { "width": "30%", "targets": 2 },
+    { "width": "30%", "targets": 1 },
+    { "width": "20%", "targets": 2 },
     { "width": "20%", "targets": 3 },
     { "width": "20%", "targets": 4 }
     ]

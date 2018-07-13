@@ -18,6 +18,7 @@ urlpatterns = [
 
     url(r'^listp$', views.list_preparations, name='list_preparation'),
     url(r'^detailp/(?P<preparation_id>[0-9]+)$', views.detail_preparation, name='detail_preparation'),        
+
     url(r'^listphotos$', views.list_photos, name='list_photos'),
     url(r'^listphotos/owner/(?P<owner>[a-z]+)$', views.list_photos, name='list_photos_owner'),
     url(r'^listphotos/acces/(?P<acces>[a-z]+)$', views.list_photos, name='list_photos_acces'),

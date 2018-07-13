@@ -48,6 +48,15 @@ h3,
     margin-bottom: 10.5px;
 }
 
+/* 
+https://css-tricks.com/almanac/properties/r/resize/
+https://css-tricks.com/almanac/properties/o/overflow/
+*/
+textarea {
+    resize:none;
+    overflow:auto;
+}
+
 .panel {
     border:0;
 }
