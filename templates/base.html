@@ -26,41 +26,43 @@
 
 <!-- h1>{% block head %}{% endblock %}</h1 -->
 
+<div id="id_loader"></div>
+
 <nav id="topnavbar"  class="navbar navbar-inverse navbar-fixed-top">  
   <div class="container-fluid">
     <div class="navbar-header">
       <a class="navbar-brand" href="/mesrecettes">P&acirc;tisser</a>
     </div>
-    <!--div class="navbar-header">
-      <a class="navbar-brand" href="/mesrecettes/listr" id="recettes_m">Recettes</a>
-    </div>
-    <div class="navbar-header">
-      <a class="navbar-brand" href="/mesrecettes/listp" id="preparations_m">Préparations</a>
-    </div>
-    <div class="navbar-header">
-      <a class="navbar-brand" href="/mesrecettes/listi" id="ingredients_m">Ingr&egrave;dients</a>
-    </div-->
-
     <ul class="nav navbar-nav">
-      <li> <a class="navbar-brand" href="/mesrecettes/listr" id="recettes_m">Recettes</a></li>
-      <li><a class="navbar-brand" href="/mesrecettes/listp" id="preparations_m">Préparations</a></a></li>
-      <li><a class="navbar-brand" href="/mesrecettes/listi" id="ingredients_m">Ingr&eacute;dients</a></li>
-      <li><a class="navbar-brand" href="/mesrecettes/listphotos" id="ptotos_m">Photos</a></li>
+      <li><a class="navbar-brand menu-selectionne " href="/mesrecettes/listr" id="id_recettes_m">Recettes</a></li>
+      <li><a class="navbar-brand" href="/mesrecettes/listp" id="id_preparations_m">Préparations</a></a></li>
+      <li><a class="navbar-brand" href="/mesrecettes/listi" id="id_ingredients_m">Ingr&eacute;dients</a></li>
+      <li><a class="navbar-brand" href="/mesrecettes/listphotos" id="id_photos_m">Photos</a></li>
     </ul>
 
 	
-    <form class="navbar-form navbar-right" id="myForm" action="#">      
-      <div class="form-group">	  
-        <input type="text" class="form-control" placeholder="Search">
-        </div>
+    <form class="navbar-form navbar-right" method="GET" id="myForm" action="{% url 'search' %}">      
+      <div class="form-group">
+	{% if request.session.filter %}
+        <input type="text" class="form-control" placeholder="Recherche" value="{{ request.session.filter }}" name="_">
+	  {% else %}
+	  <input type="text" class="form-control" placeholder="Recherche" value="" name="_">
+	{% endif %}
+	  {% if detail %}
+          <input type="hidden" class="form-control" name="detail" value="true">
+	  {% else %}
+          <input type="hidden" class="form-control" name="detail" value="false">
+	  {% endif %}
+
         <button type="submit" id="searchButton" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
-      </form>
+      </div>
+    </form>
       
       
     <ul class="nav navbar-nav navbar-right">
       {% if user.is_authenticated %}
       <li><a class="navbar-brand" href="/mesrecettes/logout" id="logout_m"><span class="glyphicon glyphicon-log-out"></span></a></li>
-      <li href="#" class="navbar-brand disabled">{{user.email}}</a></li>
+      <li><p class="navbar-text">{{user.email}}</p></li>
       {% else %}
       <li><a class="navbar-brand" href="#myModal" class="trigger-btn" data-toggle="modal"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
       {% endif %}
@@ -95,15 +97,19 @@
 	<div class="modal-dialog modal-login">
 		<div class="modal-content">
 			<div class="modal-header">
-				<div class="avatar">
+				<div class="avatar" class=".bg-primary">
 					<img src="/static/images/avatar.png" alt="Avatar">
 				</div>				
 				<h4 class="modal-title">Connexion Membre</h4>	
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 			</div>
 			<div class="modal-body">
-			  <form  class="login-form" method="post" action="/mesrecettes/login/">
-			        {% csrf_token %}
+			  <form  class="login-form" id="id_login_form" method="post" action="/mesrecettes/login/">
+
+			    {% csrf_token %}
+			    <div class="form-group">
+			      <input type="hidden" name="next" id="id_next" >
+			      </div>
 					<div class="form-group">
 						<input type="text" class="form-control" id="id_username" name="username" placeholder="Nom" required="required">		
 					</div>
@@ -111,12 +117,12 @@
 						<input type="password" class="form-control" id="id_password" name="password" placeholder="Mot de passe" required="required">	
 					</div>        
 					<div class="form-group">
-						<button type="submit" class="btn btn-primary btn-lg btn-block login-btn">Connexion</button>
+						<button id="id_submit" type="submit"  class="btn btn-primary btn-lg btn-block login-btn">Connexion</button>
 					</div>
 				</form>
 			</div>
 			<div class="modal-footer">
-				<a href="#">Forgot Password?</a>
+				<a href="#">Mot de passe oublié?</a>
 			</div>
 		</div>
 	</div>
@@ -138,9 +144,48 @@ console.log("base.html - hide ");
 $(this).parent().find(".glyphicon-minus").removeClass("glyphicon-minus").addClass("glyphicon-plus");
 });
 
+function myFunction() {
+    myVar = setTimeout(showPage, 3000);
+}
+
+function showPage() {
+  $("#id_loader").css("display", "none");
+}
+
+function prependClass(sel, strClass) {
+    var $el = jQuery(sel);
+
+    /* prepend class */
+    var classes = $el.attr('class');
+    classes = strClass +' ' +classes;
+    $el.attr('class', classes);
+}
+
 $(document).ready(function(){
-$(document.body).css('padding-top', $('#topnavbar').height() + 10);
-$(window).resize(function(){
+// menu actif
+{% if request.session.current_page %}
+$("#{{ request.session.current_page }}").prop('id', 'currentmenu');
+{% endif %}
+
+// Gestion du login
+// Ajout de l'url à atteindre si le login est autorisé
+$("#id_submit").click(function(){
+var url      = window.location.pathname;
+
+{% if detail %}
+url = url + "?detail=true"
+{% else %}
+url = url + "?detail=false"
+{% endif %}
+
+$("#id_next").val(url);
+$("#id_loader").css("display","block");
+//myFunction();
+return true;
+});
+
+  $(document.body).css('padding-top', $('#topnavbar').height() + 10);
+  $(window).resize(function(){
 $(document.body).css('padding-top', $('#topnavbar').height() + 10);
 
 });

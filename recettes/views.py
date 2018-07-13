@@ -8,6 +8,7 @@ from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponseForbidden
 
 from PIL import Image
 from fees import settings
@@ -30,25 +31,46 @@ def index(request):
 
 
 def photo(request, photo_id):
-    try:
-        logger.debug("Loadig {}/photos/{}".format(settings.BASE_DIR,photo_id))
-        img = Image.open("{}/photos/{}".format(settings.BASE_DIR,photo_id))
-	size = (128, 128)
-        img.thumbnail(size)
-	response = HttpResponse(content_type="image/png")
-	img.save(response, "PNG")
-	return response
+    if request.method == "GET":
+        try:
+            logger.debug("Loadig {}/photos/{}".format(settings.BASE_DIR,photo_id))
+            img = Image.open("{}/photos/{}".format(settings.BASE_DIR,photo_id))
+	    size = (128, 128)
+            img.thumbnail(size)
+	    response = HttpResponse(content_type="image/png")
+	    img.save(response, "PNG")
+	    return response
         #with open("{}/photos/{}".format(settings.BASE_DIR,photo_id), "rb") as f:
         #    return HttpResponse(f.read(), content_type="image/png")
-    except IOError:
-        red = Image.new('RGBA', (1, 1), (255,0,0,0))
-        response = HttpResponse(content_type="image/jpeg")
-        red.save(response, "PNG")
-    return response
+        except IOError:
+            red = Image.new('RGBA', (1, 1), (255,0,0,0))
+            response = HttpResponse(content_type="image/jpeg")
+            red.save(response, "PNG")
+            return response
+        
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden('{ "message" : "il faut se logger" }')
 
+    if request.method == "PUT":
+        return HttpResponseForbidden('{ "message" : "PUT interdit" }')
+
+    if request.method != "DELETE":    
+        raise Http404('{ "message" : "action interdite {}".format(request.method) }')
+
+    try:
+        photo = Photo.objects.get(pk=photo_id)
+    except Photo.DoesNotExist:
+
+        raise Http404('{ "message" : "photo introuvable" }')
+
+
+    if photo.owner.username != request.user.username:
+        return HttpResponseForbidden('{ "message" : "seul le pripriétaire peu supprimer la photo" }')
+
+    return HttpResponse('{ "message" : "suppression à réaliser" }')
 #
 # Appelé pour retrouver les photos
-# owner = mine ou others ou all
+# owner = me ou others ou all
 
 def lis_photos_owner(request, owner):
     list_photos(request, owner=owner)
@@ -61,7 +83,7 @@ def lis_photos_acces(request, acces):
 
 #
 # Appelé pour retrouver les photos
-# owner = mine  que les miennes publiques ou privées
+# owner = me  que les miennes publiques ou privées
 # owner = others photos publiques sauf les miennes
 # owner = all les miennes et celles des autres qui sont publiques
 #
@@ -70,13 +92,15 @@ def lis_photos_acces(request, acces):
 #
 # plus d'informations sur le Q ici
 # https://docs.djangoproject.com/fr/1.11/topics/db/queries/
-def list_photos(request,owner=None,acces=None):
+def list_photos(request,owner=None,acces=None,filter=None):
+    detail = request.GET.dict().get('detail', 'true').lower() == "true"
+    
     template = loader.get_template('photolist.html')
     if request.user.is_authenticated:
         if owner == 'all':
             photo_list = Photo.objects.filter((~Q(owner = request.user.username) & Q(acces = 'PUB'))| Q(owner = request.user.username)).order_by('code')
             acces = None
-        elif owner == "mine":
+        elif owner == "me":
             photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
             acces = 'all'
         elif owner == "others":
@@ -84,18 +108,37 @@ def list_photos(request,owner=None,acces=None):
             acces = None
         elif acces == "private":
             photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PRIV')).order_by('code')
-            owner = 'mine'
+            owner = 'me'
         elif acces == "public":
             photo_list = Photo.objects.filter(Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
-            owner = 'mine'
+            owner = 'me'
         else:
             photo_list = Photo.objects.filter(Q(owner = request.user.username)).order_by('code')
-            owner = 'mine'
+            owner = 'me'
             acces = 'all'
+
+        if filter is None:
+            filter = request.session.get('filter', None)
+
+        if filter:
+            photo_list = photo_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter))
     else:
-        photo_list = Photo.objects.filter(owner='anonyme').order_by('code')
+        logger.debug("list_photos/search[{}]".format(filter))
+        photo_list = Photo.objects.filter(owner='anonyme')
+        if filter is None:
+            filter = request.session.get('filter', None)
+        if filter:
+            photo_list = photo_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter)).order_by('code')
+        else:
+            photo_list = photo_list.order_by('code')
+
+    if detail :
+        # 10 lignes
+        nb_elem = 10
+    else:
+        # 25 lignes
+        nb_elem = 5 * 5
         
-    nb_elem= 10
     paginator = Paginator(photo_list, nb_elem)
 
     page  = request.GET.get('page')
@@ -106,10 +149,11 @@ def list_photos(request,owner=None,acces=None):
     except EmptyPage:
         photos = paginator.page(paginator_num_pages)
         
-    return HttpResponse(template.render({'photos' : photos, 'nb_line': range(nb_elem), 'owner': owner, 'acces' : acces}, request))
+    request.session['current_page'] = 'id_photos_m'
+    return HttpResponse(template.render({'photos' : photos, 'nb_line': range(nb_elem), 'owner': owner, 'acces' : acces, 'detail' : detail}, request))
 
 
-def list_recettes(request):
+def list_recettes(request, filter=None):
     template = loader.get_template('recettelist.html')
     recette_list = Recette.objects.all()
     nb_elem= 10
@@ -122,7 +166,8 @@ def list_recettes(request):
         recettes = paginator.page(1)
     except EmptyPage:
         recetes = paginator.page(paginator_num_pages)
-        
+
+    request.session['current_page'] = 'id_recettes_m'        
     return HttpResponse(template.render({'recettes' : recettes, 'nb_line': range(nb_elem)}, request))
 
 
@@ -212,7 +257,7 @@ def detail_recette(request, recette_id):
                                          'allergene' : allergene}, request))
 
 
-def list_ingredients(request):
+def list_ingredients(request, filter=None):
     template = loader.get_template('ingredientlist.html')
     ingredient_list = Ingredient.objects.all()
     nb_elem= 10
@@ -225,7 +270,8 @@ def list_ingredients(request):
         ingredients = paginator.page(1)
     except EmptyPage:
         ingredients = paginator.page(paginator_num_pages)
-        
+
+    request.session['current_page'] = 'id_ingredients_m'
     return HttpResponse(template.render({'ingredients' : ingredients, 'nb_line': range(nb_elem), 'msg_error' : ''}, request))
 
 
@@ -235,7 +281,7 @@ def detail_ingredient(request, ingredient_id):
     return HttpResponse(template.render({'ingredient' : ingredient}, request))
 
 
-def list_preparations(request):
+def list_preparations(request, filter=None):
     template = loader.get_template('preparationlist.html')
     preparation_list = Preparation.objects.all()
     nb_elem= 10
@@ -248,7 +294,8 @@ def list_preparations(request):
         preparations = paginator.page(1)
     except EmptyPage:
         preparations = paginator.page(paginator_num_pages)
-        
+
+    request.session['current_page'] = 'id_preparations_m'
     return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}, request))
 
 
@@ -274,7 +321,7 @@ def photo_new(request):
         form = PhotoForm(request.POST)
         if form.is_valid():
             myfile = request.FILES['photo']
-            name = myfile.name #[1:-1]
+            name = myfile.name 
             logger.debug("PhotoFileName {}".format(name))
             fs = FileSystemStorage()
             filename = fs.save(name, myfile)
@@ -286,3 +333,29 @@ def photo_new(request):
     else:
         form = PhotoForm()
         return render(request, 'photo_edit.html', {'form': form})
+
+
+
+
+def search(request):
+    filter = request.GET.get('_', None)
+    request.session['filter']=filter
+    logger.debug("search/{}/{}".format('photos', filter))
+    return list_photos(request, filter=filter)
+
+    template = loader.get_template('preparationlist.html')
+    preparation_list = Preparation.objects.all()
+    nb_elem= 10
+    paginator = Paginator(preparation_list, nb_elem)
+
+    page  = request.GET.get('page')
+    try:
+        preparations = paginator.page(page)
+    except PageNotAnInteger:
+        preparations = paginator.page(1)
+    except EmptyPage:
+        preparations = paginator.page(paginator_num_pages)
+
+    request.session['current_page'] = 'id_preparations_m'
+    return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}, request))
+    

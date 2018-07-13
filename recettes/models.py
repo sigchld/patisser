@@ -17,7 +17,7 @@ class Photo(models.Model):
     DEFAULT_PK = 1
     code = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
-    owner = models.ForeignKey(get_user_model() , on_delete=models.CASCADE, null=False, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     photo = models.ImageField(default='blank.png')
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
@@ -43,6 +43,9 @@ class Ingredient(models.Model):
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
 
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    
     # ancien champ
     calorie = models.IntegerField(default=0)
 
@@ -71,7 +74,7 @@ class Ingredient(models.Model):
     sel = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     
     #pas de default quand on ajoute un champ a Photo
-    photo = models.ForeignKey('Photo')
+    photo = models.ForeignKey('Photo', on_delete=models.SET_NULL, null=True,)
     #photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
     allergene = models.BooleanField(default=False)
 
@@ -82,6 +85,11 @@ class Element(models.Model):
     quantite = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     ingredient = models.ForeignKey(Ingredient)
     preparation = models.ForeignKey('Preparation', related_name='elements')
+
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    
+    
     def __unicode__(self):
         return "%s %s" % (self.ingredient.code,self.quantite)
 
@@ -89,6 +97,10 @@ class EtapePreparation(models.Model):
     preparation = models.ForeignKey('Preparation', related_name='etapes')
     titre =  models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
+
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    
     def __unicode__(self):
         return self.titre
 
@@ -98,8 +110,12 @@ class Preparation(models.Model):
     description = models.CharField(max_length=200, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     #pas de default quand on ajoute un champ a Photo
-    photo = models.ForeignKey(Photo)
+    photo = models.ForeignKey(Photo, on_delete=models.SET_NULL, null=True)
     #photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
+
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    
     def __unicode__(self):
         return self.description 
 
@@ -107,6 +123,11 @@ class PreparationRecette(models.Model):
     quantite = models.IntegerField(default=100)
     preparation = models.ForeignKey(Preparation)
     recette = models.ForeignKey('Recette', related_name='preparations')
+
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    
+    
     def __unicode__(self):
         return "{}".format(self.preparation.code)
 
@@ -114,6 +135,10 @@ class EtapeRecette(models.Model):
     recette = models.ForeignKey('Recette', related_name='etapes')
     titre =  models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
+
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    
     def __unicode__(self):
         return self.titre
 
@@ -125,10 +150,15 @@ class Recette(models.Model):
     difficulte = models.IntegerField(default=0)
     categorie = models.ForeignKey(Categorie, default=Categorie.DEFAULT_PK)
     portion = models.IntegerField(default=1)
+
     #pas de default quand on ajoute un champ a Photo
-    photo = models.ForeignKey(Photo)
+    photo = models.ForeignKey(Photo, on_delete=models.SET_NULL, null=True)
     #photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
 
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    
+    
     def image_tag(self):
         from django.utils.html import format_html
         return '<img width=200 height=200 src="/recettes/{}" />'.format(self.photo.url)

@@ -6,160 +6,405 @@
 {% block title%}Main menu{% endblock %}
 {% block head %}Liste des Photos{% endblock %}
 {% block content %}
-{% if photos %}
-<table class="table-striped"  id="liste_photos">
-  <!-- colgroup>
-       <col class="col-xs-1"></col>
-       <col class="col-xs-4"></col>
-       <col class="col-xs-1"></col>
-       <col class="col-xs-6"></col>
-  </colgroup -->
+<div class="container">
+  <table class="table-striped"  id="liste_photos">
+    <!-- colgroup>
+	 <col class="col-xs-1"></col>
+	 <col class="col-xs-4"></col>
+	 <col class="col-xs-1"></col>
+	 <col class="col-xs-6"></col>
+</colgroup -->
 
-  <thead>
-    <tr>
-    {% if request.user.is_authenticated %}
-      <td><p>Liste photos</td>
-      <td>
-	<a href="{% url 'photo_new' %}"><span class="glyphicon glyphicon-plus"> ajouter</span></a>
-      </td>
-      <td>
-      </td>
-      <td>
-      </td>
+    <thead>
+      <tr>
+	{% if request.user.is_authenticated %}
+	<td colspan="4">
+	 
+	  Liste photos
+	  &nbsp;
+	  {% if detail %}
+	  <a href="{% url 'list_photos' %}?detail=false"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_photos' %}?detail=true"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
+	  &nbsp;&nbsp;
+	  <!-- a href="{% url 'photo_new' %}"><span class="glyphicon glyphicon-plus">ajouter</span></a -->
+	  <a href="#modalAddPhoto" data-toggle="modal"><span class="glyphicon glyphicon-plus"></span> ajouter</a>
+	</td>
 
-      {% else %}
-      <td colspan="4"><p>Liste photos</td>
-      {% endif %}
+	{% else %}
+	<td colspan="4">
+	  Liste photos&nbsp;&nbsp;
+	  {% if detail %}
+	  <a href="{% url 'list_photos' %}?detail=false"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_photos' %}?detail=true"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
+	</td>
+	{% endif %}
 
-<td>
-  <div class="pagination">
-  <span class="step-links">
-    {% if photos.has_previous %}
-    <a href="?page={{ photos.previous_page_number }}"><span class="glyphicon glyphicon-arrow-left"</span></a>
-    {% endif %}
-    <span class="current">
-      Page {{ photos.number }} of {{ photos.paginator.num_pages }}
-    </span>
-    {% if photos.has_next %}
-    <a href="?page={{ photos.next_page_number }}"><span class="glyphicon glyphicon-arrow-right"</span></a>
-    {% endif %}
-  </span>
+
+	<td>
+          {% if photos %}
+	  <div class="pagination">
+	    <span class="step-links">
+	      {% if photos.has_previous %}
+	      <a href="?page={{ photos.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+								      {% endif %}
+								      <span class="current">
+									Page {{ photos.number }} of {{ photos.paginator.num_pages }}
+								      </span>
+								      {% if photos.has_next %}
+								      <a href="?page={{ photos.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+															  {% endif %}
+															  </span>
 </div>
+{% endif %}
 </td>
+
 </tr>
-  <tr>
-    <th>code acces={{ acces }}, owner={{ owner}}</th>
-    <th>description</th>
-    <th>propri&egrave;taire</th>
-    <th colspan="3">accès</th>
-  </tr>
-  {% if request.user.is_authenticated %}
-  <tr>
-    <td colspan="2">&nbsp</td>
-    <td >
-      {% if owner is None or owner == 'mine' %}
-        <span class="glyphicon glyphicon-filter">moi</span>
-	<a href="{% url 'list_photos_owner' 'others' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
-	<a href="{% url 'list_photos_owner' 'all' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
-      {% endif %}
-	
-      {% if owner == 'others' %}
-	<a href="{% url 'list_photos_owner' 'mine' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
-	<span class="glyphicon glyphicon-filter">les autres</span>
-	<a href="{% url 'list_photos_owner' 'all' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>	
-	{% endif %}
-	
-	{% if owner == 'all' %}
-	<a href="{% url 'list_photos_owner' 'mine' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
-	<a href="{% url 'list_photos_owner' 'others' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
-	<span class="glyphicon glyphicon-filter">indifférent</span>
+<tr>
+  <th>code</th>
+  <th>description</th>
+  <th>propri&egrave;taire</th>
+  <th colspan="3">accès</th>
+</tr>
 
-	{% endif %}
-    </td>
+
+{% if request.user.is_authenticated %}
+<tr>
+  <td colspan="2">&nbsp</td>
+  <td >
+    <span class="glyphicon glyphicon-filter" />
+    {% if owner is None or owner == 'me' %}
+	      <select name="acces" id="id_owner_sel">
+		<option value="{% url 'list_photos_owner' 'mine' %}?detail={{ detail }}" selected>moi</option> 
+		<option value="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}">indifférent</option>
+	      </select>
+
+<!--
+    <span class="glyphicon glyphicon-filter"></span>
+    <a href="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
+    <a href="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
+-->
+    {% endif %}
     
-    <td colspan="3">
-      {% if acces == 'public' or acces == 'all' %}
-      <a href="{% url 'list_photos_acces' 'private' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">privé</span></a>
-      {% else %}
-      <span class="glyphicon glyphicon-filter">privé</span>
-      {% endif %}
+{% if owner == 'others' %}
 
-      {% if acces == 'private' or acces == 'all' %}
-      <a href="{% url 'list_photos_acces' 'public' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">public</span></a>
-      {% else %}
-      <span class="glyphicon glyphicon-filter">public</span>
-      {% endif %}
-
-      {% if acces == 'public' or acces == 'private' %}
-      <a href="{% url 'list_photos_acces' 'all' %}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
-      {% else %}
-      <span class="glyphicon glyphicon-filter">indifférent</span>
-      {% endif %}
-    </td>
+	      <select name="acces" id="id_owner_sel">
+		<option value="{% url 'list_photos_owner' 'mine' %}?detail={{ detail }}">moi</option>
+		<option value="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}" selected>les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}">indifférent</option>
+	      </select>
+<!--
+    <a href="{% url 'list_photos_owner' 'me' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
+    <span class="glyphicon glyphicon-filter">les autres</span>
+    <a href="{% url 'list_photos_owner' 'all' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>	
+-->
+    {% endif %}
     
-  </tr>
-  {% endif %}
+{% if owner == 'all' %}
+	      <select name="acces" id="id_owner_sel">
+		<option value="{% url 'list_photos_owner' 'mine' %}?detail={{ detail }}" selected>moi</option>
+		<option value="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}">les autres</option>
+		<option value="{% url 'list_photos_owner' 'all' %}?detail={{ detail }} selected">indifférent</option>
+	      </select>
+
+<!--
+    <a href="{% url 'list_photos_owner' 'me' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">moi</span></a>
+    <a href="{% url 'list_photos_owner' 'others' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">les autres</span></a>
+    <span class="glyphicon glyphicon-filter">indifférent</span>
+-->
+    {% endif %}
+  </td>
+  
+  <td colspan="3">
+    {% if acces == 'public' or acces == 'all' %}
+    <a href="{% url 'list_photos_acces' 'private' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">privé</span></a>
+    {% else %}
+    <span class="glyphicon glyphicon-filter">privé</span>
+    {% endif %}
+
+    {% if acces == 'private' or acces == 'all' %}
+    <a href="{% url 'list_photos_acces' 'public' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">public</span></a>
+    {% else %}
+    <span class="glyphicon glyphicon-filter">public</span>
+    {% endif %}
+
+    {% if acces == 'public' or acces == 'private' %}
+    <a href="{% url 'list_photos_acces' 'all' %}?detail={{ detail }}" class="btn-link" role="button" ><span class="glyphicon glyphicon-filter">indifférent</span></a>
+    {% else %}
+    <span class="glyphicon glyphicon-filter">indifférent</span>
+    {% endif %}
+  </td>
+  
+</tr>
+{% endif %}
 </thead>
 
 <tbody>
-  {% for photo in photos %}
+  {% if photos %}
+    {% if detail %}
+     {% for photo in photos %}
   <tr>
     <td>
-      {% if request.user.username == photo.owner.username %}      
-      <a href="" ><span class="glyphicon glyphicon-trash"></span></a>
+       {% if request.user.username == photo.owner.username %}
+      <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
       <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
-      {% endif %}
-      {{photo.code}} 
-</td>
-    <td>{{photo.description}}</td>
-    <td>{{photo.owner.username}}</td>
-    <td>{{photo.get_acces_display}}</td>
-    <td><img src="{{ photo.get_absolute_url }}"></td>
+      <br>
+       {% endif %}      
+      <span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span> 
+    </td> 
+    <td><span id="id_photo_description_{{photo.id}}">{{photo.description}}</span></td>
+    <td><span id="id_photo_username_{{photo.id}}">{{photo.owner.username}}</span></td>
+    <td><span id="id_photo_acces_{{photo.id}}">{{photo.get_acces_display}}</span></td>
+    <td><img id="id_photo_img_{{photo.id}}" src="{{ photo.get_absolute_url }}"></td>
   </tr>
   {% endfor %}
- 
+  {% else %}
+  {% for photo in photos %}
+  {% if forloop.first %}
+  <tr>
+    {% elif forloop.counter0|divisibleby:"5" %}
+    </tr>
+      <tr>
+  {% endif %}  
+    <td>
+      <img id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{{ photo.get_absolute_url }}">
+      <br>
+      <span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span> 
+      {% if request.user.username == photo.owner.username %}
+            <br>
+      <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
+      <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
+      {% endif %}      
+
+    </td>
+    {% if forloop.last %}
+      </tr>
+      {% endif %}
+  {% endfor %}
+  {% endif %}
+  {% endif %}
+  
 </tbody> 
 
 <tfoot>
-<tr>
-<td colspan="4"><p>Liste photos</td>
-</td>
+  <tr>
+    <td colspan="4"><p>Liste photos</td>
 <td>
-<div class="pagination">
-  <span class="step-links">
-    {% if photos.has_previous %}
-    <a href="?page={{ photos.previous_page_number }}"><span class="glyphicon glyphicon-arrow-left"</span></a>
-    {% endif %}
-    <span class="current">
-      Page {{ photos.number }} of {{ photos.paginator.num_pages }}
-    </span>
-    {% if photos.has_next %}
-    <a href="?page={{ photos.next_page_number }}"><span class="glyphicon glyphicon-arrow-right"</span></a>
-    {% endif %}
-  </span>
+  {% if photos %}
+  <div class="pagination">
+    <span class="step-links">
+      {% if photos.has_previous %}
+      <a href="?page={{ photos.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+							      {% endif %}
+							      <span class="current">
+								Page {{ photos.number }} of {{ photos.paginator.num_pages }}
+							      </span>
+							      {% if photos.has_next %}
+							      <a href="?page={{ photos.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+														  {% endif %}
+														  </span>
 </div>
+{% endif %}
 </td>
-</foot>
+</tfoot>
 </table>
-{% else %}
-<p>Il n'y a pas de photos.</p>
+
+{% if request.user.is_authenticated %}
+<!-- Modal Creation d'une photo -->
+<div id="modalAddPhoto" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+	<h4 class="modal-title text-center">Ajouter une photo</h4>	
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      </div>
+      <div class="modal-body">
+	<form enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_new' %}">
+	  {% csrf_token %}
+	  <div class="form-group">
+	    <div class="form-group">
+	      <label for="code">Code:</label>
+	      <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
+	    </div>
+	    <div class="form-group">
+	      <label for="code">Description:</label>
+	      <input type="text" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200">
+	    </div>
+	    <div class="form-group">
+	      <label for="code">Accès:</label>
+	      <select class="form_control" name="acces" id="id_acces">
+		<option value="PUB" selected>public</option>
+		<option value="PRIV">privé</option>
+	      </select>
+	    </div>
+	    <div class="form-group">
+	      <label for="code">Image:</label>
+	      <input type="file" class="form-control-file" id="id_photo" required name="photo" placeholder="Description" required="required" maxlength="200">
+	    </div>
+	    
+	    <div class="form-group">
+	      <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer</button>
+	    </div>
+	  </div>
+	</form>
+	</div>
+	<div class="modal-footer">
+	</div>
+      </div>
+    </div>
+</div>
+
+<!-- Modal Suppression photo -->
+<div class="modal fade" id="delete_photo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Suppression Photo</h4>
+      </div>
+      <div class="modal-body">
+        <p>Vouvez-vous supprimer cette photo :</p>
+	<p id="id_delete_photo_code" />
+	<p id="id_delete_photo_description" /p>
+	<p><img id="id_delete_photo_img"></p>
+	<span style="display:none;" id="id_delete_photo_id" />
+      </div>
+      <div class="modal-footer">
+	<span id="id_delete_photo_message"></span> <br>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Abandon</button>
+        <button type="button" id="id_delete_photo" class="btn btn-warning">Suppression</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endif %}
 
-<script  type="text/javascript">
-$(document).ready( function () {
-$('#liste_photos').DataTable({
-"paging":false,
-"searching":false,
-"info":false,
-"ordering":false,
-"autoWidth":true,
-  "columnDefs": [
-{ "width": "10%", "targets": 0 },
-{ "width": "20%", "targets": 1 },
-{ "width": "30%", "targets": 2 },
-{ "width": "30%", "targets": 2 }
-]
+  <script  type="text/javascript">
+    $(document).ready(
+    function () {
+
+
+$('#id_owner_sel').on('change', function (e) {
+    var optionSelected = $("option:selected", this);
+    var valueSelected = this.value;
+    var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
+
+    /*
+     $("<input type='submit' />")
+     .attr("name", "goHomeTimeout")
+     .val("Cliquez ici si vouns n'êtes pas redirigé vers le site marchand")
+     .appendTo(myForm);
+     
+     
+     */
+
+    $('#id_loader').append(myForm);
+    $('#selectForm').submit();
+
 });
-} );
-</script>
+
+
+//    $('#id_owner_sel').addEventListener("change", myScript);
+    
+    $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+    });
+    
+    $('#liste_photos').DataTable({
+    "compact":true,
+    "strip":true,
+    "paging":false,
+    "searching":false,
+    "info":false,
+    "ordering":false,
+    "autoWidth":false,
+{% if detail %}
+    "columnDefs": [
+    { "width": "10%", "targets": 0 },
+    { "width": "20%", "targets": 1 },
+    { "width": "30%", "targets": 2 },
+    { "width": "20%", "targets": 3 },
+    { "width": "20%", "targets": 4 }
+    ]
+{% else %}
+        "columnDefs": [
+    { "width": "20%", "targets": 0 },
+    { "width": "20%", "targets": 1 },
+    { "width": "20%", "targets": 2 },
+    { "width": "20%", "targets": 3 },
+    { "width": "20%", "targets": 4 }
+    ]
+{% endif %}    
+    });
+
+    
+    $("#id_submit_photo").click(
+    function(){
+      $("#id_loader").css("display","block");
+      return true;
+    });
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+};
+			    
+    $("#id_delete_photo").click(
+    function(){
+      $("#id_loader").css("display","block");
+    var u = "{% url 'photo' '99' %}X".replace("99X", $('#id_delete_photo_id').text());
+    var csrftoken = getCookie('csrftoken');
+    $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
+    $.ajax({
+          'type': 'delete',
+          'url': u,
+
+          'success': function(response)
+           {
+			    //$("html").html(response);
+			    $("#id_delete_photo_message").text(response);
+			    $("#id_loader").css("display","none");
+           },
+           'error': function(jqXHR, textStatus, errorThrown)
+           {
+              console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+    $("#id_loader").css("display","none");
+    $("#id_delete_photo_message").text(textStatus);
+           }
+        });    
+
+    
+    });
+    
+    
+    }
+
+    ); // document ready
+
+    function ask_delete_photo(id) {
+    $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
+    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
+    $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
+    $('#id_delete_photo_id').text(id);
+    $('#delete_photo').modal('show')
+    };
+    
+  </script>
+</div>
 {% endblock %}

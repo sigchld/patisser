@@ -51,12 +51,23 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'fees.urls'
 
+
+# https://www.webforefront.com/django/customizedjangotemplates.html
+#            'string_if_invalid': InvalidTemplateVariable("%s"),
+class InvalidTemplateVariable(str):
+    def __mod__(self,other):
+        from django.template.base import TemplateSyntaxError
+        raise TemplateSyntaxError("Invalid variable : '%s'" % other)
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [ os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'term/templates'), os.path.join(BASE_DIR, 'oppotota/templates'), os.path.join(BASE_DIR, 'cumuls/templates'), os.path.join(BASE_DIR, 'sessionsbis/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
+            # si True recompilation si changement
+            'debug' : True,  # si True recompilation si changement
+            'string_if_invalid': InvalidTemplateVariable("%s"),
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
@@ -167,5 +178,4 @@ LOGGING = {
         }
     }
 
-    
-    
+
