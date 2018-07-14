@@ -22,13 +22,22 @@
 	 
 	  Liste photos
 	  &nbsp;
+	  {% if acces %}
 	  {% if detail %}
-	  <a href="{% url 'list_photos' %}?detail=false"><span class="glyphicon glyphicon-th"></span></a>
+	  <a href="{% url 'list_photos_acces' acces %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
-	  <a href="{% url 'list_photos' %}?detail=true"><span class="glyphicon glyphicon-th-list"></span></a>
+	  <a href="{% url 'list_photos_acces' acces %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
+
+	  {% else %}
+	  {% if detail %}
+	  <a href="{% url 'list_photos_owner' owner %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_photos_owner' owner %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
 	  {% endif %}
 	  &nbsp;&nbsp;
-	  <a href="#modalAddPhoto" data-toggle="modal"><span class="glyphicon glyphicon-plus"></span> ajouter</a>
+	  <a href="#modalAddPhoto" data-toggle="modal" title="importer une photo" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
 	  </td>
 
 	<td>
@@ -83,15 +92,15 @@
 	<td colspan="4">
 	  Liste photos&nbsp;&nbsp;
 	  {% if detail %}
-	  <a href="{% url 'list_photos' %}?detail=false"><span class="glyphicon glyphicon-th"></span></a>
+	  <a href="{% url 'list_photos' %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
-	  <a href="{% url 'list_photos' %}?detail=true"><span class="glyphicon glyphicon-th-list"></span></a>
+	  <a href="{% url 'list_photos' %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 	</td>
 	{% endif %}
 
 
-	<td>
+	<td class="text-right">
           {% if photos %}
 	  <div class="pagination">
 	    <span class="step-links">
@@ -219,14 +228,11 @@
 
     </td>
     {% if forloop.last %}
-    {%if not forloop.counter|divisibleby:"5" %}
     {% for i in remplissage %}
       <td></td>     
     {% endfor %}
-
-    {% endif %}
       </tr>
-      {% endif %}
+    {% endif %}
   {% endfor %}
   {% endif %}
   {% endif %}
@@ -236,7 +242,7 @@
 <tfoot>
   <tr>
     <td colspan="4"><p>Liste photos</td>
-<td>
+<td class="text-right">
   {% if photos %}
   <div class="pagination">
     <span class="step-links">
@@ -385,9 +391,6 @@ $('#id_acces_sel').on('change', function (e) {
     $('#id_loader').append(myForm);
     $('#selectForm').submit();
 });
-
-    
-    $('[data-toggle="tooltip"]').tooltip();
 
     
     $('#liste_photos').DataTable({

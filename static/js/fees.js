@@ -1,3 +1,4 @@
+/*
 $(document).ready(function () {
 	console.log("document ready");
     $('#searchButton').click(function (event) {
@@ -24,4 +25,4 @@ $(document).ready(function () {
     //}
 
 });
-
+*/

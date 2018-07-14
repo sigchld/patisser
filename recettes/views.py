@@ -19,6 +19,14 @@ from .models import Photo
 
 from .forms import PhotoForm
 
+PAGE_COURANTE='page_courante'
+ACCUEIL='accueil'
+PHOTOS='photos'
+INGREDIENTS='ingredients'
+PREPARATIONS='preparations'
+RECETTES='recettes'
+
+
 # Get an instance of a logger
 logger = logging.getLogger('fees')
 
@@ -27,6 +35,7 @@ from django.http import HttpResponse
 
 def index(request):
     template = loader.get_template('index.html')
+    request.session[PAGE_COURANTE] = ACCUEIL
     return HttpResponse(template.render({}))
 
 
@@ -93,9 +102,18 @@ def lis_photos_acces(request, acces):
 # plus d'informations sur le Q ici
 # https://docs.djangoproject.com/fr/1.11/topics/db/queries/
 def list_photos(request,owner='me',acces=None,filter=None):
+    request.session[PAGE_COURANTE] = PHOTOS
     detail = request.GET.dict().get('detail', 'true').lower() == "true"
     logger.debug("list_photos/acces/{}/owner/{}/auth/{}".format(acces, owner,request.user.is_authenticated))            
     template = loader.get_template('photolist.html')
+
+    # recuperation du filtre dans la session
+    if filter is None:
+        filter = request.session.get('filter_photos', None)
+    else:
+        request.session['filter_photos']=filter
+            
+
     if request.user.is_authenticated:
         if owner == 'all':
             photo_list = Photo.objects.filter((~Q(owner = request.user.username) & Q(acces = 'PUB'))| Q(owner = request.user.username)).order_by('code')
@@ -118,17 +136,11 @@ def list_photos(request,owner='me',acces=None,filter=None):
             acces = 'all'
             owner = 'me'
             
-        logger.debug("list_photos/acces/{}]".format(acces))            
-        if filter is None:
-            filter = request.session.get('filter', None)
-
         if filter:
             photo_list = photo_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter))
     else:
-        logger.debug("list_photos/search[{}]".format(filter))
         photo_list = Photo.objects.filter(owner='anonyme')
-        if filter is None:
-            filter = request.session.get('filter', None)
+           
         if filter:
             photo_list = photo_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter)).order_by('code')
         else:
@@ -152,12 +164,19 @@ def list_photos(request,owner='me',acces=None,filter=None):
         photos = paginator.page(paginator_num_pages)
         
     request.session['current_page'] = 'id_photos_m'
-    logger.debug("list_photos/len/{}]".format(len(photos)))
-    # remplissage sert a papier pb template 
-    return HttpResponse(template.render({'photos' : photos, 'remplissage': range(5 -(len(photos) % 5)), 'owner': owner, 'acces' : acces, 'detail' : detail}, request))
+
+    # remplissage sert a palier pb template ou aucun calcul ne peut etre fait
+    remplissage = 5 - (len(photos) % 5)
+    if remplissage == 5:
+        remplissage = range(0)
+    else:
+        remplissage = range(remplissage)
+        
+    return HttpResponse(template.render({'filter' : filter, 'photos' : photos, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail}, request))
 
 
 def list_recettes(request, filter=None):
+    request.session[PAGE_COURANTE] = RECETTES
     template = loader.get_template('recettelist.html')
     recette_list = Recette.objects.all()
     nb_elem= 10
@@ -262,6 +281,7 @@ def detail_recette(request, recette_id):
 
 
 def list_ingredients(request, filter=None):
+    request.session[PAGE_COURANTE] = INGREDIENTS
     template = loader.get_template('ingredientlist.html')
     ingredient_list = Ingredient.objects.all()
     nb_elem= 10
@@ -286,6 +306,7 @@ def detail_ingredient(request, ingredient_id):
 
 
 def list_preparations(request, filter=None):
+    request.session[PAGE_COURANTE] = PREPARATIONS
     template = loader.get_template('preparationlist.html')
     preparation_list = Preparation.objects.all()
     nb_elem= 10
@@ -343,23 +364,11 @@ def photo_new(request):
 
 def search(request):
     filter = request.GET.get('_', None)
-    request.session['filter']=filter
     logger.debug("search/{}/{}".format('photos', filter))
-    return list_photos(request, filter=filter)
-
-    template = loader.get_template('preparationlist.html')
-    preparation_list = Preparation.objects.all()
-    nb_elem= 10
-    paginator = Paginator(preparation_list, nb_elem)
-
-    page  = request.GET.get('page')
-    try:
-        preparations = paginator.page(page)
-    except PageNotAnInteger:
-        preparations = paginator.page(1)
-    except EmptyPage:
-        preparations = paginator.page(paginator_num_pages)
-
-    request.session['current_page'] = 'id_preparations_m'
-    return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}, request))
+    page_courante = request.session.get(PAGE_COURANTE, ACCUEIL)
+    if page_courante == ACCUEIL:
+        return index(request, filter=filter)
+    elif page_courante == PHOTOS:
+        return list_photos(request, filter=filter)
     
+    return index(request, filter=filter)

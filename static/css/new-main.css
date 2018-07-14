@@ -261,3 +261,67 @@ table.dataTable td{ background-color: white;  border:1px lightgrey;}
    table.dataTable tr.odd { background-color: #faf5f5;  border:1px lightgrey;}
     table.dataTable tr.even{ background-color: white; border:1px lightgrey; }
 
+/* https://css-tricks.com/removing-the-dotted-outline/ */
+a {outline : 0;}
+    
+#scrollUp {
+	position				:	fixed;
+	right					:	20px;
+	bottom				:	50px;
+	display				:	none;
+	padding				:	0px;
+	background			:	#edeff0;
+	-moz-border-radius	:	40px;
+	-webkit-border-radius	:	40px;
+	border-radius			:	40px;
+	opacity				:	0.9;
+	z-index				:	2000;
+}
+
+/* tentative de diminuer la hauteur de la navbar 
+.navbar-nav > li > a {padding-top:10px !important; padding-bottom:10px !important;}
+.navbar {min-height:40px !important}*/
+
+.nav li {
+  display: inline;
+  padding-right: 0px;
+}
+
+
+.search  {
+width: 8px;
+}
+
+/* https://bootstrapious.com/p/bootstrap-navbar */
+ .navbar {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    transition: all 0.5s;
+ }
+ 
+ 
+ .form-inline {
+     padding-left: 0px;
+     padding-right:0px;
+ }
+
+ .search-small {
+     width:50px;
+ }
+
+
+/* pour ipad
+http://stephen.io/mediaqueries/
+*/
+
+@media only screen 
+and (min-device-width : 768px) 
+and (max-device-width : 1024px) 
+and (orientation : portrait)
+and (-webkit-min-device-pixel-ratio: 2) {
+   /* pour les ipad en mode portrait on dimimue la longueur de la zone de saisie de la recherche */
+  input[name="_"].form-control {
+    max-width: 130px;
+  }
+}
+
