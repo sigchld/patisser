@@ -20,7 +20,8 @@ class Photo(models.Model):
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     photo = models.ImageField(default='blank.png')
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
-
+    thumbnail = models.BinaryField(null=True, blank=True)
+    
     def get_absolute_url(self):
         return "/mesrecettes/photos/{}".format(self.photo.name)
     def __unicode__(self):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import io
 
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -9,8 +10,10 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponseForbidden
+from django.http import HttpResponseNotModified, HttpResponseServerError
 
 from PIL import Image
+from PIL import ImageMath
 from fees import settings
 from .models import Recette
 from .models import Ingredient
@@ -18,6 +21,8 @@ from .models import Preparation
 from .models import Photo
 
 from .forms import PhotoForm
+
+from django.db.utils import IntegrityError
 
 PAGE_COURANTE='page_courante'
 ACCUEIL='accueil'
@@ -39,29 +44,180 @@ def index(request):
     return HttpResponse(template.render({}))
 
 
-def photo(request, photo_id):
+#
+# nouvelle photo
+# info sur le multipart/form :
+# https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
+def photo_create(request):
+    if not request.user.is_authenticated:
+        return  HttpResponseForbidden("""
+        {
+        "message" : "il faut se logger",
+        }
+        """)
+        
+    if request.method == "POST" and request.FILES['photo']:
+        form = PhotoForm(request.POST)
+        if form.is_valid():
+            myfile = request.FILES['photo']
+            name = myfile.name 
+            logger.debug("PhotoFileName {}".format(name))
+            fs = FileSystemStorage()
+            filename = fs.save(name, myfile)
+            photo = form.save(commit=False)
+            photo.photo = filename
+            photo.owner = request.user
+
+            try:
+                img = Image.open("{}/photos/{}".format(settings.BASE_DIR, filename))
+                img = get_thumbnail(img)
+            except IOError:
+                blank = Photo.objects.get(code='blank')
+                img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+                img = get_thumbnail(img)
+
+            f = io.BytesIO()
+            img.save(f, "PNG")
+            f.seek(0)
+	    photo.thumbnail = f.read1(-1)
+            f.close()
+            photo.save()
+            return redirect('/mesrecettes/listphotos')
+    else:
+        form = PhotoForm()
+        return render(request, 'photo_edit.html', {'form': form})
+
+def blank_photo():
+    blank = Photo.objects.get(code='blank')
+    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+    size = (128, 128)
+    img.thumbnail(size)
+    response = HttpResponse(content_type="image/png")
+    img.save(response, "PNG")
+    return response
+
+def distance2(a, b):
+    return (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]) + (a[2] - b[2]) * (a[2] - b[2])
+
+def get_thumbnail(img):
+    color = (255,255,255)
+    thresh2=0
+    image = img.convert("RGBA")
+    red, green, blue, alpha = image.split()
+    image.putalpha(ImageMath.eval("""convert(((((t - d(c, (r, g, b))) >> 31) + 1) ^ 1) * a, 'L')""",
+        t=thresh2, d=distance2, c=color, r=red, g=green, b=blue, a=alpha))
+    size = (128, 128)
+    image.thumbnail(size)
+
+    return image
+
+def get_thumbnail1(img):
+    img = img.convert("RGBA")
+    datas = img.getdata()
+    
+    newData = []
+    for item in datas:
+        if item[0] == 255 and item[1] == 255 and item[2] == 255:
+            newData.append((255, 255, 255, 0))
+        else:
+            newData.append(item)
+            
+    img.putdata(newData)
+    size = (128, 128)
+    img.thumbnail(size)
+
+    return img
+    
+def photo(request, photo_id=None):
     if request.method == "GET":
+        # il faut charger la photo...
+        photo = None
         try:
-            logger.debug("Loadig {}/photos/{}".format(settings.BASE_DIR,photo_id))
+            photo = Photo.objects.get(pk=photo_id)
+        #except Photo.DoesNotExist:
+        except:
+            logger.error("Loading photos inconnue/{}".format(photo_id))
+
+        try:
+            if photo is not None:
+                if photo.acces != "PUB":
+                    if not request.user.is_authenticated and  photo.owner.username != request.user.username:
+                        logger.error("Loading acces interdit1 /photos/{}/{}/{}/{}/{}/".format(photo_id, request.user.is_authenticated, request.user.username, photo.acces, photo.owner))
+                        return blank_photo()
+                
+                if photo.thumbnail is not None:
+                    logger.debug("Loading thumbnail /photos/{}".format(photo_id))
+
+                    response = HttpResponse(content_type="image/png")
+                    response.write(photo.thumbnail)
+                    return response
+                photo_id = photo.photo
+
+            # ************************** ATTENTION
+            # POUR MAINTENIR LA COMPATIBILITE avec les anciennes URL
+            # ON maintient le chargent direct
+
+            logger.debug("Loading img {}/photos/{}".format(settings.BASE_DIR, photo_id))
             img = Image.open("{}/photos/{}".format(settings.BASE_DIR,photo_id))
-	    size = (128, 128)
-            img.thumbnail(size)
+            img = get_thumbnail(img)
+
+            if photo:
+                try:
+                    logger.debug("Loading writing img /photos/{}".format(photo_id))
+                    f = io.BytesIO()
+                    img.save(f, "PNG")
+                    f.seek(0)
+	            photo.thumbnail = f.read1(-1)
+                    f.close()
+                    photo.save()
+                except:
+                    pass
+
 	    response = HttpResponse(content_type="image/png")
 	    img.save(response, "PNG")
 	    return response
-        #with open("{}/photos/{}".format(settings.BASE_DIR,photo_id), "rb") as f:
-        #    return HttpResponse(f.read(), content_type="image/png")
+        
         except IOError:
-            red = Image.new('RGBA', (1, 1), (255,0,0,0))
-            response = HttpResponse(content_type="image/jpeg")
-            red.save(response, "PNG")
-            return response
+            logger.error("Loading IOError /photos/{}".format(photo_id))
+            return blank_photo()
         
     if not request.user.is_authenticated:
         return HttpResponseForbidden('{ "message" : "il faut se logger" }')
+    #https://thihara.github.io/Django-Req-Parsing/
+    # django ne sait pa gerer le PUT... il faut un middleware approprié
+    
+    if request.method == "PUT" and request.FILES['photo']:
+        try:
+            form = PhotoForm(request.PUT)
+            if form.is_valid():
+                myfile = request.FILES['photo']
+                name = myfile.name 
+                logger.debug("PhotoFileName {}".format(name))
+                fs = FileSystemStorage()
+                filename = fs.save(name, myfile)
+                photo = form.save(commit=False)
+                photo.photo = filename
+                photo.owner = request.user
 
-    if request.method == "PUT":
-        return HttpResponseForbidden('{ "message" : "PUT interdit" }')
+                try:
+                    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, filename))
+                    img = get_thumbnail(img)
+                except IOError:
+                    blank = Photo.objects.get(code='blank')
+                    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+                    img = get_thumbnail(img)
+
+                f = io.BytesIO()
+                img.save(f, "PNG")
+                f.seek(0)
+	        photo.thumbnail = f.read1(-1)
+                f.close()
+                photo.save()
+                return HttpResponse('{ "message" : "OK" }')
+        except IntegrityError:
+            return HttpResponseServerError('{ "message" : "Le code est déjà utilisé" }')
+        except:
+            return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
     if request.method != "DELETE":    
         raise Http404('{ "message" : "action interdite {}".format(request.method) }')
@@ -69,14 +225,24 @@ def photo(request, photo_id):
     try:
         photo = Photo.objects.get(pk=photo_id)
     except Photo.DoesNotExist:
-
         raise Http404('{ "message" : "photo introuvable" }')
 
 
     if photo.owner.username != request.user.username:
         return HttpResponseForbidden('{ "message" : "seul le pripriétaire peu supprimer la photo" }')
 
-    return HttpResponse('{ "message" : "suppression à réaliser" }')
+    import time
+    #time.sleep(3)
+    nbref = len(photo.ingredient_set.all())
+    nbref = nbref + len(photo.recette_set.all())
+    nbref = nbref + len(photo.preparation_set.all())
+    logger.debug("nb photos ref dans ingredient : {}".format(len(photo.ingredient_set.all())))
+    if nbref != 0:
+        return HttpResponseForbidden("{{ \"message\" : \"Suppression impossible, la photo est referencée {} fois\" }}".format(nbref))
+    photo.delete()
+    #return redirect('/mesrecettes/listphotos')
+    return HttpResponse('{ "message" : "Suppression rélaliser" }')
+    
 #
 # Appelé pour retrouver les photos
 # owner = me ou others ou all
@@ -333,33 +499,6 @@ def detail_preparation(request, preparation_id):
                                          'energie' : energie,
                                          'cout' : cout,
                                          'allergene' : allergene}, request))
-
-#
-# nouvelle photo
-# info sur le multipart/form :
-# https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
-def photo_new(request):
-    if not request.user.is_authenticated:
-        return redirect('/')
-        
-    if request.method == "POST" and request.FILES['photo']:
-        form = PhotoForm(request.POST)
-        if form.is_valid():
-            myfile = request.FILES['photo']
-            name = myfile.name 
-            logger.debug("PhotoFileName {}".format(name))
-            fs = FileSystemStorage()
-            filename = fs.save(name, myfile)
-            photo = form.save(commit=False)
-            photo.photo = filename
-            photo.owner = request.user
-            photo.save()
-            return redirect('/mesrecettes/listphotos')
-    else:
-        form = PhotoForm()
-        return render(request, 'photo_edit.html', {'form': form})
-
-
 
 
 def search(request):

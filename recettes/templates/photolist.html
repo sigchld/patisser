@@ -37,7 +37,7 @@
 	  {% endif %}
 	  {% endif %}
 	  &nbsp;&nbsp;
-	  <a href="#modalAddPhoto" data-toggle="modal" title="importer une photo" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
+	  <a href="#modalAddPhoto" data-toggle="modal" data-backdrop="static" data-keyboard="false"  title="importer une photo" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
 	  </td>
 
 	<td>
@@ -196,16 +196,22 @@
   <tr>
     <td>
        {% if request.user.username == photo.owner.username %}
-      <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
+<div>
+       <div>
+  <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
+</div>
+<div>
       <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
-      <br>
+</div>
+</div>
        {% endif %}      
       <span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span> 
     </td> 
     <td><span id="id_photo_description_{{photo.id}}">{{photo.description}}</span></td>
     <td><span id="id_photo_username_{{photo.id}}">{{photo.owner.username}}</span></td>
     <td><span id="id_photo_acces_{{photo.id}}">{{photo.get_acces_display}}</span></td>
-    <td><img id="id_photo_img_{{photo.id}}" src="{{ photo.get_absolute_url }}"></td>
+    <td><img id="id_photo_img_{{photo.id}}" src="{% url 'photo' photo.id %}"></td>
+    <!-- td><img id="id_photo_img_{{photo.id}}" src="{{ photo.get_absolute_url }}"></td -->
   </tr>
   {% endfor %}
   {% else %}
@@ -216,16 +222,22 @@
     </tr>
       <tr>
   {% endif %}  
-    <td>
-      <img id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{{ photo.get_absolute_url }}">
-      <br>
-      <span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span> 
+  {% comment %}
+  http://fr.learnlayout.com/position-example.html
+  la cellule est aligne en haut,
+  il faut specifier une hauteur de 128 pour les images
+  {% endcomment %}
+  <td style="vertical-align:top">
+    <div class="container-fluid" >
+      <div class="row sticky-top" style="text-align:center;"><span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span></div>
+      <div class="row" style="height:128px;text-align:center;"><img  id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{% url 'photo' photo.id %}"></div>
       {% if request.user.username == photo.owner.username %}
-            <br>
+      <div class="row" style="vertical-align:bottom;margin-left:0px;">   
       <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
       <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
+      </div>
       {% endif %}      
-
+    </div>
     </td>
     {% if forloop.last %}
     {% for i in remplissage %}
@@ -272,7 +284,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
       </div>
       <div class="modal-body">
-	<form enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_new' %}">
+	<form id="id_import_photo" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
 	  {% csrf_token %}
 	  <div class="form-group">
 	    <div class="form-group">
@@ -296,23 +308,24 @@
 	    </div>
 	    
 	    <div class="form-group">
-	      <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer</button>
+	      <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
 	    </div>
 	  </div>
 	</form>
 	</div>
-	<div class="modal-footer">
+      <div class="modal-footer">
+        	<span id="id_import_photo_message"></span> <br>
 	</div>
       </div>
     </div>
 </div>
 
 <!-- Modal Suppression photo -->
-<div class="modal fade" id="delete_photo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div data-backdrop="static" data-keyboard="false"  class="modal fade" id="delete_photo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <!-- button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button -->
         <h4 class="modal-title" id="myModalLabel">Suppression Photo</h4>
       </div>
       <div class="modal-body">
@@ -323,9 +336,11 @@
 	<span style="display:none;" id="id_delete_photo_id" />
       </div>
       <div class="modal-footer">
-	<span id="id_delete_photo_message"></span> <br>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Abandon</button>
+        <div>
+        <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_photo_abandon" >Abandon</button>
         <button type="button" id="id_delete_photo" class="btn btn-warning">Suppression</button>
+        </div>
+        <span id="id_delete_photo_message">&nbsp;</span>
       </div>
     </div>
   </div>
@@ -352,7 +367,8 @@ function getCookie(name) {
 
 function ask_delete_photo(id) {
     $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
-    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
+			    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
+			    $('#id_delete_photo_message').text("");
     $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
     $('#id_delete_photo_id').text(id);
     $('#delete_photo').modal('show')
@@ -393,7 +409,8 @@ $('#id_acces_sel').on('change', function (e) {
 });
 
     
-    $('#liste_photos').DataTable({
+			    $('#liste_photos').DataTable({
+			    "hover":true,
     "compact":true,
     "strip":true,
     "paging":false,
@@ -420,18 +437,52 @@ $('#id_acces_sel').on('change', function (e) {
 {% endif %}    
     });
 
-    
-    $("#id_submit_photo").click(
-    function(){
-      $("#id_loader").css("display","block");
-      return true;
+
+{% comment %}
+   soumission de l'import de la photo
+{% endcomment %}
+    $("#id_import_photo").submit(
+                            function(event){
+                            event.preventDefault();
+                            $("#id_import_photo_message").text("");
+                            var formdata = new FormData($(this)[0]);
+                            $("#id_loader").css("display","block");
+                            var csrftoken = getCookie('csrftoken');
+                            var u = "{% url 'photo_create' %}";
+
+                            $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+                            //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
+                            $.ajax({
+                            //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
+                            processData: false,
+                            contentType:false,
+                            'type': 'put',
+                            'url': u,
+                            data: formdata,
+                            
+          'success': function(response)
+          {
+			    window.location.reload();
+           },
+           'error': function(jqXHR, textStatus, errorThrown)
+           {
+              console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+			    $("#id_loader").css("display","none");
+                            $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
+           }
+        });    
+
+
     });
     
 
     
 			    
     $("#id_delete_photo").click(
-    function(){
+			    function(){
+			    $("#id_delete_photo").attr("disabled", true);
+			    $("#id_delete_photo_abandon").attr("disabled", true);
+			        $("#id_delete_photo_message").text("");
       $("#id_loader").css("display","block");
     var u = "{% url 'photo' '99' %}X".replace("99X", $('#id_delete_photo_id').text());
     var csrftoken = getCookie('csrftoken');
@@ -441,16 +492,20 @@ $('#id_acces_sel').on('change', function (e) {
           'url': u,
 
           'success': function(response)
-           {
-			    //$("html").html(response);
-			    $("#id_delete_photo_message").text(response);
-			    $("#id_loader").css("display","none");
+          {
+			    window.location.reload()
+//			    $("#id_delete_photo_message").text(response);
+//			    $("#id_loader").css("display","none");
+//			    $("#id_delete_photo").removeAttr("disabled");
+//			    $("#id_delete_photo_abandon").removeAttr("disabled");
            },
            'error': function(jqXHR, textStatus, errorThrown)
            {
               console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-    $("#id_loader").css("display","none");
-    $("#id_delete_photo_message").text(textStatus);
+			    $("#id_loader").css("display","none");
+			    $("#id_delete_photo").removeAttr("disabled");
+			    			    $("#id_delete_photo_abandon").removeAttr("disabled");
+    $("#id_delete_photo_message").text(JSON.parse(jqXHR.responseText).message);
            }
         });    
 
