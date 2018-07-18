@@ -8,18 +8,11 @@
 {% block content %}
 <div class="container">
   <table class="table-striped"  id="liste_photos">
-    <!-- colgroup>
-	 <col class="col-xs-1"></col>
-	 <col class="col-xs-4"></col>
-	 <col class="col-xs-1"></col>
-	 <col class="col-xs-6"></col>
-</colgroup -->
-
     <thead>
       <tr>
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
-	 
+	  
 	  Liste photos
 	  &nbsp;
 	  {% if acces %}
@@ -38,55 +31,55 @@
 	  {% endif %}
 	  &nbsp;&nbsp;
 	  <a href="#modalAddPhoto" data-toggle="modal" data-backdrop="static" data-keyboard="false"  title="importer une photo" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
-	  </td>
+	</td>
 
 	<td>
-    {% if owner == 'me' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
-		<option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres publiques</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">les miennes et les autres</option>
-	      </select>
-    {% endif %}
-    
-    {% if owner == 'others' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
-		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres publiques</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">les miennes et les autres</option>
-	      </select>
-    {% endif %}
-    
-    {% if owner == 'all' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
-		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres publiques</option>
-		<option value="{% url 'list_photos_owner' 'all' %}" selected>les miennes et les autres</option>
-	      </select>
-     {% endif %}
+          {% if owner == 'me' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
+	    <option value="{% url 'list_photos_owner' 'others' %}">les autres publiques</option>
+	    <option value="{% url 'list_photos_owner' 'all' %}">les miennes et les autres</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'others' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+	    <option value="{% url 'list_photos_owner' 'others' %}" selected>les autres publiques</option>
+	    <option value="{% url 'list_photos_owner' 'all' %}">les miennes et les autres</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'all' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+	    <option value="{% url 'list_photos_owner' 'others' %}">les autres publiques</option>
+	    <option value="{% url 'list_photos_owner' 'all' %}" selected>les miennes et les autres</option>
+	  </select>
+          {% endif %}
 	  
-	  </td>
+	</td>
 
 	<td>
-	{% if owner == 'me' %}
-    <!-- span class="glyphicon glyphicon-filter"></span -->
-    <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
-      {% if acces == 'public' %}
-      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
-      <option value="{% url 'list_photos_acces' 'public' %}" selected>publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques ou privées</option>
-      {% elif acces == 'private' %}
-      <option value="{% url 'list_photos_acces' 'private' %}" selected>privées</option>
-      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques ou privées</option>
-      {% else %}
-      <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
-      <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
-      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques ou privées</option>
-      {% endif %}
-    </select>
-    
-{% endif %}
+	  {% if owner == 'me' %}
+          <!-- span class="glyphicon glyphicon-filter"></span -->
+          <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+            {% if acces == 'public' %}
+            <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
+            <option value="{% url 'list_photos_acces' 'public' %}" selected>publiques</option>
+            <option value="{% url 'list_photos_acces' 'all' %}">publiques ou privées</option>
+            {% elif acces == 'private' %}
+            <option value="{% url 'list_photos_acces' 'private' %}" selected>privées</option>
+            <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
+            <option value="{% url 'list_photos_acces' 'all' %}">publiques ou privées</option>
+            {% else %}
+            <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
+            <option value="{% url 'list_photos_acces' 'public' %}">publiques</option>
+            <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques ou privées</option>
+            {% endif %}
+          </select>
+          
+          {% endif %}
 	</td>
 	{% else %}
 	<td colspan="4">
@@ -106,415 +99,399 @@
 	    <span class="step-links">
 	      {% if photos.has_previous %}
 	      <a href="?page={{ photos.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
-								      {% endif %}
-								      <span class="current">
-									Page {{ photos.number }} of {{ photos.paginator.num_pages }}
-								      </span>
-								      {% if photos.has_next %}
-								      <a href="?page={{ photos.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
-															  {% endif %}
-															  </span>
-</div>
-{% endif %}
-</td>
-</tr>
-
-{% if detail %}
-<tr>
-  <th>code</th>
-  <th>description</th>
-  <th>
-    propriétaire
-  </th>
-
-  <th colspan="2">
-    accès
-</tr>
-{% endif %}
-
-{% comment %}
-{% if request.user.is_authenticated %}
-<tr>
-  <td colspan="2">&nbsp</td>
-  <td >
-    <!-- span class="glyphicon glyphicon-filter"></span -->
-    {% if owner == 'me' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
-		<option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">publiques privées</option>
-	      </select>
-    {% endif %}
-    
-    {% if owner == 'others' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
-		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}" selected>les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}">publiques privées</option>
-	      </select>
-    {% endif %}
-    
-    {% if owner == 'all' %}
-	      <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
-		<option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
-		<option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
-		<option value="{% url 'list_photos_owner' 'all' %}" selected>publiques privées</option>
-	      </select>
-    {% endif %}
-  </td>
-  
-  <td colspan="3">
-    {% if owner == 'me' %}
-    <!-- span class="glyphicon glyphicon-filter"></span -->
-    <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
-      {% if acces == 'public' %}
-      <option value="{% url 'list_photos_acces' 'private' %}">privé</option>      
-      <option value="{% url 'list_photos_acces' 'public' %}" selected>public</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
-      {% elif acces == 'private' %}
-      <option value="{% url 'list_photos_acces' 'private' %}" selected>privé</option>
-      <option value="{% url 'list_photos_acces' 'public' %}">public</option>
-      <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
-      {% else %}
-      <option value="{% url 'list_photos_acces' 'private' %}">privé</option>      
-      <option value="{% url 'list_photos_acces' 'public' %}">public</option>
-      <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques privées</option>      
-      {% endif %}
-    </select>
-    {% endif %}
-</td>
-  
-</tr>
-{% endif %}
-{% endcomment %}
-</thead>
-
-<tbody>
-  {% if photos %}
-    {% if detail %}
-     {% for photo in photos %}
-  <tr>
-    <td>
-       {% if request.user.username == photo.owner.username %}
-<div>
-       <div>
-  <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
-</div>
-<div>
-      <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
-</div>
-</div>
-       {% endif %}      
-      <span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span> 
-    </td> 
-    <td><span id="id_photo_description_{{photo.id}}">{{photo.description}}</span></td>
-    <td><span id="id_photo_username_{{photo.id}}">{{photo.owner.username}}</span></td>
-    <td><span id="id_photo_acces_{{photo.id}}">{{photo.get_acces_display}}</span></td>
-    <td><img id="id_photo_img_{{photo.id}}" src="{% url 'photo' photo.id %}"></td>
-    <!-- td><img id="id_photo_img_{{photo.id}}" src="{{ photo.get_absolute_url }}"></td -->
-  </tr>
-  {% endfor %}
-  {% else %}
-  {% for photo in photos %}
-  {% if forloop.first %}
-  <tr>
-    {% elif forloop.counter0|divisibleby:"5" %}
-    </tr>
-      <tr>
-  {% endif %}  
-  {% comment %}
-  http://fr.learnlayout.com/position-example.html
-  la cellule est aligne en haut,
-  il faut specifier une hauteur de 128 pour les images
-  {% endcomment %}
-  <td style="vertical-align:top">
-    <div class="container-fluid" >
-      <div class="row sticky-top" style="text-align:center;"><span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span></div>
-      <div class="row" style="height:128px;text-align:center;"><img  id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{% url 'photo' photo.id %}"></div>
-      {% if request.user.username == photo.owner.username %}
-      <div class="row" style="vertical-align:bottom;margin-left:0px;">   
-      <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
-      <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
-      </div>
-      {% endif %}      
-    </div>
-    </td>
-    {% if forloop.last %}
-    {% for i in remplissage %}
-      <td></td>     
-    {% endfor %}
+	      {% endif %}
+	      <span class="current">
+		Page {{ photos.number }} of {{ photos.paginator.num_pages }}
+	      </span>
+	      {% if photos.has_next %}
+	      <a href="?page={{ photos.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+	      {% endif %}
+	    </span>
+          </div>
+          {% endif %}
+        </td>
       </tr>
-    {% endif %}
-  {% endfor %}
-  {% endif %}
-  {% endif %}
-  
-</tbody> 
 
-<tfoot>
-  <tr>
-    <td colspan="4"><p>Liste photos</td>
-<td class="text-right">
-  {% if photos %}
-  <div class="pagination">
-    <span class="step-links">
-      {% if photos.has_previous %}
-      <a href="?page={{ photos.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
-							      {% endif %}
-							      <span class="current">
-								Page {{ photos.number }} of {{ photos.paginator.num_pages }}
-							      </span>
-							      {% if photos.has_next %}
-							      <a href="?page={{ photos.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
-														  {% endif %}
-														  </span>
-</div>
-{% endif %}
-</td>
-</tfoot>
-</table>
+      {% if detail %}
+      <tr>
+        <th>code</th>
+        <th>description</th>
+        <th>
+          propriétaire
+        </th>
 
-{% if request.user.is_authenticated %}
-<!-- Modal Creation d'une photo -->
-<div id="modalAddPhoto" class="modal fade">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-	<h4 class="modal-title text-center">Ajouter une photo</h4>	
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      </div>
-      <div class="modal-body">
-	<form id="id_import_photo" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
-	  {% csrf_token %}
-	  <div class="form-group">
-	    <div class="form-group">
-	      <label for="code">Code:</label>
-	      <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
-	    </div>
-	    <div class="form-group">
-	      <label for="code">Description:</label>
-	      <textarea rows="5" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
-	    </div>
-	    <div class="form-group">
-	      <label for="code">Accès:</label>
-	      <select class="form_control" name="acces" id="id_acces">
-		<option value="PUB" selected>public</option>
-		<option value="PRIV">privé</option>
-	      </select>
-	    </div>
-	    <div class="form-group">
-	      <label for="code">Image:</label>
-	      <input type="file" class="form-control-file" id="id_photo" required name="photo" placeholder="Description" required="required" maxlength="200">
-	    </div>
-	    
-	    <div class="form-group">
-	      <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
-	    </div>
-	  </div>
-	</form>
-	</div>
-      <div class="modal-footer">
-        	<span id="id_import_photo_message"></span> <br>
-	</div>
-      </div>
-    </div>
-</div>
+        <th colspan="2">
+          accès
+        </tr>
+        {% endif %}
 
-<!-- Modal Suppression photo -->
-<div data-backdrop="static" data-keyboard="false"  class="modal fade" id="delete_photo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <!-- button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button -->
-        <h4 class="modal-title" id="myModalLabel">Suppression Photo</h4>
-      </div>
-      <div class="modal-body">
-        <p>Vouvez-vous supprimer cette photo :</p>
-	<p id="id_delete_photo_code" />
-	<p id="id_delete_photo_description" /p>
-	<p><img id="id_delete_photo_img"></p>
-	<span style="display:none;" id="id_delete_photo_id" />
-      </div>
-      <div class="modal-footer">
-        <div>
-        <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_photo_abandon" >Abandon</button>
-        <button type="button" id="id_delete_photo" class="btn btn-warning">Suppression</button>
-        </div>
-        <span id="id_delete_photo_message">&nbsp;</span>
-      </div>
-    </div>
-  </div>
-</div>
+        {% comment %}
+        {% if request.user.is_authenticated %}
+        <tr>
+          <td colspan="2">&nbsp</td>
+          <td >
+            <!-- span class="glyphicon glyphicon-filter"></span -->
+            {% if owner == 'me' %}
+	    <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	      <option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
+	      <option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+	      <option value="{% url 'list_photos_owner' 'all' %}">publiques privées</option>
+	    </select>
+            {% endif %}
+            
+            {% if owner == 'others' %}
+	    <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	      <option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+	      <option value="{% url 'list_photos_owner' 'others' %}" selected>les autres</option>
+	      <option value="{% url 'list_photos_owner' 'all' %}">publiques privées</option>
+	    </select>
+            {% endif %}
+            
+            {% if owner == 'all' %}
+	    <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	      <option value="{% url 'list_photos_owner' 'me' %}">les miennes</option>
+	      <option value="{% url 'list_photos_owner' 'others' %}">les autres</option>
+	      <option value="{% url 'list_photos_owner' 'all' %}" selected>publiques privées</option>
+	    </select>
+            {% endif %}
+          </td>
+          
+          <td colspan="3">
+            {% if owner == 'me' %}
+            <!-- span class="glyphicon glyphicon-filter"></span -->
+            <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+              {% if acces == 'public' %}
+              <option value="{% url 'list_photos_acces' 'private' %}">privé</option>      
+              <option value="{% url 'list_photos_acces' 'public' %}" selected>public</option>
+              <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+              {% elif acces == 'private' %}
+              <option value="{% url 'list_photos_acces' 'private' %}" selected>privé</option>
+              <option value="{% url 'list_photos_acces' 'public' %}">public</option>
+              <option value="{% url 'list_photos_acces' 'all' %}">publiques privées</option>
+              {% else %}
+              <option value="{% url 'list_photos_acces' 'private' %}">privé</option>      
+              <option value="{% url 'list_photos_acces' 'public' %}">public</option>
+              <option value="{% url 'list_photos_acces' 'all' %}" selected>publiques privées</option>      
+              {% endif %}
+            </select>
+            {% endif %}
+          </td>
+          
+        </tr>
+        {% endif %}
+        {% endcomment %}
+      </thead>
 
-{% endif %}
+      <tbody>
+        {% if photos %}
+        {% if detail %}
+        {% for photo in photos %}
+        <tr>
+          <td>
+            {% if request.user.username == photo.owner.username %}
+            <div>
+              <div>
+                <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
+              </div>
+              <div>
+                <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
+              </div>
+            </div>
+            {% endif %}      
+            <span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span> 
+          </td> 
+          <td><span id="id_photo_description_{{photo.id}}">{{photo.description}}</span></td>
+          <td><span id="id_photo_username_{{photo.id}}">{{photo.owner.username}}</span></td>
+          <td><span id="id_photo_acces_{{photo.id}}">{{photo.get_acces_display}}</span></td>
+          <td><img id="id_photo_img_{{photo.id}}" src="{% url 'photo' photo.id %}"></td>
+          <!-- td><img id="id_photo_img_{{photo.id}}" src="{{ photo.get_absolute_url }}"></td -->
+        </tr>
+        {% endfor %}
+        {% else %}
+        {% for photo in photos %}
+        {% if forloop.first %}
+        <tr>
+          {% elif forloop.counter0|divisibleby:"5" %}
+        </tr>
+        <tr>
+          {% endif %}  
+          {% comment %}
+          http://fr.learnlayout.com/position-example.html
+          la cellule est aligne en haut,
+          il faut specifier une hauteur de 128 pour les images
+          {% endcomment %}
+          <td style="vertical-align:top">
+            <div class="container-fluid" >
+              <div class="row sticky-top" style="text-align:center;"><span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span></div>
+              <div class="row" style="height:128px;text-align:center;"><img  id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{% url 'photo' photo.id %}"></div>
+              {% if request.user.username == photo.owner.username %}
+              <div class="row" style="vertical-align:bottom;margin-left:0px;">   
+                <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
+                <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
+              </div>
+              {% endif %}      
+            </div>
+          </td>
+          {% if forloop.last %}
+          {% for i in remplissage %}
+          <td></td>     
+          {% endfor %}
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endif %}
+        
+      </tbody> 
 
-<script  type="text/javascript">
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+      <tfoot>
+        <tr>
+          <td colspan="4"><p>Liste photos</td>
+          <td class="text-right">
+            {% if photos %}
+            <div class="pagination">
+              <span class="step-links">
+                {% if photos.has_previous %}
+                <a href="?page={{ photos.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+		{% endif %}
+		<span class="current">
+		  Page {{ photos.number }} of {{ photos.paginator.num_pages }}
+		</span>
+		{% if photos.has_next %}
+		<a href="?page={{ photos.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+		{% endif %}
+	      </span>
+            </div>
+            {% endif %}
+          </td>
+        </tfoot>
+      </table>
+
+      {% if request.user.is_authenticated %}
+      <!-- Modal Creation d'une photo -->
+      <div id="modalAddPhoto" class="modal fade">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+	      <h4 class="modal-title text-center">Ajouter une photo</h4>	
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+	      <form id="id_import_photo" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
+	        {% csrf_token %}
+	        <div class="form-group">
+	          <div class="form-group">
+	            <label for="code">Code:</label>
+	            <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
+	            </div>
+	            <div class="form-group">
+	              <label for="code">Description:</label>
+	              <textarea rows="5" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
+	            </div>
+	            <div class="form-group">
+	              <label for="code">Accès:</label>
+	              <select class="form_control" name="acces" id="id_acces">
+		        <option value="PUB" selected>public</option>
+		        <option value="PRIV">privé</option>
+	              </select>
+	            </div>
+	            <div class="form-group">
+	              <label for="code">Image:</label>
+	              <input type="file" class="form-control-file" id="id_photo" required name="photo" placeholder="Description" required="required" maxlength="200">
+	              </div>
+	              
+	              <div class="form-group">
+	                <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
+	              </div>
+	            </div>
+	          </form>
+	        </div>
+                <div class="modal-footer">
+        	  <span id="id_import_photo_message"></span> <br>
+	        </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Suppression photo -->
+          <div data-backdrop="static" data-keyboard="false"  class="modal fade" id="delete_photo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <!-- button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button -->
+                  <h4 class="modal-title" id="myModalLabel">Suppression Photo</h4>
+                </div>
+                <div class="modal-body">
+                  <p>Vouvez-vous supprimer cette photo :</p>
+	          <p id="id_delete_photo_code" />
+	          <p id="id_delete_photo_description" /p>
+	          <p><img id="id_delete_photo_img"></p>
+	          <span style="display:none;" id="id_delete_photo_id" />
+                </div>
+                <div class="modal-footer">
+                  <div>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_photo_abandon" >Abandon</button>
+                    <button type="button" id="id_delete_photo" class="btn btn-warning">Suppression</button>
+                  </div>
+                  <span id="id_delete_photo_message">&nbsp;</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% endif %}
+
+          <script  type="text/javascript">
+            function ask_delete_photo(id) {
+            $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
+	    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
+	    $('#id_delete_photo_message').text("");
+            $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
+            $('#id_delete_photo_id').text(id);
+            $('#delete_photo').modal('show')
+            };
+            
+
+            $(document).ready(
+            function () {
+
+
+            $('#id_owner_sel').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var valueSelected = this.value;
+            var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
+
+            $("<input type='hidden' />")
+            .attr("name", "detail")
+            .val("{{ detail}}")
+            .appendTo(myForm);
+            
+            $('#id_loader').append(myForm);
+            $('#selectForm').submit();
+
+            });
+
+            $('#id_acces_sel').on('change', function (e) {
+            var optionSelected = $("option:selected", this);
+            var valueSelected = this.value;
+            var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
+
+            $("<input type='hidden' />")
+            .attr("name", "detail")
+            .val("{{ detail}}")
+            .appendTo(myForm);
+
+            $('#id_loader').append(myForm);
+            $('#selectForm').submit();
+            });
+
+            
+	    $('#liste_photos').DataTable({
+	    "hover":true,
+            "compact":true,
+            "strip":true,
+            "paging":false,
+            "searching":false,
+            "info":false,
+            "ordering":false,
+            "autoWidth":false,
+            {% if detail %}
+            "columnDefs": [
+            { "width": "10%", "targets": 0 },
+            { "width": "30%", "targets": 1 },
+            { "width": "20%", "targets": 2 },
+            { "width": "20%", "targets": 3 },
+            { "width": "20%", "targets": 4 }
+            ]
+            {% else %}
+            "columnDefs": [
+            { "width": "20%", "targets": 0 },
+            { "width": "20%", "targets": 1 },
+            { "width": "20%", "targets": 2 },
+            { "width": "20%", "targets": 3 },
+            { "width": "20%", "targets": 4 }
+            ]
+            {% endif %}    
+            });
+
+
+            {% comment %}
+            soumission de l'import de la photo
+            {% endcomment %}
+            $("#id_import_photo").submit(
+            function(event){
+            event.preventDefault();
+            $("#id_import_photo_message").text("");
+            var formdata = new FormData($(this)[0]);
+            $("#id_loader").css("display","block");
+            var csrftoken = getCookie('csrftoken');
+            var u = "{% url 'photo_create' %}";
+
+            $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+            //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
+            $.ajax({
+            //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
+            processData: false,
+            contentType:false,
+            'type': 'put',
+            'url': u,
+            data: formdata,
+            
+            'success': function(response)
+            {
+	    window.location.reload();
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+            console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+	    $("#id_loader").css("display","none");
+            $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
             }
-        }
-    }
-    return cookieValue;
-};
-
-function ask_delete_photo(id) {
-    $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
-			    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
-			    $('#id_delete_photo_message').text("");
-    $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-    $('#id_delete_photo_id').text(id);
-    $('#delete_photo').modal('show')
-    };
-    
-
-$(document).ready(
-    function () {
+            });    
 
 
-$('#id_owner_sel').on('change', function (e) {
-    var optionSelected = $("option:selected", this);
-    var valueSelected = this.value;
-    var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
+            });
+            
 
-    $("<input type='hidden' />")
-            .attr("name", "detail")
-            .val("{{ detail}}")
-            .appendTo(myForm);
-    
-    $('#id_loader').append(myForm);
-    $('#selectForm').submit();
+            
+	    
+            $("#id_delete_photo").click(
+	    function(){
+	    $("#id_delete_photo").attr("disabled", true);
+	    $("#id_delete_photo_abandon").attr("disabled", true);
+	    $("#id_delete_photo_message").text("");
+            $("#id_loader").css("display","block");
+            var u = "{% url 'photo' '99' %}X".replace("99X", $('#id_delete_photo_id').text());
+            var csrftoken = getCookie('csrftoken');
+            $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
+            $.ajax({
+            'type': 'delete',
+            'url': u,
 
-});
+            'success': function(response)
+            {
+	    window.location.reload()
+            //			    $("#id_delete_photo_message").text(response);
+            //			    $("#id_loader").css("display","none");
+            //			    $("#id_delete_photo").removeAttr("disabled");
+            //			    $("#id_delete_photo_abandon").removeAttr("disabled");
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+            console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+	    $("#id_loader").css("display","none");
+	    $("#id_delete_photo").removeAttr("disabled");
+	    $("#id_delete_photo_abandon").removeAttr("disabled");
+            $("#id_delete_photo_message").text(JSON.parse(jqXHR.responseText).message);
+            }
+            });    
 
-$('#id_acces_sel').on('change', function (e) {
-    var optionSelected = $("option:selected", this);
-    var valueSelected = this.value;
-    var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
+            
+            });
+            
+            
+            }); // fin document ready
 
-    $("<input type='hidden' />")
-            .attr("name", "detail")
-            .val("{{ detail}}")
-            .appendTo(myForm);
-
-    $('#id_loader').append(myForm);
-    $('#selectForm').submit();
-});
-
-    
-			    $('#liste_photos').DataTable({
-			    "hover":true,
-    "compact":true,
-    "strip":true,
-    "paging":false,
-    "searching":false,
-    "info":false,
-    "ordering":false,
-    "autoWidth":false,
-{% if detail %}
-    "columnDefs": [
-    { "width": "10%", "targets": 0 },
-    { "width": "30%", "targets": 1 },
-    { "width": "20%", "targets": 2 },
-    { "width": "20%", "targets": 3 },
-    { "width": "20%", "targets": 4 }
-    ]
-{% else %}
-        "columnDefs": [
-    { "width": "20%", "targets": 0 },
-    { "width": "20%", "targets": 1 },
-    { "width": "20%", "targets": 2 },
-    { "width": "20%", "targets": 3 },
-    { "width": "20%", "targets": 4 }
-    ]
-{% endif %}    
-    });
-
-
-{% comment %}
-   soumission de l'import de la photo
-{% endcomment %}
-    $("#id_import_photo").submit(
-                            function(event){
-                            event.preventDefault();
-                            $("#id_import_photo_message").text("");
-                            var formdata = new FormData($(this)[0]);
-                            $("#id_loader").css("display","block");
-                            var csrftoken = getCookie('csrftoken');
-                            var u = "{% url 'photo_create' %}";
-
-                            $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-                            //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
-                            $.ajax({
-                            //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
-                            processData: false,
-                            contentType:false,
-                            'type': 'put',
-                            'url': u,
-                            data: formdata,
-                            
-          'success': function(response)
-          {
-			    window.location.reload();
-           },
-           'error': function(jqXHR, textStatus, errorThrown)
-           {
-              console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-			    $("#id_loader").css("display","none");
-                            $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
-           }
-        });    
-
-
-    });
-    
-
-    
-			    
-    $("#id_delete_photo").click(
-			    function(){
-			    $("#id_delete_photo").attr("disabled", true);
-			    $("#id_delete_photo_abandon").attr("disabled", true);
-			        $("#id_delete_photo_message").text("");
-      $("#id_loader").css("display","block");
-    var u = "{% url 'photo' '99' %}X".replace("99X", $('#id_delete_photo_id').text());
-    var csrftoken = getCookie('csrftoken');
-    $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
-    $.ajax({
-          'type': 'delete',
-          'url': u,
-
-          'success': function(response)
-          {
-			    window.location.reload()
-//			    $("#id_delete_photo_message").text(response);
-//			    $("#id_loader").css("display","none");
-//			    $("#id_delete_photo").removeAttr("disabled");
-//			    $("#id_delete_photo_abandon").removeAttr("disabled");
-           },
-           'error': function(jqXHR, textStatus, errorThrown)
-           {
-              console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-			    $("#id_loader").css("display","none");
-			    $("#id_delete_photo").removeAttr("disabled");
-			    			    $("#id_delete_photo_abandon").removeAttr("disabled");
-    $("#id_delete_photo_message").text(JSON.parse(jqXHR.responseText).message);
-           }
-        });    
-
-    
-    });
-    
-    
-}); // fin document ready
-
-</script>
-</div>
-{% endblock %}
+          </script>
+        </div>
+        {% endblock %}

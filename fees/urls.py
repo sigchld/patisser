@@ -14,7 +14,9 @@ admin.autodiscover()
 
 urlpatterns = [
     # Examples:
-    url('^mesrecettes/', include('django.contrib.auth.urls')),
+    #
+    # plus utile, traite dans une vue specifique
+    #url('^mesrecettes/', include('django.contrib.auth.urls')),
     url(r'^$', views.index, name='index'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^mesrecettes/', include('recettes.urls')),

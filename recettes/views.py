@@ -9,11 +9,15 @@ from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.http import HttpResponseNotModified, HttpResponseServerError
+from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.csrf import csrf_exempt
 
 from PIL import Image
 from PIL import ImageMath
+from PIL import ImageChops
+
 from fees import settings
 from .models import Recette
 from .models import Ingredient
@@ -41,7 +45,7 @@ from django.http import HttpResponse
 def index(request):
     template = loader.get_template('index.html')
     request.session[PAGE_COURANTE] = ACCUEIL
-    return HttpResponse(template.render({}))
+    return  HttpResponse(template.render({}, request))
 
 
 #
@@ -99,6 +103,19 @@ def blank_photo():
 def distance2(a, b):
     return (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]) + (a[2] - b[2]) * (a[2] - b[2])
 
+def get_thumbnail0(img):
+    bg = Image.new(img.mode, img.size, img.getpixel((0,0)))
+    diff = ImageChops.difference(img, bg)
+    diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        img=img.crop(bbox)
+    else:
+        return get_thumbnail(img)
+    size = (128, 128)
+    img.thumbnail(size)
+    return img
+    
 def get_thumbnail(img):
     color = (255,255,255)
     thresh2=0
@@ -239,8 +256,8 @@ def photo(request, photo_id=None):
     logger.debug("nb photos ref dans ingredient : {}".format(len(photo.ingredient_set.all())))
     if nbref != 0:
         return HttpResponseForbidden("{{ \"message\" : \"Suppression impossible, la photo est referencée {} fois\" }}".format(nbref))
-    photo.delete()
-    #return redirect('/mesrecettes/listphotos')
+    photo.delete(
+)
     return HttpResponse('{ "message" : "Suppression rélaliser" }')
     
 #
@@ -327,7 +344,8 @@ def list_photos(request,owner='me',acces=None,filter=None):
     except PageNotAnInteger:
         photos = paginator.page(1)
     except EmptyPage:
-        photos = paginator.page(paginator_num_pages)
+        photos = paginator.page(1)
+
         
     request.session['current_page'] = 'id_photos_m'
 
@@ -511,3 +529,27 @@ def search(request):
         return list_photos(request, filter=filter)
     
     return index(request, filter=filter)
+
+def my_logout(request):
+    logout(request)
+    return redirect('/mesrecettes/')
+    return index(request)
+    
+def my_login(request):
+    #logout(request)
+    username = password = ''
+    if request.POST:
+        username = request.POST['username']
+        password = request.POST['password']
+        
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            return HttpResponse('{ "message" : "OK" }')
+        else:
+            return HttpResponseForbidden('{ "message" : "Acces interdit" }')
+    else:
+        return HttpResponseForbidden('{ "message" : "Login ou mot de passe erroné" }')
+    #return render_to_response('login.html', context_instance=RequestContext(request))
+
