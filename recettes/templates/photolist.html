@@ -194,7 +194,7 @@
                 <a href="javascript:ask_delete_photo({{photo.id}});"><span class="glyphicon glyphicon-trash"></span></a>
               </div>
               <div>
-                <a href=""><span class="glyphicon glyphicon-pencil"></span></a>
+                <a href="#modalEditPhoto" data-toggle="modal" data-backdrop="static" data-keyboard="false"  title="modifier une photo"><span class="glyphicon glyphicon-pencil"></span></a>
               </div>
             </div>
             {% endif %}      
@@ -313,6 +313,51 @@
             </div>
           </div>
 
+      <!-- Modal Modification d'une photo -->
+      <div id="modalEditPhoto" class="modal fade">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+	      <h4 class="modal-title text-center">Modifier une photo</h4>	
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+	      <form id="id_edit_photo" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
+	        {% csrf_token %}
+	        <div class="form-group">
+	          <div class="form-group">
+	            <label for="code">Code:</label>
+	            <input type="text" class="form-control" id="id_edit_code" name="code" placeholder="Code" required="required" maxlength="20">
+	            </div>
+	            <div class="form-group">
+	              <label for="code">Description:</label>
+	              <textarea rows="5" class="form-control" id="id_edit_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
+	            </div>
+	            <div class="form-group">
+	              <label for="code">Accès:</label>
+	              <select class="form_control" name="acces" id="id_edit_acces">
+		        <option value="PUB" selected>public</option>
+		        <option value="PRIV">privé</option>
+	              </select>
+	            </div>
+	            <div class="form-group">
+	              <label for="code">Image:</label>
+	              <input type="file" class="form-control-file" id="id_edit_photo" required name="photo" placeholder="Description" required="required" maxlength="200">
+	              </div>
+	              
+	              <div class="form-group">
+	                <button id="id_edit_submit_photo" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
+	              </div>
+	            </div>
+	          </form>
+	        </div>
+                <div class="modal-footer">
+        	  <span id="id_edit_photo_message"></span> <br>
+	        </div>
+              </div>
+            </div>
+          </div>
+      
           <!-- Modal Suppression photo -->
           <div data-backdrop="static" data-keyboard="false"  class="modal fade" id="delete_photo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
             <div class="modal-dialog" role="document">
@@ -340,53 +385,20 @@
           </div>
 
           {% endif %}
-
+          <script type="text/javascript" src="{% static "js/photo.js" %}"></script>
           <script  type="text/javascript">
-            function ask_delete_photo(id) {
-            $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
-	    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
-	    $('#id_delete_photo_message').text("");
-            $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-            $('#id_delete_photo_id').text(id);
-            $('#delete_photo').modal('show')
-            };
-            
+            function getDetailValue() {
+            return "{{detail}}";
+            }
+            function getPhotoCreateUrl() {
+            return "{% url 'photo_create' %}";
+            }
 
-            $(document).ready(
-            function () {
+            function getGetPhotoUrl() {
+            return "{% url 'photo' '99' %}";
+            }
 
-
-            $('#id_owner_sel').on('change', function (e) {
-            var optionSelected = $("option:selected", this);
-            var valueSelected = this.value;
-            var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
-
-            $("<input type='hidden' />")
-            .attr("name", "detail")
-            .val("{{ detail}}")
-            .appendTo(myForm);
-            
-            $('#id_loader').append(myForm);
-            $('#selectForm').submit();
-
-            });
-
-            $('#id_acces_sel').on('change', function (e) {
-            var optionSelected = $("option:selected", this);
-            var valueSelected = this.value;
-            var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
-
-            $("<input type='hidden' />")
-            .attr("name", "detail")
-            .val("{{ detail}}")
-            .appendTo(myForm);
-
-            $('#id_loader').append(myForm);
-            $('#selectForm').submit();
-            });
-
-            
-	    $('#liste_photos').DataTable({
+            	    $('#liste_photos').DataTable({
 	    "hover":true,
             "compact":true,
             "strip":true,
@@ -414,83 +426,6 @@
             {% endif %}    
             });
 
-
-            {% comment %}
-            soumission de l'import de la photo
-            {% endcomment %}
-            $("#id_import_photo").submit(
-            function(event){
-            event.preventDefault();
-            $("#id_import_photo_message").text("");
-            var formdata = new FormData($(this)[0]);
-            $("#id_loader").css("display","block");
-            var csrftoken = getCookie('csrftoken');
-            var u = "{% url 'photo_create' %}";
-
-            $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-            //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
-            $.ajax({
-            //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
-            processData: false,
-            contentType:false,
-            'type': 'put',
-            'url': u,
-            data: formdata,
-            
-            'success': function(response)
-            {
-	    window.location.reload();
-            },
-            'error': function(jqXHR, textStatus, errorThrown)
-            {
-            console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-	    $("#id_loader").css("display","none");
-            $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
-            }
-            });    
-
-
-            });
-            
-
-            
-	    
-            $("#id_delete_photo").click(
-	    function(){
-	    $("#id_delete_photo").attr("disabled", true);
-	    $("#id_delete_photo_abandon").attr("disabled", true);
-	    $("#id_delete_photo_message").text("");
-            $("#id_loader").css("display","block");
-            var u = "{% url 'photo' '99' %}X".replace("99X", $('#id_delete_photo_id').text());
-            var csrftoken = getCookie('csrftoken');
-            $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
-            $.ajax({
-            'type': 'delete',
-            'url': u,
-
-            'success': function(response)
-            {
-	    window.location.reload()
-            //			    $("#id_delete_photo_message").text(response);
-            //			    $("#id_loader").css("display","none");
-            //			    $("#id_delete_photo").removeAttr("disabled");
-            //			    $("#id_delete_photo_abandon").removeAttr("disabled");
-            },
-            'error': function(jqXHR, textStatus, errorThrown)
-            {
-            console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-	    $("#id_loader").css("display","none");
-	    $("#id_delete_photo").removeAttr("disabled");
-	    $("#id_delete_photo_abandon").removeAttr("disabled");
-            $("#id_delete_photo_message").text(JSON.parse(jqXHR.responseText).message);
-            }
-            });    
-
-            
-            });
-            
-            
-            }); // fin document ready
 
           </script>
         </div>

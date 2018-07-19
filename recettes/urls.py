@@ -1,8 +1,12 @@
 from django.conf.urls import url
+from django.views.generic import TemplateView
 
 from . import views
+from . import photoview
 
 urlpatterns = [
+    #url(r'^about/$', TemplateView.as_view(template_name="index.html")),
+    url(r'^about/$', photoview.PhotoView.as_view()),
     url(r'^$', views.index, name='index'),
 
     url(r'^login/$', views.my_login, name='login'),
@@ -10,8 +14,9 @@ urlpatterns = [
 
     url(r'^search$', views.search, name='search'),    
 
-    url(r'^photos/$', views.photo, name='photo_create'),
-    url(r'^photos/(?P<photo_id>[0-9a-zA-Z._ -]+)(/.*)?$', views.photo, name='photo'),
+    url(r'^photos/$', photoview.PhotoView.as_view(), name='photo_create'),
+    url(r'^photos/$', photoview.PhotoView.as_view(), name='photo_update'),
+    url(r'^photos/(?P<photo_id>[0-9a-zA-Z._ -]+)$', photoview.PhotoView.as_view(), name='photo'),
 
     url(r'^listr$', views.list_recettes, name='list_recette'),
     url(r'^detailr/(?P<recette_id>[0-9]+)$', views.detail_recette, name='detail_recette'),
