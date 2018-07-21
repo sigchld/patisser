@@ -1,150 +1,157 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XML 1.0 Transitional//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+	  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
 <html>
-<head>
+  <head>
 
-{% load staticfiles %}
-  
-<link rel="shortcut icon" type="img/png" href="{%  static 'images/favicon2.png' %}" />
-<meta http-equiv="cache-control" content="max-age=0" />
-<meta http-equiv="cache-control" content="no-store" />
-<meta http-equiv="expires" content="0" />
-<meta http-equiv="pragma" content="no-cache" />
-
-
-<title>Mes recettes{% block title %}{% endblock %}</title>
-
-<script type="text/javascript" src="{% static "js/vendor/modernizr-2.8.3.min.js" %}"></script>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" href="{% static "css/new-main.css" %}">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.18/datatables.min.js"></script>
-<script type="text/javascript" src="{% static "js/fees.js" %}"></script>
-</head>
-<body>
-  <!--[if lt IE 8]>
-      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-      <![endif]-->
-
-<!-- h1>{% block head %}{% endblock %}</h1 -->
-
-<div class="modal" id="id_loader"></div>
-
-<nav id="topnavbar"  class="navbar navbar-inverse navbar-fixed-top">  
-  <div class="container-fluid">
-
-    <div class="navbar-header">
-      <a class="navbar-brand" href="/mesrecettes">PATISSER</a>
-    </div>
+    {% load staticfiles %}
     
-    <ul class="nav navbar-nav">
-      <li><a class="navbar" href="/mesrecettes/listr" id="id_recettes_m">Recettes</a></li>
-      <li><a class="navbar" href="/mesrecettes/listp" id="id_preparations_m">Préparations</a></a></li>
-      <li><a class="navbar" href="/mesrecettes/listi" id="id_ingredients_m">Ingr&eacute;dients</a></li>
-      <li><a class="navbar" href="/mesrecettes/listphotos" id="id_photos_m">Photos</a></li>
-  </ul>
-  
-    <ul class="nav navbar-nav navbar-right">
-      {% if request.user.is_authenticated %}
-      <li><a class="navbar" href="/mesrecettes/logout" id="logout_m"><span class="glyphicon glyphicon-log-out"> {{user.email}}</span></a></li>
-      {% else %}
-      <li><a class="navbar" href="#myModal" class="trigger-btn" data-toggle="modal"><span class="glyphicon glyphicon-log-in"> Login</span></a></li>
-      {% endif %}
-    </ul>
+    <link rel="shortcut icon" type="img/png" href="{%  static 'images/favicon2.png' %}" />
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-store" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
 
-    <form id="id_search_form" class="navbar-form navbar-right form-inline" role="search" method="GET" id="myForm" action="{% url 'search' %}">      
-      <div class="form-group">
-	{% if filter %}
-        <input type="text" class="form-control" placeholder="Recherche" id="id_search_filter" value="{{ filter }}" name="_">
-	{% else %}
-	<input type="text" class="form-control" placeholder="Recherche" value="" name="_">
-	{% endif %}
-	  {% if detail %}
-          <input type="hidden" class="form-control" name="detail" value="true">
-	  {% else %}
-          <input type="hidden" class="form-control" name="detail" value="false">
-	  {% endif %}
 
-        <button type="submit" id="searchButton" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
-      </div>
-    </form>
-  </div>
-</nav>
+    <title>Mes recettes{% block title %}{% endblock %}</title>
 
-{% block content %}{% endblock %}
-{% block table %}{% endblock %}
+    <script type="text/javascript" src="{% static "js/vendor/modernizr-2.8.3.min.js" %}"></script>
+    <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+          <link rel="stylesheet" href="{% static "css/new-main.css" %}">
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+            <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.18/datatables.min.js"></script>
+            <script type="text/javascript" src="{% static "js/fees.js" %}"></script>
+          </head>
+          <body>
+            <!--[if lt IE 8]>
+                <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+                <![endif]-->
 
-<div class="txt_error">
-   <div >{%if msg_error %}{{ msg_error }}{%endif%}</div>
-</div>
+            <!-- h1>{% block head %}{% endblock %}</h1 -->
 
-<div id="scrollUp">
-<a href="#top"><img src="{% static "images/top.png" %}"/></a>
-</div>
+            <div class="modal" id="id_loader"></div>
 
-{% if not request.user.is_authenticated %}
-<!-- Modal HTML -->
-<div id="myModal" class="modal fade">
-	<div class="modal-dialog modal-login">
-		<div class="modal-content">
+            <nav id="topnavbar"  class="navbar navbar-inverse navbar-fixed-top">  
+              <div class="container-fluid">
+
+                <div class="navbar-header">
+                  <a class="navbar-brand" href="/mesrecettes">PATISSER</a>
+                </div>
+                
+                <ul class="nav navbar-nav">
+                  <li><a class="navbar" href="/mesrecettes/listr" id="id_recettes_m">Recettes</a></li>
+                  <li><a class="navbar" href="/mesrecettes/listp" id="id_preparations_m">Préparations</a></a></li>
+                <li><a class="navbar" href="/mesrecettes/listi" id="id_ingredients_m">Ingr&eacute;dients</a></li>
+                <li><a class="navbar" href="/mesrecettes/listphotos" id="id_photos_m">Photos</a></li>
+              </ul>
+              
+              <ul class="nav navbar-nav navbar-right">
+                {% if request.user.is_authenticated %}
+                <li><a class="navbar" href="/mesrecettes/logout" id="logout_m"><span class="glyphicon glyphicon-log-out"> {{user.email}}</span></a></li>
+                {% else %}
+                <li><a class="navbar" id="id_login_button" href="#id_login_modal"  data-toggle="modal"><span class="glyphicon glyphicon-log-in"> Login</span></a></li>
+                {% endif %}
+              </ul>
+
+              <form id="id_search_form" class="navbar-form navbar-right form-inline" role="search" method="GET" id="myForm" action="{% url 'search' %}">      
+                <div class="form-group">
+	          {% if filter %}
+                  <input type="text" class="form-control" placeholder="Recherche" id="id_search_filter" value="{{ filter }}" name="_">
+	            {% else %}
+	            <input type="text" class="form-control" placeholder="Recherche" value="" name="_">
+	              {% endif %}
+	              {% if detail %}
+                      <input type="hidden" class="form-control" name="detail" value="true">
+	                {% else %}
+                        <input type="hidden" class="form-control" name="detail" value="false">
+	                  {% endif %}
+
+                          <button type="submit" id="searchButton" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                        </div>
+                      </form>
+                    </div>
+                  </nav>
+
+                  {% block content %}{% endblock %}
+                  {% block table %}{% endblock %}
+
+                  <div class="txt_error">
+                    <div >{%if msg_error %}{{ msg_error }}{%endif%}</div>
+                  </div>
+
+                  <div id="scrollUp">
+                    <a href="#top"><img src="{% static "images/top.png" %}"/></a>
+                  </div>
+
+                  {% if not request.user.is_authenticated %}
+                  <!-- Modal HTML -->
+                  <div id="id_login_modal" class="modal fade">
+	            <div class="modal-dialog modal-login">
+		      <div class="modal-content">
 			<div class="modal-header">
-				<div class="avatar" class=".bg-primary">
-					<img src="/static/images/avatar.png" alt="Avatar">
-				</div>				
-				<h4 class="modal-title">Connexion Membre</h4>	
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-			</div>
-			<div class="modal-body">
-			  <form  class="login-form" id="id_login_form" method="post" action="{% url 'login' %}">
-			    {%  csrf_token %}
-			    <div class="form-group">
-			      <input type="hidden" name="next" id="id_next" >
+			  <div class="avatar .bg-primary">
+			    <img src="/static/images/avatar.png" alt="Avatar">
+			    </div>				
+			    <h4 class="modal-title">Connexion Membre</h4>	
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			  </div>
+			  <div class="modal-body">
+			    <form  class="login-form" id="id_login_form" method="post" action="{% url 'login' %}">
+			      {%  csrf_token %}
+			      <div class="form-group">
 			      </div>
-					<div class="form-group">
-						<input type="text" class="form-control" id="id_username" name="username" placeholder="Nom" required="required">		
-					</div>
-					<div class="form-group">
-						<input type="password" class="form-control" id="id_password" name="password" placeholder="Mot de passe" required="required">	
-					</div>        
-					<div class="form-group">
-						<button id="id_submit" type="submit"  class="btn btn-primary btn-lg btn-block login-btn">Connexion</button>
-					</div>
+			      <div class="form-group">
+				<input type="text" class="form-control" id="id_username" name="username" placeholder="Nom" required="required">		
+				</div>
+				<div class="form-group">
+				  <input type="password" class="form-control" id="id_password" name="password" placeholder="Mot de passe" required="required">	
+				  </div>        
+				  <div class="form-group">
+				    <button id="id_submit" type="submit"  class="btn btn-primary btn-lg btn-block login-btn">Connexion</button>
+				  </div>
 				</form>
-			</div>
-			                <div class="modal-footer">
-                                          <div><span  id="id_login_message"></span></div>
+			      </div>
+			      <div class="modal-footer">
+                                <div class="alert-warning text-center" >
+                                  <span id="id_login_message"></span>
+                                </div>
+                                
 				<div><a href="#">Mot de passe oublié?</a></div>
-			</div>
-		</div>
-	</div>
-</div>
-{% endif %}
+			      </div>
+		            </div>
+	                  </div>
+                        </div>
+                        {% endif %}
 
-<script type="text/javascript" src="{% static "js/jquery.easing.min.js" %}"></script>
-<script type="text/javascript" src="{% static "js/plugins.js" %}"></script>
-<script type="text/javascript">
+                        <script type="text/javascript" src="{% static "js/jquery.easing.min.js" %}"></script>
+                        <script type="text/javascript" src="{% static "js/plugins.js" %}"></script>
+                        <script type="text/javascript">
+                          
+                          var blank_photo = "{% url 'photo_blank' %}";
+   
 
-  function getLoginUrl() {
-    return "{% url 'login' %}";
-  }
+                          $(blank_photo).load();
+                          
+                          function getLoginUrl() {
+                          return "{% url 'login' %}";
+                          }
 
-  function getDetail() {
-              {% if detail %}
-            return  "?detail=true";
-            {% else %}
-            return  "?detail=false";
-            {% endif %}
-  }
+                          function getDetail() {
+                          {% if detail %}
+                          return  "?detail=true";
+                          {% else %}
+                          return  "?detail=false";
+                          {% endif %}
+                          }
 
-  function setCurrentMenu() {
-  {% if request.session.current_page %}
-  $("#{{ request.session.current_page }}").prop('id', 'currentmenu');
-  //$("#currentmenu").addClass('navbar-inverse')
-  {% endif %}
-  }
-</script>
-</body>
-</html>
+                          function setCurrentMenu() {
+                          {% if request.session.current_page %}
+                          $("#{{ request.session.current_page }}").prop('id', 'currentmenu');
+                          //$("#currentmenu").addClass('navbar-inverse')
+                          {% endif %}
+                          }
+                        </script>
+                      </body>
+                    </html>

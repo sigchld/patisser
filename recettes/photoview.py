@@ -3,6 +3,7 @@ import traceback
 import logging
 import io
 
+from django import http
 from django.http import HttpResponse
 from django.views.generic import ListView
 from recettes.models import Photo
@@ -32,7 +33,7 @@ from .models import Photo
 from .forms import PhotoForm
 
 from django.db.utils import IntegrityError
-
+from django.utils.datastructures import MultiValueDictKeyError
 from django.views import View
 from django.views.decorators.http import require_http_methods
 
@@ -50,23 +51,78 @@ logger = logging.getLogger('fees')
 
 class PhotoView(View):
     def __init__(self):
-        self.xhttp_method_names = ['get', 'post', 'put', 'head']
+        self.http_method_names = ['get', 'post', 'put', 'delete']
 
-    def Xdispatch(self, request, *args, **kwargs):
-        logger.debug(request.method.lower())
-        logger.debug(self.http_method_names)
-        if request.method.lower() in self.http_method_names:
-            handler = getattr(self, request.method.lower(), self.http_method_not_allowed) 
-        else:
-            handler = self.http_method_not_allowed
-        return handler(self, request, args, kwargs)
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        logger.warning(
+            'Method Not Allowed (%s): %s', request.method, request.path,
+            extra={'status_code': 405, 'request': request}
+        )
+        return http.HttpResponseNotAllowed(self._allowed_methods(), '{ "message" : "Méthode non supportée" }')
+        
     
+    # Mofification d'une photo
     def post(self, request):
-        pass
-    
-    # retrouve une photo
+        try:
+            form = PhotoForm(request.POST)
+            #if not form.is_valid():
+            #    return HttpResponseServerError('{ "message" : "saisie incomplète" }')
+            photo_id = request.POST.get('id', None)
+            photo = None
+            try:
+                photo = Photo.objects.get(pk=photo_id)
+                #except Photo.DoesNotExist:
+            except:
+                logger.error("Loading photos inconnue/{}".format(photo_id))
+                return HttpResponseServerError('{ "message" : "photo inconnue" }')
 
+            if not request.user.is_authenticated and  photo.owner.username != request.user.username:
+                return HttpResponseServerError('{ "message" : "la photo ne vous appartient pas" }')
+
+            try:
+                myfile = request.FILES['photo']
+                name = myfile.name 
+                logger.debug(u"PhotoFileName {}".format(name))
+                fs = FileSystemStorage()
+                filename = fs.save(name, myfile)
+                photo.photo = filename
+                
+                try:
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
+                    img = get_thumbnail(img)
+                except IOError:
+                    blank = Photo.objects.get(code='blank')
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+                    img = get_thumbnail(img)
+
+                f = io.BytesIO()
+                img.save(f, "PNG")
+                f.seek(0)
+	        photo.thumbnail = f.read1(-1)
+                
+            except MultiValueDictKeyError:
+                # pas de nouvelle photo
+                pass
+            photo.description = request.POST.get('description', photo.description)
+            photo.code = request.POST.get('code',photo.code)
+            photo.acces = request.POST.get('acces',photo.acces)
+            photo.save()
+            return HttpResponse('{ "message" : "OK" }')
+        
+        except IntegrityError:
+            return HttpResponseServerError('{ "message" : "Le code est déjà utilisé" }')
+        except Exception as error:
+            import traceback
+            just_the_string = traceback.format_exc()
+            logger.debug(just_the_string)
+            return HttpResponseServerError('{ "message" : "erreur inattendue" }')
+
+    # Recherche une photo
     def get(self, request, photo_id=None):
+        # par defaut c'estt la photo blanche!
+        if not photo_id:
+            return  blank_photo()
+        
         # il faut charger la photo...
         photo = None
         try:
@@ -129,7 +185,7 @@ class PhotoView(View):
             if form.is_valid():
                 myfile = request.FILES['photo']
                 name = myfile.name 
-                logger.debug("PhotoFileName {}".format(name))
+                logger.debug(u"PhotoFileName {}".format(name))
                 fs = FileSystemStorage()
                 filename = fs.save(name, myfile)
                 photo = form.save(commit=False)
@@ -137,11 +193,11 @@ class PhotoView(View):
                 photo.owner = request.user
 
                 try:
-                    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, filename))
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                     img = get_thumbnail(img)
                 except IOError:
                     blank = Photo.objects.get(code='blank')
-                    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
                     img = get_thumbnail(img)
 
                 f = io.BytesIO()
@@ -166,7 +222,7 @@ class PhotoView(View):
             raise Http404('{ "message" : "photo introuvable" }')
 
         if photo.owner.username != request.user.username:
-            return HttpResponseForbidden('{ "message" : "seul le pripriétaire peu supprimer la photo" }')
+            return HttpResponseForbidden('{ "message" : "seul le propriétaire peu supprimer la photo" }')
 
         import time
         #time.sleep(3)
@@ -190,7 +246,7 @@ class PhotoView(View):
     @staticmethod
     def blank_photo():
         blank = Photo.objects.get(code='blank')
-        img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+        img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
         size = (128, 128)
         img.thumbnail(size)
         response = HttpResponse(content_type="image/png")
@@ -222,11 +278,11 @@ def photo_create(request):
             photo.owner = request.user
 
             try:
-                img = Image.open("{}/photos/{}".format(settings.BASE_DIR, filename))
+                img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                 img = get_thumbnail(img)
             except IOError:
                 blank = Photo.objects.get(code='blank')
-                img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+                img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
                 img = get_thumbnail(img)
 
             f = io.BytesIO()
@@ -242,7 +298,7 @@ def photo_create(request):
 
 def blank_photo():
     blank = Photo.objects.get(code='blank')
-    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
     size = (128, 128)
     img.thumbnail(size)
     response = HttpResponse(content_type="image/png")
@@ -324,7 +380,7 @@ def photo(request, photo_id=None):
             # ON maintient le chargent direct
 
             logger.debug("Loading img {}/photos/{}".format(settings.BASE_DIR, photo_id))
-            img = Image.open("{}/photos/{}".format(settings.BASE_DIR,photo_id))
+            img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR,photo_id))
             img = get_thumbnail(img)
 
             if photo:
@@ -346,6 +402,7 @@ def photo(request, photo_id=None):
         except IOError:
             logger.error("Loading IOError /photos/{}".format(photo_id))
             return blank_photo()
+
         
     if not request.user.is_authenticated:
         return HttpResponseForbidden('{ "message" : "il faut se logger" }')
@@ -366,11 +423,11 @@ def photo(request, photo_id=None):
                 photo.owner = request.user
 
                 try:
-                    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, filename))
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                     img = get_thumbnail(img)
                 except IOError:
                     blank = Photo.objects.get(code='blank')
-                    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
                     img = get_thumbnail(img)
 
                 f = io.BytesIO()
@@ -394,7 +451,7 @@ def photo(request, photo_id=None):
         raise Http404('{ "message" : "photo introuvable" }')
 
     if photo.owner.username != request.user.username:
-        return HttpResponseForbidden('{ "message" : "seul le pripriétaire peu supprimer la photo" }')
+        return HttpResponseForbidden('{ "message" : "seul le propriétaire peu supprimer la photo" }')
 
     import time
     #time.sleep(3)

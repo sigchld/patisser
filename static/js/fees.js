@@ -27,26 +27,27 @@ function prependClass(sel, strClass) {
     $el.attr('class', classes);
 }
 
+// Check for the various File API support.
+var fileApi = false;
+if (window.File && window.FileReader && window.FileList && window.Blob) {
+    fileApi = true;
+}
 
 $(document).ready(function(){
+    // lors de l'affichage de la modale
+    // le champ id_user_name aura le focus
+    $('#id_login_modal').on('shown.bs.modal', function() {
+        $('#id_username').focus();
+    });
+    
     //  soumission de l'import de la photo
     $("#id_login_form").submit(
         function(event){
-
             event.preventDefault();
             // Gestion du login
-            // Ajout de l'url à atteindre si le login est autorisé
-
-            var url      = window.location.pathname; 
-            url = url + getDetail();
-
-            $("#id_next").val(url);
-
-            $("#id_login__message").text("");
-            var formdata = new FormData($(this)[0]);
+            $("#id_login_message").text("");
             $("#id_loader").css("display","block");
             var csrftoken = getCookie('csrftoken');
-            var u = getLoginUrl();
 
             $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
             $.ajax({
@@ -84,7 +85,6 @@ $(document).ready(function(){
     if(isTouchDevice()===false) {
         $('[data-toggle="tooltip"]').tooltip();
     }
-
 
     // menu actif
     setCurrentMenu();

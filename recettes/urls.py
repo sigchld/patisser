@@ -14,6 +14,7 @@ urlpatterns = [
 
     url(r'^search$', views.search, name='search'),    
 
+    url(r'^photos/$', photoview.PhotoView.as_view(), name='photo_blank'),
     url(r'^photos/$', photoview.PhotoView.as_view(), name='photo_create'),
     url(r'^photos/$', photoview.PhotoView.as_view(), name='photo_update'),
     url(r'^photos/(?P<photo_id>[0-9a-zA-Z._ -]+)$', photoview.PhotoView.as_view(), name='photo'),
