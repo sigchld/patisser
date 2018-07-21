@@ -223,6 +223,11 @@ body {
 {
     color : white;
     text-decoration: none ;
+}
+.currentmenu
+{
+    color : white;
+    text-decoration: none ;
     
     /*
     background-image: linear-gradient(to right, blue 75%, transparent 75%);
@@ -256,8 +261,11 @@ table.dataTable td.sorting_1{ background-color: white; border:1px lightgrey; }
 table.dataTable td{ background-color: white;  border:1px lightgrey;}
 */
    table.dataTable tr.odd { background-color: #faf5f5;  border:1px lightgrey;}
-    table.dataTable tr.even{ background-color: white; border:1px lightgrey; }
+   table.dataTable tr.even{ background-color: white; border:1px lightgrey; }
 
+   .table-striped>tbody>tr:nth-of-type(odd) {
+background-color: #faf5f5;
+}
 /* https://css-tricks.com/removing-the-dotted-outline/ */
 a {outline : 0;}
     

@@ -21,6 +21,8 @@ class Photo(models.Model):
     photo = models.ImageField(default='blank.png')
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
     thumbnail = models.BinaryField(null=True, blank=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
     
     def get_absolute_url(self):
         return "/mesrecettes/photos/{}".format(self.photo.name)
@@ -79,6 +81,10 @@ class Ingredient(models.Model):
     #photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
     allergene = models.BooleanField(default=False)
 
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+
+    
     def __unicode__(self):
         return self.description 
 
@@ -90,6 +96,8 @@ class Element(models.Model):
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
     
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
     
     def __unicode__(self):
         return "%s %s" % (self.ingredient.code,self.quantite)
@@ -101,6 +109,9 @@ class EtapePreparation(models.Model):
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
     
     def __unicode__(self):
         return self.titre
@@ -116,6 +127,9 @@ class Preparation(models.Model):
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
     
     def __unicode__(self):
         return self.description 
@@ -128,6 +142,8 @@ class PreparationRecette(models.Model):
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
     
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
     
     def __unicode__(self):
         return "{}".format(self.preparation.code)
@@ -139,6 +155,10 @@ class EtapeRecette(models.Model):
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+    
     
     def __unicode__(self):
         return self.titre
@@ -158,7 +178,10 @@ class Recette(models.Model):
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
-    
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+
     
     def image_tag(self):
         from django.utils.html import format_html

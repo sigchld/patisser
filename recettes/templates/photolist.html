@@ -369,7 +369,7 @@
 	</form>
       </div>
       <div class="modal-footer">
-        <div class="alert-warning text-center" >
+        <div class="alert-error text-center" >
           <span id="id_edit_photo_message"></span>
         </div>
       </div>
@@ -397,7 +397,7 @@
           <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_photo_abandon" >Abandon</button>
           <button type="button" id="id_delete_photo" class="btn btn-warning">Suppression</button>
         </div>
-        <div class="alert-warning text-center" >
+        <div class="alert-error text-center" >
           <span id="id_delete_photo_message"  >&nbsp;</span>
         </div>
       </div>
@@ -419,6 +419,8 @@
   return "{% url 'photo' '99' %}";
   }
 
+  $(document).ready(
+    function () {
   $('#liste_photos').DataTable({
   "hover":true,
   "compact":true,
@@ -446,7 +448,7 @@
   ]
   {% endif %}    
   });
-
+});
 
 </script>
 </div>

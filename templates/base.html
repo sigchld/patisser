@@ -37,7 +37,7 @@
               <div class="container-fluid">
 
                 <div class="navbar-header">
-                  <a class="navbar-brand" href="/mesrecettes">PATISSER</a>
+                  <a class="navbar-brand" href="/mesrecettes" id="id_accueil_m">PATISSER</a>
                 </div>
                 
                 <ul class="nav navbar-nav">
@@ -148,8 +148,9 @@
 
                           function setCurrentMenu() {
                           {% if request.session.current_page %}
-                          $("#{{ request.session.current_page }}").prop('id', 'currentmenu');
-                          //$("#currentmenu").addClass('navbar-inverse')
+                          //$('#id_'.concat("{{ request.session.current_page }}").concat('_m')).addClass('currentmenu');
+                          $('#id_'.concat("{{ request.session.current_page }}").concat('_m')).prop('id', 'currentmenu');
+
                           {% endif %}
                           }
                         </script>

@@ -28,7 +28,7 @@ from .forms import PhotoForm
 
 from django.db.utils import IntegrityError
 
-PAGE_COURANTE='page_courante'
+PAGE_COURANTE='current_page'
 ACCUEIL='accueil'
 PHOTOS='photos'
 INGREDIENTS='ingredients'
@@ -42,108 +42,11 @@ logger = logging.getLogger('fees')
 # Create your views here.
 from django.http import HttpResponse
 
-def index(request):
+def index(request, filter=None):
     template = loader.get_template('index.html')
     request.session[PAGE_COURANTE] = ACCUEIL
     return  HttpResponse(template.render({}, request))
 
-
-#
-# nouvelle photo
-# info sur le multipart/form :
-# https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
-def photo_create(request):
-    if not request.user.is_authenticated:
-        return  HttpResponseForbidden("""
-        {
-        "message" : "il faut se logger",
-        }
-        """)
-        
-    if request.method == "POST" and request.FILES['photo']:
-        form = PhotoForm(request.POST)
-        if form.is_valid():
-            myfile = request.FILES['photo']
-            name = myfile.name 
-            logger.debug("PhotoFileName {}".format(name))
-            fs = FileSystemStorage()
-            filename = fs.save(name, myfile)
-            photo = form.save(commit=False)
-            photo.photo = filename
-            photo.owner = request.user
-
-            try:
-                img = Image.open("{}/photos/{}".format(settings.BASE_DIR, filename))
-                img = get_thumbnail(img)
-            except IOError:
-                blank = Photo.objects.get(code='blank')
-                img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
-                img = get_thumbnail(img)
-
-            f = io.BytesIO()
-            img.save(f, "PNG")
-            f.seek(0)
-	    photo.thumbnail = f.read1(-1)
-            f.close()
-            photo.save()
-            return redirect('/mesrecettes/listphotos')
-    else:
-        form = PhotoForm()
-        return render(request, 'photo_edit.html', {'form': form})
-
-def blank_photo():
-    blank = Photo.objects.get(code='blank')
-    img = Image.open("{}/photos/{}".format(settings.BASE_DIR, blank.photo))
-    size = (128, 128)
-    img.thumbnail(size)
-    response = HttpResponse(content_type="image/png")
-    img.save(response, "PNG")
-    return response
-
-def distance2(a, b):
-    return (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]) + (a[2] - b[2]) * (a[2] - b[2])
-
-def get_thumbnail0(img):
-    bg = Image.new(img.mode, img.size, img.getpixel((0,0)))
-    diff = ImageChops.difference(img, bg)
-    diff = ImageChops.add(diff, diff, 2.0, -100)
-    bbox = diff.getbbox()
-    if bbox:
-        img=img.crop(bbox)
-    else:
-        return get_thumbnail(img)
-    size = (128, 128)
-    img.thumbnail(size)
-    return img
-    
-def get_thumbnail(img):
-    color = (255,255,255)
-    thresh2=0
-    image = img.convert("RGBA")
-    red, green, blue, alpha = image.split()
-    image.putalpha(ImageMath.eval("""convert(((((t - d(c, (r, g, b))) >> 31) + 1) ^ 1) * a, 'L')""",
-        t=thresh2, d=distance2, c=color, r=red, g=green, b=blue, a=alpha))
-    size = (128, 128)
-    image.thumbnail(size)
-
-    return image
-
-def get_thumbnail1(img):
-    img = img.convert("RGBA")
-    datas = img.getdata()
-    
-    newData = []
-    for item in datas:
-        if item[0] == 255 and item[1] == 255 and item[2] == 255:
-            newData.append((255, 255, 255, 0))
-        else:
-            newData.append(item)
-            
-    img.putdata(newData)
-    size = (128, 128)
-    img.thumbnail(size)
-
-    return img
         
 #
 # Appelé pour retrouver les photos
@@ -232,8 +135,6 @@ def list_photos(request,owner='me',acces=None,filter=None):
         photos = paginator.page(1)
 
         
-    request.session['current_page'] = 'id_photos_m'
-
     # remplissage sert a palier pb template ou aucun calcul ne peut etre fait
     remplissage = 5 - (len(photos) % 5)
     if remplissage == 5:
@@ -259,7 +160,6 @@ def list_recettes(request, filter=None):
     except EmptyPage:
         recetes = paginator.page(paginator_num_pages)
 
-    request.session['current_page'] = 'id_recettes_m'        
     return HttpResponse(template.render({'recettes' : recettes, 'nb_line': range(nb_elem)}, request))
 
 
@@ -348,12 +248,82 @@ def detail_recette(request, recette_id):
                                          'cout_portion' : cout_portion,
                                          'allergene' : allergene}, request))
 
+#
+# Appelé pour retrouver les ingredients
+# owner = me ou others ou all
 
-def list_ingredients(request, filter=None):
+def list_ingredients_owner(request, owner):
+    list_ingredients(request, owner=owner)
+    
+#
+# Appelé pour retrouver les ingredients
+# acces = private ou public
+def list_ingredients_acces(request, acces):
+    list_ingredients(request, acces=acces)
+
+#
+# Appelé pour retrouver les ingredients
+# owner = me  que les miens publics ou privées
+# owner = others ingredients publics sauf les miens
+# owner = all les miens et ceux des autres qui sont publics
+#
+# acces = public les miens publics
+# acces = private les miens privés
+#
+# plus d'informations sur le Q ici
+# https://docs.djangoproject.com/fr/1.11/topics/db/queries/
+def list_ingredients(request,owner='me',acces=None,filter=None):
     request.session[PAGE_COURANTE] = INGREDIENTS
+    detail = request.GET.dict().get('detail', 'true').lower() == "true"
+    logger.debug("list_ingredients/acces/{}/owner/{}/auth/{}".format(acces, owner,request.user.is_authenticated))            
     template = loader.get_template('ingredientlist.html')
-    ingredient_list = Ingredient.objects.all()
-    nb_elem= 10
+
+    # recuperation du filtre dans la session
+    if filter is None:
+        filter = request.session.get('filter_ingredients', None)
+    else:
+        request.session['filter_ingredients']=filter
+            
+
+    if request.user.is_authenticated:
+        if owner == 'all':
+            ingredient_list = Ingredient.objects.filter((~Q(owner = request.user.username) & Q(acces = 'PUB'))| Q(owner = request.user.username)).order_by('code')
+            acces = None
+        elif owner == "others":
+            ingredient_list = Ingredient.objects.filter(~Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
+            acces = None
+        elif owner == "me":
+            if acces == 'all':
+                ingredient_list = Ingredient.objects.filter(Q(owner = request.user.username)).order_by('code')
+            elif acces == 'private':
+                ingredient_list = Ingredient.objects.filter(Q(owner = request.user.username) & Q(acces = 'PRIV')).order_by('code')
+            elif acces == 'public':
+                ingredient_list = Ingredient.objects.filter(Q(owner = request.user.username) & Q(acces = 'PUB')).order_by('code')
+            else:
+                ingredient_list = Ingredient.objects.filter(Q(owner = request.user.username)).order_by('code')
+                acces = 'all'
+        else:
+            ingredient_list = Ingredient.objects.filter(Q(owner = request.user.username)).order_by('code')
+            acces = 'all'
+            owner = 'me'
+            
+        if filter:
+            ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter))
+    else:
+        ingredient_list = Ingredient.objects.filter(owner='anonyme')
+           
+        if filter:
+            ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter)).order_by('code')
+        else:
+            ingredient_list = ingredient_list.order_by('code')
+
+    if detail :
+        # 10 lignes
+        nb_elem = 10
+    else:
+        # 25 lignes
+        nb_elem = 5 * 5
+        
     paginator = Paginator(ingredient_list, nb_elem)
 
     page  = request.GET.get('page')
@@ -362,10 +332,18 @@ def list_ingredients(request, filter=None):
     except PageNotAnInteger:
         ingredients = paginator.page(1)
     except EmptyPage:
-        ingredients = paginator.page(paginator_num_pages)
+        ingredients = paginator.page(1)
 
-    request.session['current_page'] = 'id_ingredients_m'
-    return HttpResponse(template.render({'ingredients' : ingredients, 'nb_line': range(nb_elem), 'msg_error' : ''}, request))
+        
+    # remplissage sert a palier pb template ou aucun calcul ne peut etre fait
+    remplissage = 5 - (len(ingredients) % 5)
+    if remplissage == 5:
+        remplissage = range(0)
+    else:
+        remplissage = range(remplissage)
+        
+    return HttpResponse(template.render({'filter' : filter, 'ingredients' : ingredients, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail}, request))
+
 
 
 def detail_ingredient(request, ingredient_id):
@@ -389,7 +367,6 @@ def list_preparations(request, filter=None):
     except EmptyPage:
         preparations = paginator.page(paginator_num_pages)
 
-    request.session['current_page'] = 'id_preparations_m'
     return HttpResponse(template.render({'preparations' : preparations, 'nb_line': range(nb_elem)}, request))
 
 
@@ -412,6 +389,8 @@ def search(request):
         return index(request, filter=filter)
     elif page_courante == PHOTOS:
         return list_photos(request, filter=filter)
+    elif page_courante == INGREDIENTS:
+        return list_ingredients(request, filter=filter)
     
     return index(request, filter=filter)
 

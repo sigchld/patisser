@@ -6,47 +6,450 @@
 {% block title%}Main menu{% endblock %}
 {% block head %}Liste des Ingredients{% endblock %}
 {% block content %}
-{% if ingredients %}
-<table class="table table-condensed" id="liste">
-  <colgroup>
-    <col class="col-xs-1"></col>
-    <col class="col-xs-11"></col>
-  </colgroup>
-<div class="pagination">
-  <span class="step-links">
-    {% if ingredients.has_previous %}
-    <a href="?page={{ ingredients.previous_page_number }}">previous</a>
-    {% endif %}
-    <span class="current">
-      Page {{ ingredients.number }} of {{ ingredients.paginator.num_pages }}.
-    </span>
-    {% if ingredients.has_next %}
-    <a href="?page={{ ingredients.next_page_number }}">next</a>
-    {% endif %}
-  </span>
+<div class="container">
+  <table class="table-striped"  id="liste_ingredients">
+    <thead>
+      <tr>
+	{% if request.user.is_authenticated %}
+	<td colspan="2">
+	  
+	  Liste ingredients
+	  &nbsp;
+	  {% if acces %}
+	  {% if detail %}
+	  <a href="{% url 'list_ingredients_acces' acces %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_ingredients_acces' acces %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
 
-  {% for ingredient in ingredients %}
-  <tr>
-    <td><a href="/mesrecettes/detaili/{{ ingredient.id }}"><img src="{{ ingredient.photo.get_absolute_url }}"></td>
-    <td><a href="/mesrecettes/detaili/{{ ingredient.id }}">{{ingredient.description}}</a></td>
-  </tr>
-  {% endfor %}
-  
-</table>
-<div class="pagination">
-  <span class="step-links">
-    {% if ingredients.has_previous %}
-    <a href="?page={{ ingredients.previous_page_number }}">previous</a>
-    {% endif %}
-    <span class="current">
-      Page {{ ingredients.number }} of {{ ingredients.paginator.num_pages }}.
-    </span>
-    {% if ingredients.has_next %}
-    <a href="?page={{ ingredients.next_page_number }}">next</a>
-    {% endif %}
-  </span>
+	  {% else %}
+	  {% if detail %}
+	  <a href="{% url 'list_ingredients_owner' owner %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_ingredients_owner' owner %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
+	  {% endif %}
+	  &nbsp;&nbsp;
+	  <a href="javascript:ask_import_ingredient();" title="ajouter un ingrédient" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
+	</td>
+
+	<td>
+          {% if owner == 'me' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_ingredients_owner' 'me' %}" selected>les miens</option> 
+	    <option value="{% url 'list_ingredients_owner' 'others' %}">les autres publics</option>
+	    <option value="{% url 'list_ingredients_owner' 'all' %}">les miens et les autres</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'others' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_ingredients_owner' 'me' %}">les miees</option>
+	    <option value="{% url 'list_ingredients_owner' 'others' %}" selected>les autres plubics</option>
+	    <option value="{% url 'list_ingredients_owner' 'all' %}">les miens et les autres</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'all' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_ingredients_owner' 'me' %}">les miens</option>
+	    <option value="{% url 'list_ingredients_owner' 'others' %}">les autres plubics</option>
+	    <option value="{% url 'list_ingredients_owner' 'all' %}" selected>les miens et les autres</option>
+	  </select>
+          {% endif %}
+	  
+	</td>
+
+	<td>
+	  {% if owner == 'me' %}
+          <!-- span class="glyphicon glyphicon-filter"></span -->
+          <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+            {% if acces == 'public' %}
+            <option value="{% url 'list_ingredients_acces' 'private' %}">privés</option>      
+            <option value="{% url 'list_ingredients_acces' 'public' %}" selected>plubics</option>
+            <option value="{% url 'list_ingredients_acces' 'all' %}">plubics ou privés</option>
+            {% elif acces == 'private' %}
+            <option value="{% url 'list_ingredients_acces' 'private' %}" selected>privés</option>
+            <option value="{% url 'list_ingredients_acces' 'public' %}">plubics</option>
+            <option value="{% url 'list_ingredients_acces' 'all' %}">plubics ou privés</option>
+            {% else %}
+            <option value="{% url 'list_ingredients_acces' 'private' %}">privés</option>      
+            <option value="{% url 'list_ingredients_acces' 'public' %}">plubics</option>
+            <option value="{% url 'list_ingredients_acces' 'all' %}" selected>plubics ou privés</option>
+            {% endif %}
+          </select>
+          
+          {% endif %}
+	</td>
+	{% else %}
+	<td colspan="4">
+	  Liste ingredients&nbsp;&nbsp;
+	  {% if detail %}
+	  <a href="{% url 'list_ingredients' %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_ingredients' %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
+	</td>
+	{% endif %}
+
+
+	<td class="text-right">
+          {% if ingredients %}
+	  <div class="pagination">
+	    <span class="step-links">
+	      {% if ingredients.has_previous %}
+	      <a href="?page={{ ingredients.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+	      {% endif %}
+	      <span class="current">
+		Page {{ ingredients.number }} of {{ ingredients.paginator.num_pages }}
+	      </span>
+	      {% if ingredients.has_next %}
+	      <a href="?page={{ ingredients.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+	      {% endif %}
+	    </span>
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+
+      {% if detail %}
+      <tr>
+        <th>code</th>
+        <th>description</th>
+        <th>
+          propriétaire
+        </th>
+
+        <th colspan="2">
+          accès
+      </tr>
+      {% endif %}
+
+      {% comment %}
+      {% if request.user.is_authenticated %}
+      <tr>
+        <td colspan="2">&nbsp</td>
+        <td >
+          <!-- span class="glyphicon glyphicon-filter"></span -->
+          {% if owner == 'me' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	    <option value="{% url 'list_ingredients_owner' 'me' %}" selected>les miens</option> 
+	    <option value="{% url 'list_ingredients_owner' 'others' %}">les autres</option>
+	    <option value="{% url 'list_ingredients_owner' 'all' %}">plubics privés</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'others' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	    <option value="{% url 'list_ingredients_owner' 'me' %}">les miens</option>
+	    <option value="{% url 'list_ingredients_owner' 'others' %}" selected>les autres</option>
+	    <option value="{% url 'list_ingredients_owner' 'all' %}">plubics privés</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'all' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	    <option value="{% url 'list_ingredients_owner' 'me' %}">les miens</option>
+	    <option value="{% url 'list_ingredients_owner' 'others' %}">les autres</option>
+	    <option value="{% url 'list_ingredients_owner' 'all' %}" selected>plubics privés</option>
+	  </select>
+          {% endif %}
+        </td>
+        
+        <td colspan="3">
+          {% if owner == 'me' %}
+          <!-- span class="glyphicon glyphicon-filter"></span -->
+          <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+            {% if acces == 'public' %}
+            <option value="{% url 'list_ingredients_acces' 'private' %}">privé</option>      
+            <option value="{% url 'list_ingredients_acces' 'public' %}" selected>public</option>
+            <option value="{% url 'list_ingredients_acces' 'all' %}">plubics privés</option>
+            {% elif acces == 'private' %}
+            <option value="{% url 'list_ingredients_acces' 'private' %}" selected>privé</option>
+            <option value="{% url 'list_ingredients_acces' 'public' %}">public</option>
+            <option value="{% url 'list_ingredients_acces' 'all' %}">plubics privés</option>
+            {% else %}
+            <option value="{% url 'list_ingredients_acces' 'private' %}">privé</option>      
+            <option value="{% url 'list_ingredients_acces' 'public' %}">public</option>
+            <option value="{% url 'list_ingredients_acces' 'all' %}" selected>plubics privés</option>      
+            {% endif %}
+          </select>
+          {% endif %}
+        </td>
+        
+      </tr>
+      {% endif %}
+      {% endcomment %}
+    </thead>
+
+    <tbody>
+      {% if ingredients %}
+      {% if detail %}
+      {% for ingredient in ingredients %}
+      <tr role="row">
+        <td>
+          {% if request.user.username == ingredient.owner.username %}
+          <div>
+            <div>
+              <a href="javascript:ask_delete_ingredient({{ingredient.id}});"><span class="glyphicon glyphicon-trash"></span></a>
+            </div>
+            <div>
+              <a href="javascript:ask_edit_ingredient({{ingredient.id}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
+            </div>
+          </div>
+          {% endif %}      
+          <span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span> 
+        </td> 
+        <td><span id="id_ingredient_description_{{ingredient.id}}">{{ingredient.description}}</span></td>
+        <td><span id="id_ingredient_username_{{ingredient.id}}">{{ingredient.owner.username}}</span></td>
+        <td><span >{{ingredient.get_acces_display}}</span></td>
+        <td style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></td>
+        <td><img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}"></td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      {% for ingredient in ingredients %}
+      {% if forloop.first %}
+      <tr>
+        {% elif forloop.counter0|divisibleby:"5" %}
+      </tr>
+      <tr>
+        {% endif %}  
+        {% comment %}
+        http://fr.learnlayout.com/position-example.html
+        la cellule est aligne en haut,
+        il faut specifier une hauteur de 128 pour les images
+        {% endcomment %}
+        <td style="vertical-align:top">
+          <div class="container-fluid" >
+            <div class="row sticky-top" style="text-align:center;"><span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span></div>
+            <div class="row" style="height:128px;text-align:center;"><img  id="id_ingredient_img_{{ingredient.id}}"  data-toggle="tooltip" title="{{ingredient.description}}" src="{% url 'photo' ingredient.photo.id %}"></div>
+            <div style="display:none"><span id="id_ingredient_description_{{ingredient.id}}">{{ingredient.description}}</span></div>
+            <div style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></div>
+            {% if request.user.username == ingredient.owner.username %}
+            <div class="row" style="vertical-align:bottom;margin-left:0px;">   
+              <a href="javascript:ask_delete_ingredient({{ingredient.id}});" title="supprimer une ingredient"><span class="glyphicon glyphicon-trash"></span></a>
+              <a href="javascript:ask_edit_ingredient({{ingredient.id}});"  title="modifier une ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
+            </div>
+            {% endif %}      
+          </div>
+        </td>
+        {% if forloop.last %}
+        {% for i in remplissage %}
+        <td></td>     
+        {% endfor %}
+      </tr>
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+      {% endif %}
+      
+    </tbody> 
+
+    <tfoot>
+      <tr>
+        <td colspan="4"><p>Liste ingredients</td>
+        <td class="text-right">
+          {% if ingredients %}
+          <div class="pagination">
+            <span class="step-links">
+              {% if ingredients.has_previous %}
+              <a href="?page={{ ingredients.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+	      {% endif %}
+	      <span class="current">
+		Page {{ ingredients.number }} of {{ ingredients.paginator.num_pages }}
+	      </span>
+	      {% if ingredients.has_next %}
+	      <a href="?page={{ ingredients.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+	      {% endif %}
+	    </span>
+          </div>
+          {% endif %}
+        </td>
+    </tfoot>
+  </table>
+
+  {% if request.user.is_authenticated %}
+  <!-- Modal Creation d'une ingredient -->
+  <div id="modalAddIngredient" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+	  <h4 class="modal-title text-center">Ajouter une ingredient</h4>	
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </div>
+        <div class="modal-body">
+	  <form id="id_import_ingredient_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'ingredient_create' %}">
+	    {% csrf_token %}
+	    <div class="form-group">
+	      <div class="form-group form-inline">
+	        <label for="code">Code:</label>
+	        <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
+	      </div>
+	      <div class="form-group">
+	        <label for="description">Description:</label>
+	        <textarea rows="5" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
+	      </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="display:inline-block">  
+              
+	      <div class="form-group">
+	        <label for="acces">Accès:</label>
+	        <select class="form_control" name="acces" id="id_acces">
+		  <option value="PUB" selected>public</option>
+		  <option value="PRIV">privé</option>
+	        </select>
+	      </div>
+	      <div class="form-group">
+	        <label for="ingredient">Image:</label>
+	        <input type="file" class="form-control-file" id="id_import_ingredient" required name="ingredient" placeholder="Description" required="required" maxlength="200">
+	      </div>
+              </div>
+	      <div style="display:inline-block"><img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_import_ingredient_img">
+              </div>
+              </div>
+	      <div class="form-group">
+	        <button id="id_submit_ingredient" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
+	      </div>
+	    </div>
+	  </form>
+	</div>
+        <div class="modal-footer">
+          <div class="alert-warning text-center" >
+            <span id="id_import_ingredient_message"></span>
+            </div>
+	</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Modification d'une ingredient -->
+  <div id="id_edit_ingredient_modal" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+	  <h4 class="modal-title text-center">Modifier une ingredient</h4>	
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </div>
+        <div class="modal-body">
+	  <form id="id_edit_ingredient_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'ingredient_create' %}">
+	    {% csrf_token %}
+            <input type="hidden" name="id" id="id_edit_ingredient_id">
+	    <div class="form-group form-inline">
+	      <label for="code">Code:</label>
+	      <input type="text" class="form-control" id="id_edit_ingredient_code" name="code" placeholder="Code" required="required" maxlength="20">
+	    </div>
+	    <div class="form-group">
+	      <label for="description">Description:</label>
+	      <textarea rows="5" class="form-control" id="id_edit_ingredient_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
+	    </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="display:inline-block">  
+	        <div class="form-group">
+	          <label for="acces">Accès:</label>
+	          <select class="form_control" name="acces" id="id_edit_ingredient_acces">
+		    <option value="PUB" selected>public</option>
+		    <option value="PRIV">privé</option>
+	          </select>
+	        </div>
+	        <div class="form-group">
+	          <label for="ingredient">Image:</label>
+	          <input type="file" class="form-control-file" id="id_edit_ingredient" name="ingredient" placeholder="Description"  maxlength="200">
+	        </div>
+              </div>
+	      <div style="display:inline-block"><img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_edit_ingredient_img">
+              </div>
+            </div>
+
+	<div class="form-group">
+	  <button id="id_edit_submit_ingredient" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
+	</div>
+	</form>
+      </div>
+      <div class="modal-footer">
+        <div class="alert-error text-center" >
+          <span id="id_edit_ingredient_message"></span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-{% else %}
-<p>Il n'y a pas de ingredients.</p>
+
+<!-- Modal Suppression ingredient -->
+<div data-backdrop="static" data-keyboard="false"  class="modal fade" id="delete_ingredient" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <!-- button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button -->
+        <h4 class="modal-title text-center" id="myModalLabel">Supprimer une  Ingredient</h4>
+      </div>
+      <div class="modal-body">
+	<span>Code : </span><p style="display:inline" id="id_delete_ingredient_code"></p>
+        <div style="overflow:auto">
+          <img style="height:128px;float:left;border-right: 0px solid black;margin-right:5px;" id="id_delete_ingredient_img">
+          <p  id="id_delete_ingredient_description" ></p>
+      </div>
+      <div class="modal-footer">
+        <div>
+          <span style="display:none;" id="id_delete_ingredient_id"></span>
+          <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_ingredient_abandon" >Abandon</button>
+          <button type="button" id="id_delete_ingredient" class="btn btn-warning">Suppression</button>
+        </div>
+        <div class="alert-error text-center" >
+          <span id="id_delete_ingredient_message"  >&nbsp;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endif %}
+<script type="text/javascript" src="{% static "js/ingredient.js" %}"></script>
+<script  type="text/javascript">
+  function getDetailValue() {
+  return "{{detail}}";
+  }
+  function getIngredientCreateUrl() {
+  return "{% url 'ingredient_create' %}";
+  }
+
+  function getGetIngredientUrl() {
+  return "{% url 'ingredient' '99' %}";
+  }
+
+  $(document).ready(
+    function () {
+  $('#liste_ingredients').DataTable({
+  "hover":true,
+  "compact":true,
+  "strip":true,
+  "paging":false,
+  "searching":false,
+  "info":false,
+  "ordering":false,
+  "autoWidth":false,
+  {% if detail %}
+  "columnDefs": [
+  { "width": "10%", "targets": 0 },
+  { "width": "30%", "targets": 1 },
+  { "width": "20%", "targets": 2 },
+  { "width": "20%", "targets": 3 },
+  { "width": "20%", "targets": 4 }
+  ]
+  {% else %}
+  "columnDefs": [
+  { "width": "20%", "targets": 0 },
+  { "width": "20%", "targets": 1 },
+  { "width": "20%", "targets": 2 },
+  { "width": "20%", "targets": 3 },
+  { "width": "20%", "targets": 4 }
+  ]
+  {% endif %}    
+  });
+});
+
+</script>
+</div>
 {% endblock %}
