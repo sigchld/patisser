@@ -17,16 +17,16 @@
 	  &nbsp;
 	  {% if acces %}
 	  {% if detail %}
-	  <a href="{% url 'list_ingredients_acces' acces %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
+	  <a href="{% url 'list_ingredients_acces' acces %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
-	  <a href="{% url 'list_ingredients_acces' acces %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  <a href="{% url 'list_ingredients_acces' acces %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 
 	  {% else %}
 	  {% if detail %}
-	  <a href="{% url 'list_ingredients_owner' owner %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
+	  <a href="{% url 'list_ingredients_owner' owner %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
-	  <a href="{% url 'list_ingredients_owner' owner %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  <a href="{% url 'list_ingredients_owner' owner %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 	  {% endif %}
 	  &nbsp;&nbsp;
@@ -85,9 +85,9 @@
 	<td colspan="4">
 	  Liste ingredients&nbsp;&nbsp;
 	  {% if detail %}
-	  <a href="{% url 'list_ingredients' %}?detail=false" data-toggle="tooltip" title="mode photos"><span class="glyphicon glyphicon-th"></span></a>
+	  <a href="{% url 'list_ingredients' %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
-	  <a href="{% url 'list_ingredients' %}?detail=true" data-toggle="tooltip" title="mode détails"><span class="glyphicon glyphicon-th-list"></span></a>
+	  <a href="{% url 'list_ingredients' %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 	</td>
 	{% endif %}
@@ -204,7 +204,11 @@
         <td><span id="id_ingredient_username_{{ingredient.id}}">{{ingredient.owner.username}}</span></td>
         <td><span >{{ingredient.get_acces_display}}</span></td>
         <td style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></td>
-        <td><img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}"></td>
+        <td>
+	  <a href="javascript:detail_ingredient({{ingredient.id}});" title="détail de l'ingrédient" >
+            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}"></a>
+        </td>
+
       </tr>
       {% endfor %}
       {% else %}
@@ -223,13 +227,16 @@
         <td style="vertical-align:top">
           <div class="container-fluid" >
             <div class="row sticky-top" style="text-align:center;"><span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span></div>
-            <div class="row" style="height:128px;text-align:center;"><img  id="id_ingredient_img_{{ingredient.id}}"  data-toggle="tooltip" title="{{ingredient.description}}" src="{% url 'photo' ingredient.photo.id %}"></div>
+            <div class="row" style="height:128px;text-align:center;">
+	      <a href="javascript:detail_ingredient({{ingredient.id}});" title="détail de l'ingrédient" >
+                <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}"></a>
+            </div>
             <div style="display:none"><span id="id_ingredient_description_{{ingredient.id}}">{{ingredient.description}}</span></div>
             <div style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></div>
             {% if request.user.username == ingredient.owner.username %}
             <div class="row" style="vertical-align:bottom;margin-left:0px;">   
-              <a href="javascript:ask_delete_ingredient({{ingredient.id}});" title="supprimer une ingredient"><span class="glyphicon glyphicon-trash"></span></a>
-              <a href="javascript:ask_edit_ingredient({{ingredient.id}});"  title="modifier une ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
+              <a href="javascript:ask_delete_ingredient({{ingredient.id}});" title="supprimer un ingredient"><span class="glyphicon glyphicon-trash"></span></a>
+              <a href="javascript:ask_edit_ingredient({{ingredient.id}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
             </div>
             {% endif %}      
           </div>
@@ -270,12 +277,12 @@
   </table>
 
   {% if request.user.is_authenticated %}
-  <!-- Modal Creation d'une ingredient -->
+  <!-- Modal Creation d'un ingredient -->
   <div id="modalAddIngredient" class="modal fade">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-	  <h4 class="modal-title text-center">Ajouter une ingredient</h4>	
+	  <h4 class="modal-title text-center">Ajouter un ingredient</h4>	
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         </div>
         <div class="modal-body">
@@ -324,12 +331,12 @@
     </div>
   </div>
 
-  <!-- Modal Modification d'une ingredient -->
+  <!-- Modal Modification d'un ingredient -->
   <div id="id_edit_ingredient_modal" class="modal fade">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-	  <h4 class="modal-title text-center">Modifier une ingredient</h4>	
+	  <h4 class="modal-title text-center">Modifier un ingredient</h4>	
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         </div>
         <div class="modal-body">
@@ -383,7 +390,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <!-- button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button -->
-        <h4 class="modal-title text-center" id="myModalLabel">Supprimer une  Ingredient</h4>
+        <h4 class="modal-title text-center" id="myModalLabel">Supprimer un Ingredient</h4>
       </div>
       <div class="modal-body">
 	<span>Code : </span><p style="display:inline" id="id_delete_ingredient_code"></p>
@@ -404,10 +411,169 @@
     </div>
   </div>
 </div>
-
 {% endif %}
+
+  <!-- Modal detail d'un ingredient -->
+  <div id="id_detail_ingredient_modal" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+	  <h4 class="modal-title text-center">Détail ingredient</h4>	
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="greybox" style="width:30%">
+                <span class="font-weight-bold">Code </span>
+                <span id="id_detail_ingredient_code"></span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="greybox">
+                <span class="font-weight-bold">Date création</span>
+                <span id="id_detail_ingredient_date_creation"></span>
+              </div>
+            </div>            
+            <div class="row">
+              <div class="greybox">
+                <span class="font-weight-bold">Date dernière modification </span>
+                <span id="id_detail_ingredient_date_modification"></span>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="greybox" style="min-height: 75px;">
+                <span class="font-weight-bold" >Description </span>
+                <span id="id_detail_ingredient_description"></span>
+              </div>
+              <div class="greybox" style="min-height: 75px;">
+                <span class="font-weight-bold" >Bon à savoir </span>
+                <span id="id_detail_ingredient_bonasavoir"></span>
+              </div>
+              <div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-8 greybox">
+                <div class="row">
+                  <div class="col-lg-8"><span class="font-lighter">Valeurs nutritionnelles moyennes</span>
+                  </div>
+                  <div class="col-lg-4"><span>Pour 100g</span>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-8"><span>energie</span>
+                  </div>
+                  <div class="col-lg-4">
+                    <span style="display:block">1810kj</span>
+                    <span>355kcal</span>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-8"><span>maitères grasses<span>
+                  </div>
+                  <div class="col-lg-4">0.5
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-8"><span>dont acides gras saturés<span>
+                  </div>
+                  <div class="col-lg-4">20
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-8"><span>Glucides<span>
+                  </div>
+                  <div class="col-lg-4">0.5
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-8"><span>dont sucres<span>
+                  </div>
+                  <div class="col-lg-4">20
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-8"><span>fibres<span>
+                  </div>
+                  <div class="col-lg-4">20
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-8"><span>proteines<span>
+                  </div>
+                  <div class="col-lg-4">20
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-8"><span>sel<span>
+                  </div>
+                  <div class="col-lg-4">20
+                  </div>
+                </div>
+                
+                
+              </div>
+              <div class="col-lg-4">
+                <img style="height:128px;float:left;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="alert-error text-center" >
+            <span id="id_detail_ingredient_message"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+
 <script type="text/javascript" src="{% static "js/ingredient.js" %}"></script>
 <script  type="text/javascript">
+
+  var ingredients = {};
+  {% for ingredient in ingredients %}
+  ingredients[ {{ingredient.id}} ] = {
+  "id" : "{{ ingredient.id }}",
+  "code" : "{{ ingredient.code|escapejs }}",
+  "description" : "{{ ingredient.description|escapejs }}",
+  "bonasavoir" :  "{{ ingredient.bonasavoir|escapejs }}",
+  "owner" : "{{ ingredient.owner.username|escapejs }}",
+  "acces" : "{{ingredient.acces|escapejs}}",
+  
+  "kcalories" : "{{ingredient.kcalories|escapejs}}",
+  "kjoules" : "{{ingredient.kjoules|escapejs}}",
+  "matieges_grasses_inferieures" : "{{ingredient.matieres_grasses_inferieures|escapejs}}",
+  "matieres_grasses" : "{{ingredient.matieres_grasses|escapejs}}",
+  "matieres_grasses_saturees" : "{{ingredient.matieres_grasses_saturees|escapejs}}",
+  "glucides_inferieures" : "{{ingredient.glucides_inferieures|escapejs}}",
+  "glucides" : "{{ingredient.glucides|escapejs}}",
+  "glucides_dont_sucres" : "{{ingredient.glucides_dont_sucres|escapejs}}",
+  "fibres_alimentaires_inferieures" : "{{ingredient.fibres_alimentaires_inferieures|escapejs}}",
+  "fibres_alimentaires" : "{{ingredient.fibres_alimentaires|escapejs}}",
+  "proteines_inferieur" : "{{ingredient.proteines_inferieures|escapejs}}",
+  "proteines" : "{{ingredient.proteines|escapejs}}",
+  "sel_inferieur" : "{{ingredient.sel_inferieur|escapejs}}",
+  "sel" : "{{ingredient.sel|escapejs}}",
+  "date_creation" : "{{ingredient.date_creation|escapejs}}",
+  "date_modification" : "{{ingredient.date_modification|escapejs}}"
+  };
+  {% endfor %}
+  
+  function getIngredient(id_ingredient) {
+  return ingredients[id_ingredient];
+  }
+  
   function getDetailValue() {
   return "{{detail}}";
   }

@@ -59,7 +59,7 @@ class Ingredient(models.Model):
     # détail de la composition de l'ingeédient
     # xx_inferieures indique valeur très faible non mesurable
 
-    matieges_grasses_inferieures  = models.BooleanField(default=False)
+    matieres_grasses_inferieures  = models.BooleanField(default=False)
     matieres_grasses = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     matieres_grasses_saturees = models.DecimalField("Dont acides gras saturés", max_digits=7, decimal_places=2, default=0)
 
@@ -67,10 +67,10 @@ class Ingredient(models.Model):
     glucides = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     glucides_dont_sucres = models.DecimalField(max_digits=7, decimal_places=2, default=0)
 
-    fibres_inferieur = models.BooleanField(default=False)
+    fibres_alimentaires_inferieures = models.BooleanField(default=False)
     fibres_alimentaires = models.DecimalField(max_digits=7, decimal_places=2, default=0)
 
-    proteines_inferieur = models.BooleanField(default=False)
+    proteines_inferieures = models.BooleanField(default=False)
     proteines = models.DecimalField(max_digits=7, decimal_places=2, default=0)
 
     sel_inferieur = models.BooleanField(default=False)

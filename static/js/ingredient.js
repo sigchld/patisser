@@ -1,3 +1,35 @@
+function remplissage(no_ingredient) {
+    var ingredient = getIngredient(no_ingredient);
+    $('#id_detail_ingredient_code').text(ingredient.code);
+    $('#id_detail_ingredient_id').text(ingredient.id);
+    $("#id_detail_ingredient_description").text(ingredient.description);
+    $("#id_detail_ingredient_bonasavoir").text(ingredient.bonasavoir);
+    $("#id_detail_ingredient_owner").text(ingredient.owner)
+    $("#id_detail_ingredient_acces").text(ingredient.acces);
+    $("#id_detail_ingredient_kcalories").text(ingredient.kcalories);
+    $("#id_detail_ingredient_kjoules").text(ingredient.kjoules);
+    $("#id_detail_ingredient_matieges_grasses_inferieures").text(ingredient.matieres_grasses_inferieures);
+    $("#id_detail_ingredient_matieres_grasses").text(ingredient.matieres_grasses);
+    $("#id_detail_ingredient_matieres_grasses_saturees").text(ingredient.matieres_grasses_saturees);
+    $("#id_detail_ingredient_glucides_inferieures").text(ingredient.glucides_inferieures);
+    $("#id_detail_ingredient_glucides").text(ingredient.glucides);
+    $("#id_detail_ingredient_glucides_dont_sucres").text(ingredient.glucides_dont_sucres);
+    $("#id_detail_ingredient_fibres_alimentaires_inferieures").text(ingredient.fibres_alimentaires_inferieures);
+    $("#id_detail_ingredient_fibres_alimentaires").text(ingredient.fibres_alimentaires);
+    $("#id_detail_ingredient_proteines_inferieur").text(ingredient.proteines_inferieures);
+    $("#id_detail_ingredient_proteines").text(ingredient.proteines);
+    $("#id_detail_ingredient_sel_inferieur").text(ingredient.sel_inferieur);
+    $("#id_detail_ingredient_date_creation").text(ingredient.date_creation);
+    $("#id_detail_ingredient_date_modification").text(ingredient.date_modification);
+    $('#id_detail_ingredient_img').attr('src', $('#id_ingredient_img_'.concat(no_ingredient)).attr('src'));    
+}
+
+function detail_ingredient(id) {
+    remplissage(id);
+    $('#id_detail_ingredient_modal').modal('show');
+}
+
+
 function ask_delete_photo(id) {
     $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
     $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
