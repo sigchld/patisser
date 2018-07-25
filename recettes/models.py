@@ -12,15 +12,15 @@ ACCES = (
 )
 
 
-
 class Photo(models.Model):
     DEFAULT_PK = 1
     code = models.CharField(max_length=50)
     description = models.CharField(max_length=200)
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     photo = models.ImageField(default='blank.png')
-    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB", null=False)
     thumbnail = models.BinaryField(null=True, blank=True)
+    categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
     
@@ -32,8 +32,16 @@ class Photo(models.Model):
         unique_together = (("owner", "code"),)
 
 class Categorie(models.Model):
+    GROUPE = (
+        ('REC', 'recettes'),
+        ('ING', 'ingrédients'),
+        ('PREP', 'préparations'),
+        ('MAT', 'matériel')
+    )
+
     DEFAULT_PK = 1
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, null=False)
+    groupe = models.CharField(max_length=10, choices=GROUPE, default="ING", null=False)
     description = models.CharField(max_length=200)
     def __unicode__(self):
         return "%s" % (self.description)
@@ -107,8 +115,8 @@ class EtapePreparation(models.Model):
     titre =  models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
-    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    #owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    #acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -169,7 +177,7 @@ class Recette(models.Model):
     description = models.TextField(max_length=5000, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     difficulte = models.IntegerField(default=0)
-    categorie = models.ForeignKey(Categorie, default=Categorie.DEFAULT_PK)
+    categorie = models.ForeignKey(Categorie, on_delete=models.SET_NULL, null=True, blank=True)
     portion = models.IntegerField(default=1)
 
     #pas de default quand on ajoute un champ a Photo

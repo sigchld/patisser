@@ -13,6 +13,8 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.http import HttpResponseNotModified, HttpResponseServerError
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
 
 from PIL import Image
 from PIL import ImageMath
@@ -23,6 +25,7 @@ from .models import Recette
 from .models import Ingredient
 from .models import Preparation
 from .models import Photo
+from .models import Categorie
 
 from .forms import PhotoForm
 
@@ -310,7 +313,7 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
         if filter:
             ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter))
     else:
-        ingredient_list = Ingredient.objects.filter(owner='anonyme')
+        ingredient_list = ngredient.objects.filter(owner='anonyme')
            
         if filter:
             ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter)).order_by('code')
@@ -417,3 +420,25 @@ def my_login(request):
         return HttpResponseForbidden('{ "message" : "Login ou mot de passe erroné" }')
     #return render_to_response('login.html', context_instance=RequestContext(request))
 
+
+def categorie(request):
+    import json
+    groupe = None
+    categorie = None
+    if request.POST:
+        logger.debug("categorie POST présent")            
+        #return HttpResponseServerError("{ \"message\" : \"méthode non supportée\" }")
+    groupe = request.POST.get('groupe', None)
+    categorie = request.POST.get('categorie', None)
+    logger.debug("categorie {}/{}".format( groupe, categorie))            
+
+    if  groupe is None or [] == [ item for item in Categorie.GROUPE if item[0] == groupe]:
+        if groupe == "ALL":
+            return HttpResponse('{ "message" : "OK" }')
+        else:
+            return HttpResponseServerError("{ \"message\" : \"erreur groupe\" }")
+        
+    queryset = Categorie.objects.filter(groupe=groupe).values('id', 'code', 'groupe', 'description')
+    data = '{{ "message" : {} }}'.format(json.dumps(list(queryset), cls=DjangoJSONEncoder))
+    logger.debug('categorie {}'.format(data))
+    return HttpResponseServerError(data)

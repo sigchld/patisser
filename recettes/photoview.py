@@ -245,7 +245,7 @@ class PhotoView(View):
                     logger.error(u"Suppression impossible de {}".format(filename))
                     
             photo.delete()
-            return HttpResponse('{ "message" : "Suppression rélaliser" }')
+            return HttpResponse('{ "message" : "Suppression rélalisée" }')
         except Exception as error:
 
             just_the_string = traceback.format_exc()

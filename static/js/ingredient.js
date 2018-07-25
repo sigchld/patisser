@@ -1,37 +1,87 @@
+var current_no_ingredient;
 function remplissage(no_ingredient) {
     var ingredient = getIngredient(no_ingredient);
+    //alert(no_ingredient);
+    //$('#id_detail_ingredient_no').text(no_ingredient.toString());
+    current_no_ingredient = no_ingredient;
+    $('#id_delete_ingredient_id').text(ingredient.id);
+    
     $('#id_detail_ingredient_code').text(ingredient.code);
     $('#id_detail_ingredient_id').text(ingredient.id);
     $("#id_detail_ingredient_description").text(ingredient.description);
     $("#id_detail_ingredient_bonasavoir").text(ingredient.bonasavoir);
     $("#id_detail_ingredient_owner").text(ingredient.owner)
     $("#id_detail_ingredient_acces").text(ingredient.acces);
+
     $("#id_detail_ingredient_kcalories").text(ingredient.kcalories);
     $("#id_detail_ingredient_kjoules").text(ingredient.kjoules);
-    $("#id_detail_ingredient_matieges_grasses_inferieures").text(ingredient.matieres_grasses_inferieures);
+
+
     $("#id_detail_ingredient_matieres_grasses").text(ingredient.matieres_grasses);
     $("#id_detail_ingredient_matieres_grasses_saturees").text(ingredient.matieres_grasses_saturees);
-    $("#id_detail_ingredient_glucides_inferieures").text(ingredient.glucides_inferieures);
+    $("#id_detail_ingredient_matieges_grasses_inf").text(ingredient.matieres_grasses_inferieures);
+    
     $("#id_detail_ingredient_glucides").text(ingredient.glucides);
     $("#id_detail_ingredient_glucides_dont_sucres").text(ingredient.glucides_dont_sucres);
-    $("#id_detail_ingredient_fibres_alimentaires_inferieures").text(ingredient.fibres_alimentaires_inferieures);
-    $("#id_detail_ingredient_fibres_alimentaires").text(ingredient.fibres_alimentaires);
-    $("#id_detail_ingredient_proteines_inferieur").text(ingredient.proteines_inferieures);
+    $("#id_detail_ingredient_glucides_inf").text(ingredient.glucides_inferieures);
+
+    $("#id_detail_ingredient_fibres").text(ingredient.fibres_alimentaires);
+    $("#id_detail_ingredient_fibres_inf").text(ingredient.fibres_alimentaires_inferieures);
+    
+    $("#id_detail_ingredient_proteines_inf").text(ingredient.proteines_inferieures);
     $("#id_detail_ingredient_proteines").text(ingredient.proteines);
-    $("#id_detail_ingredient_sel_inferieur").text(ingredient.sel_inferieur);
+    $("#id_detail_ingredient_sel_inf").text(ingredient.sel_inferieur);
+    $("#id_detail_ingredient_sel").text(ingredient.sel);
     $("#id_detail_ingredient_date_creation").text(ingredient.date_creation);
     $("#id_detail_ingredient_date_modification").text(ingredient.date_modification);
-    $('#id_detail_ingredient_img').attr('src', $('#id_ingredient_img_'.concat(no_ingredient)).attr('src'));    
+    $('#id_detail_ingredient_img').attr('src', $('#id_ingredient_img_'.concat(ingredient.id)).attr('src'));    
 }
 
 function detail_ingredient(id) {
     remplissage(id);
+    
+    $('#id_detail_ingredient_previous').click( function(event) {
+        event.preventDefault();
+        var idx =  getNbIngredient();
+        var next_idx  = current_no_ingredient - 1;
+        if (next_idx < 0) {
+            next_idx  = idx - 1;
+        }
+        remplissage(next_idx);
+    });
+
+    $('#id_detail_ingredient_next').click( function(event) {
+        event.preventDefault();
+        var idx =  getNbIngredient();
+        next_idx  = current_no_ingredient + 1;
+        if (next_idx >= idx) {
+            next_idx  = 0;
+        }
+        remplissage(next_idx);
+    });
+
+    $("#id_detail_ingredient_modal_view_footer").css("display", "block");
+    $('#id_detail_ingredient_modal_delete_footer').css("display", "none");
+    $("#id_detail_ingredient_modal_view_header").css("display", "block");
+    $('#id_detail_ingredient_modal_delete_header').css("display", "none");
+    
     $('#id_detail_ingredient_modal').modal('show');
 }
 
 
-function ask_delete_photo(id) {
-    $('#id_delete_photo_code').text($('#id_photo_code_'.concat(id)).text());
+function ask_delete_ingredient(id) {
+    remplissage(id);
+
+    $("#id_detail_ingredient_modal_view_footer").css("display", "none");
+    $('#id_detail_ingredient_modal_delete_footer').css("display", "block");
+    $("#id_detail_ingredient_modal_view_header").css("display", "none");
+    $('#id_detail_ingredient_modal_delete_header').css("display", "block");
+
+    $('#id_detail_ingredient_modal').modal('show');
+    
+    return;
+    
+    $('#id_ingredient_photo_code').text($('#id_photo_code_'.concat(id)).text());
     $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
     $('#id_delete_photo_message').text("");
     $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
@@ -238,13 +288,13 @@ $(document).ready(
             });
                 
 	
-        $("#id_delete_photo").click(
+        $("#id_delete_ingredient").click(
 	    function(){
-	        $("#id_delete_photo").attr("disabled", true);
-	        $("#id_delete_photo_abandon").attr("disabled", true);
-	        $("#id_delete_photo_message").text("");
+	        $("#id_delete_ingredient").attr("disabled", true);
+	        $("#id_delete_ingredient_abandon").attr("disabled", true);
+	        $("#id_delete_ingredient_message").text("");
                 $("#id_loader").css("display","block");
-                var u = getGetPhotoUrl().concat("X").replace("99X", $('#id_delete_photo_id').text());
+                var u = getGetIngredientUrl().concat($('#id_delete_ingredient_id').text());
                 var csrftoken = getCookie('csrftoken');
                 $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
                 $.ajax({
@@ -254,18 +304,14 @@ $(document).ready(
                     'success': function(response)
                     {
 	                window.location.reload()
-                        //			    $("#id_delete_photo_message").text(response);
-                        //			    $("#id_loader").css("display","none");
-                        //			    $("#id_delete_photo").removeAttr("disabled");
-                        //			    $("#id_delete_photo_abandon").removeAttr("disabled");
                     },
                     'error': function(jqXHR, textStatus, errorThrown)
                     {
-                        console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+                        console.log('Error on deleting ingredient:', jqXHR, textStatus, errorThrown);
 	                $("#id_loader").css("display","none");
-	                $("#id_delete_photo").removeAttr("disabled");
-	                $("#id_delete_photo_abandon").removeAttr("disabled");
-                        $("#id_delete_photo_message").text(JSON.parse(jqXHR.responseText).message);
+	                $("#id_delete_ingredient").removeAttr("disabled");
+	                $("#id_delete_ingredient_abandon").removeAttr("disabled");
+                        $("#id_delete_ingredient_message").text(JSON.parse(jqXHR.responseText).message);
                     }
                 });    
             });

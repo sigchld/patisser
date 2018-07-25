@@ -8,13 +8,12 @@
 {% block content %}
 <div class="container">
   <table class="table-striped"  id="liste_photos">
-    <thead>
-      <tr>
+    <thead >
+      <tr  style="margin:0;padding:0;border:0px;">
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
 	  
-	  Liste photos
-	  &nbsp;
+	  Photos&nbsp;
 	  {% if acces %}
 	  {% if detail %}
 	  <a href="{% url 'list_photos_acces' acces %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
@@ -29,10 +28,11 @@
 	  <a href="{% url 'list_photos_owner' owner %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 	  {% endif %}
+          <span class="glyphicon glyphicon-filter"></span>
 	  &nbsp;&nbsp;
 	  <a href="javascript:ask_import_photo();" title="importer une photo" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
-	</td>
 
+	</td>
 	<td>
           {% if owner == 'me' %}
 	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
@@ -62,7 +62,6 @@
 
 	<td>
 	  {% if owner == 'me' %}
-          <!-- span class="glyphicon glyphicon-filter"></span -->
           <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
             {% if acces == 'public' %}
             <option value="{% url 'list_photos_acces' 'private' %}">privées</option>      
@@ -83,13 +82,15 @@
 	</td>
 	{% else %}
 	<td colspan="4">
-	  Liste photos&nbsp;&nbsp;
+          <span>Photos (</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >toutes</a><span>)</span>
 	  {% if detail %}
 	  <a href="{% url 'list_photos' %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
 	  <a href="{% url 'list_photos' %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
-	</td>
+
+
+        </td>
 	{% endif %}
 
 
@@ -112,6 +113,25 @@
         </td>
       </tr>
 
+      <!-- tr >
+        <td colspan="2" style="margin:0;padding:0;border:0px;"></td>
+        <td  style="margin-top:1px;padding:0;border:0px;">
+          <select   id="id_groupe">
+	    <option value="PUB" selected>groupe recettes</option>
+	    <option value="PRIV">groupe preparations</option>
+            <option value="PRIV">groupe ingredients</option>
+            <option value="PRIV">groupe ustensiles</option>
+	  </select>
+        </td>
+        <td style="margin-top:0;padding:0;border:0px;">
+          <select   id="id_groupe">
+	    <option value="PUB" selected></option>
+	    <option value="PRIV">fruits frais</option>
+            <option value="PRIV">groupe ingredients</option>
+            <option value="PRIV">groupe ustensiles</option>
+	  </select>
+          </td>
+</tr -->
       {% if detail %}
       <tr>
         <th>code</th>
@@ -130,7 +150,6 @@
       <tr>
         <td colspan="2">&nbsp</td>
         <td >
-          <!-- span class="glyphicon glyphicon-filter"></span -->
           {% if owner == 'me' %}
 	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
 	    <option value="{% url 'list_photos_owner' 'me' %}" selected>les miennes</option> 
@@ -158,7 +177,6 @@
         
         <td colspan="3">
           {% if owner == 'me' %}
-          <!-- span class="glyphicon glyphicon-filter"></span -->
           <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
             {% if acces == 'public' %}
             <option value="{% url 'list_photos_acces' 'private' %}">privé</option>      
@@ -248,7 +266,7 @@
 
     <tfoot>
       <tr>
-        <td colspan="4"><p>Liste photos</td>
+        <td colspan="4"><p>Photos</td>
         <td class="text-right">
           {% if photos %}
           <div class="pagination">
@@ -269,6 +287,37 @@
     </tfoot>
   </table>
 
+  
+<div id="popover-content" style="display: none" >
+        <form class="postform" id="id_popover_categorie_form"  name="mainForm" method="post" action="{% url 'get_category' %}">
+          {% csrf_token %}
+          <div class="form-group">
+	    <div class="form-group form-inline">
+	      <label for="groupe">Groupe:</label>
+              <select   id="id_popover_groupe" name="groupe" placeholder="groupe">
+	        <option value="ALL" selected>tous</option>
+                <option value="REC" >recettes</option>
+	        <option value="PREP">preparations</option>
+                <option value="ING">ingredients</option>
+                <option value="MAT">ustensiles</option>
+	      </select>
+	    </div>
+            <div class="form-group form-inline">
+	      <label for="categorie">Catégorie:</label>
+              <select   id="id_popover_categorie" name="categorie" placeholder="categorie">
+	        <option value="ALL" selected>toutes</option>
+	      </select>
+	    </div>
+            <div class="form-group">
+              <button id="id_submit_filter" type="submit"  class="btn btn-primary pull-right">Filtrer</button>
+	    </div>
+          </div>
+        </form>
+        <div>
+          <span id="id_popover_message"></span>
+        </div>
+ </div>
+  
   {% if request.user.is_authenticated %}
   <!-- Modal Creation d'une photo -->
   <div id="modalAddPhoto" class="modal fade">
@@ -405,6 +454,7 @@
   </div>
 </div>
 
+  
 {% endif %}
 <script type="text/javascript" src="{% static "js/photo.js" %}"></script>
 <script  type="text/javascript">

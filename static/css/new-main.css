@@ -350,3 +350,41 @@ and (-webkit-min-device-pixel-ratio: 2) {
 .font-weight-lighter {
     font-weight: lighter;
 }
+
+.no-margin {
+    margin: 0px;
+    padding:0px;
+  /*  height:35px;*/
+}
+
+.col-border {
+/*    border: 1px solid black;
+    height:100%;*/
+}
+
+Xdiv.row { 
+  border: 1px solid;
+  border-bottom: 0px;
+}
+X.container div.row:last-child {
+  border-bottom: 1px solid;
+}
+
+.fond_image{
+    opacity:0.1;
+    top:15px;left:0;background:transparent;
+}
+
+.fond_image {
+-moz-transition: opacity 0.9s;
+-webkit-transition: opacity 0.9s;
+-o-transition: opacity 0.9s;
+}
+
+.fond_image:hover{
+opacity:1;
+-moz-transition: opacity 0.7s;
+-webkit-transition: opacity 0.7s;
+-o-transition: opacity 0.7s;
+}
+

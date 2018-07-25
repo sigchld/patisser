@@ -129,10 +129,13 @@
                         <script type="text/javascript" src="{% static "js/plugins.js" %}"></script>
                         <script type="text/javascript">
                           
-                          var blank_photo = "{% url 'photo_blank' %}";
-   
-
-                          $(blank_photo).load();
+                          // prechargement image no photo
+                          var blank_photo = new Image();
+                          blank_photo.src = "{% url 'photo_blank' %}";
+                          //blank_photo.onload = function() {
+                              //alert('loaded');
+                          //}
+                          //$(blank_photo).load();
                           
                           function getLoginUrl() {
                           return "{% url 'login' %}";

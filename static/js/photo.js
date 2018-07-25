@@ -103,10 +103,58 @@ function handleFileSelect(evt) {
     return false;
 }
 
+
+function loadCategories(event){
+    event.preventDefault();
+    $("#id_popover_message").text("");
+    //$("#id_loader").css("display","block");
+    var csrftoken = getCookie('csrftoken');
+    var u = $(this).get(0).getAttribute('action');
+
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        //processData: true,
+        //contentType: true,
+        'type' : 'post',
+        'url' : u,
+        'data' : $("#id_popover_categorie_form").serialize(),        
+        'success' : function(response)
+        {
+	    window.location.reload();
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            //console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+	    //$("#id_loader").css("display","none");
+            $("#id_popover_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+        }
+    });    
+}
+
 $(document).ready(
     function () {
         $('#id_edit_photo').change(handleFileSelect);
         $('#id_import_photo').change(handleFileSelect);
+
+        $('#id_sel_categorie').popover({
+            html: true,
+            placement: 'right',
+            content : function() {
+                return $('#popover-content').html();
+            },
+            title: function(){
+		return $(this).data('title')+'<span class="close">&times;</span>';
+            }
+        }).on('shown.bs.popover', function(e){
+	    var popover = $(this);
+            $("#id_popover_categorie_form").submit(loadCategories);
+	    $(this).parent().find('div.popover .close').on('click', function(e){
+		popover.popover('hide');
+                // pour eviter de clicker 2 fois
+                // https://stackoverflow.com/questions/11703093/how-to-dismiss-a-twitter-bootstrap-popover-by-clicking-outside/14857326#14857326
+                popover.popover('hide').data('bs.popover').inState.click = false
+            });
+        });
         
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);
@@ -203,9 +251,9 @@ $(document).ready(
                         $("#id_edit_photo_message").text(JSON.parse(jqXHR.responseText).message);
                     }
                 });    
+
             });
-                
-	
+        
         $("#id_delete_photo").click(
 	    function(){
 	        $("#id_delete_photo").attr("disabled", true);
