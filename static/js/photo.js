@@ -54,10 +54,12 @@ function handleFileSelect(evt) {
 
     var msg_id = '#id_edit_photo_message';
     var img_target_id = '#id_edit_photo_img'
-
+    var creation = false;
+    
     if (evt.target.id.match(/import/)) {
         msg_id = '#id_import_photo_message';
         img_target_id = '#id_import_photo_img'
+        creation = true;
     }
     
     if (files.length !=1) {
@@ -76,10 +78,16 @@ function handleFileSelect(evt) {
     if (f.size == 0 || f.size > 300000) {
            error = f.name.concat(", fichier trop gros 300000 caractères au maximum");
         $( this ).val('');
+        if (creation) {
+            $('#id_import_photo_img').attr('src', blank_photo);
+        }
     }
     else if ((f.type != "image/png" && f.type != "image/jpeg")) {
         error = f.name.concat(", n'est pas une image jpeg ou png");
         $( this ).val('');
+        if (creation) {
+            $('#id_import_photo_img').attr('src', blank_photo);
+        }
         //$(this).get(0).reset();
         //$(this).wrap('<form>').closest('form').get(0).reset();
         //$(this).unwrap();
@@ -104,13 +112,13 @@ function handleFileSelect(evt) {
 }
 
 
-function loadCategories(event){
+function loadCategoriesPopOver(event){
 
     event.preventDefault();
-    $("#id_popover_message").text("");
+    $("#id_popover_message").text(" ");
     //$("#id_loader").css("display","block");
     var csrftoken = getCookie('csrftoken');
-    var u = $("#id_popover_categorie_form").attr('action');
+    var u = $("#id_popover_categorie_form").data('action');
     var groupe = $("#id_popover_groupe");
 
     if (groupe.val() == "ALL") {
@@ -133,8 +141,9 @@ function loadCategories(event){
             $select.append('<option value="ALL">toutes</option>');
             for (var idx=0; idx < res.length; idx++) { 
                 var element = res[idx];
-                $select.append('<option value=' + element.code + '>' + element.description + '</option>');
+                $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
             }
+            //$select.selectpicker('refresh');
 //            $("#id_popover_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
             //alert(groupe.val());
 	    //window.location.reload();
@@ -148,6 +157,45 @@ function loadCategories(event){
     });    
 }
 
+function loadCategories(event) {
+
+    event.preventDefault();
+    $("#id_import_photo_message").text(" ");
+    
+    var csrftoken = getCookie('csrftoken');
+    var u = $("#id_popover_categorie_form").data('action');
+    var groupe = $("#id_import_groupe");
+    
+    if (groupe.val() == "NONE") {
+        $selected = $("#id_import_categorie option[value='NONE']");
+        $select.empty();
+        $select.append('<option value="NONE" selected></option>');
+        return ;
+    }
+    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'post',
+        'url' : u,
+        'data' : "groupe=".concat($('#id_import_groupe').val()),
+           'success' : function(response)
+           {
+               $select = $("#id_import_categorie");
+               $select.empty();
+               var res = JSON.parse(response).message;
+               $select.append('<option value="NONE"></option>');
+               for (var idx=0; idx < res.length; idx++) { 
+                   var element = res[idx];
+                   $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+               }
+           },
+           'error': function(jqXHR, textStatus, errorThrown)
+           {
+               $("#id_import_photo_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+           }
+          });    
+}
+
 $(document).ready(
     function () {
         $('#id_edit_photo').change(handleFileSelect);
@@ -159,23 +207,25 @@ $(document).ready(
             placement: 'right',
             content : function() {
                 return $('#popover-content').html();
+                //return $('#popover-content').children();
             },
             title: function(){
 		return $(this).data('title')+'<span class="close">&times;</span>';
             }
         }).on('shown.bs.popover', function(e){
 	    var popover = $(this);
-            $('#id_popover_groupe').on('change', loadCategories);
-            //$("#id_popover_categorie_form").submit(loadCategories);
+            //$('.selectpicker').selectpicker();
+            $('#id_popover_groupe').on('change', loadCategoriesPopOver);
+            //$("#id_popover_categorie_form").submit(loadCategoriesPopOver);
 	    $(this).parent().find('div.popover .close').on('click', function(e){
 		popover.popover('hide');
                 // pour eviter de clicker 2 fois
                 // https://stackoverflow.com/questions/11703093/how-to-dismiss-a-twitter-bootstrap-popover-by-clicking-outside/14857326#14857326
                 popover.popover('hide').data('bs.popover').inState.click = false
             });
-        });
+        }).on("show.bs.popover", function(e){  $(this).data("bs.popover").tip().css({"max-width": "400px"}); });
 
-        $('#id_popover_groupe').on('change', loadCategories);
+        $('#id_import_groupe').on('change', loadCategories);
         
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);

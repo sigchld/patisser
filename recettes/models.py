@@ -40,9 +40,14 @@ class Categorie(models.Model):
     )
 
     DEFAULT_PK = 1
-    code = models.CharField(max_length=50, null=False)
+    categorie = models.CharField(max_length=10, null=False, blank=True)
     groupe = models.CharField(max_length=10, choices=GROUPE, default="ING", null=False)
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=30)
+    
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+
+
     def __unicode__(self):
         return "%s" % (self.description)
 
@@ -55,7 +60,7 @@ class Ingredient(models.Model):
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
-    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
     
     # ancien champ
     calorie = models.IntegerField(default=0)

@@ -54,7 +54,6 @@ def index(request, filter=None):
 #
 # Appelé pour retrouver les photos
 # owner = me ou others ou all
-
 def lis_photos_owner(request, owner):
     list_photos(request, owner=owner)
     
@@ -424,21 +423,25 @@ def my_login(request):
 def categorie(request):
     import json
     groupe = None
-    categorie = None
+
     if request.POST:
         logger.debug("categorie POST présent")            
         #return HttpResponseServerError("{ \"message\" : \"méthode non supportée\" }")
     groupe = request.POST.get('groupe', None)
-    categorie = request.POST.get('categorie', None)
-    logger.debug("categorie {}/{}".format( groupe, categorie))            
+    logger.debug("categorie {}".format( groupe))            
 
     if  groupe is None or [] == [ item for item in Categorie.GROUPE if item[0] == groupe]:
         if groupe == "ALL":
             return HttpResponse('{ "message" : "OK" }')
         else:
             return HttpResponseServerError("{ \"message\" : \"erreur groupe\" }")
-        
-    queryset = Categorie.objects.filter(groupe=groupe).values('id', 'code', 'groupe', 'description')
+
+    if request.user.is_authenticated:        
+        queryset = Categorie.objects.filter((Q(owner = request.user.username) | Q(owner = 'anonyme') | Q(acces='PUB'))&Q(groupe=groupe)).values('id', 'categorie', 'groupe', 'description').order_by('description')
+    else:
+        queryset = Categorie.objects.filter((Q(owner = 'anonyme') | Q(acces = 'PUB')) & Q(groupe=groupe)).values('id', 'categorie', 'groupe', 'description').order_by('description')
+
+
     data = '{{ "message" : {} }}'.format(json.dumps(list(queryset), cls=DjangoJSONEncoder))
     logger.debug('categorie {}'.format(data))
     return HttpResponse(data)
