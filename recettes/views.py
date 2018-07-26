@@ -313,7 +313,7 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
         if filter:
             ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter))
     else:
-        ingredient_list = ngredient.objects.filter(owner='anonyme')
+        ingredient_list =  Ingredient.objects.filter(owner='anonyme')
            
         if filter:
             ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter)).order_by('code')
@@ -441,4 +441,4 @@ def categorie(request):
     queryset = Categorie.objects.filter(groupe=groupe).values('id', 'code', 'groupe', 'description')
     data = '{{ "message" : {} }}'.format(json.dumps(list(queryset), cls=DjangoJSONEncoder))
     logger.debug('categorie {}'.format(data))
-    return HttpResponseServerError(data)
+    return HttpResponse(data)

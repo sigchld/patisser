@@ -82,13 +82,13 @@
 	</td>
 	{% else %}
 	<td colspan="4">
-          <span>Photos (</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >toutes</a><span>)</span>
+
 	  {% if detail %}
 	  <a href="{% url 'list_photos' %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
 	  <a href="{% url 'list_photos' %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
-
+          <span>Photos (</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >toutes</a><span>)</span>
 
         </td>
 	{% endif %}

@@ -105,12 +105,19 @@ function handleFileSelect(evt) {
 
 
 function loadCategories(event){
+
     event.preventDefault();
     $("#id_popover_message").text("");
     //$("#id_loader").css("display","block");
     var csrftoken = getCookie('csrftoken');
-    var u = $(this).get(0).getAttribute('action');
+    var u = $("#id_popover_categorie_form").attr('action');
+    var groupe = $("#id_popover_groupe");
 
+    if (groupe.val() == "ALL") {
+        $("#id_popover_categorie option[value='ALL']").prop('selected', true);
+        return ;
+    }
+    
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
     $.ajax({
         //processData: true,
@@ -120,7 +127,17 @@ function loadCategories(event){
         'data' : $("#id_popover_categorie_form").serialize(),        
         'success' : function(response)
         {
-	    window.location.reload();
+            $select = $("#id_popover_categorie");
+            $select.empty();
+            var res = JSON.parse(response).message;
+            $select.append('<option value="ALL">toutes</option>');
+            for (var idx=0; idx < res.length; idx++) { 
+                var element = res[idx];
+                $select.append('<option value=' + element.code + '>' + element.description + '</option>');
+            }
+//            $("#id_popover_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            //alert(groupe.val());
+	    //window.location.reload();
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
@@ -136,6 +153,7 @@ $(document).ready(
         $('#id_edit_photo').change(handleFileSelect);
         $('#id_import_photo').change(handleFileSelect);
 
+
         $('#id_sel_categorie').popover({
             html: true,
             placement: 'right',
@@ -147,7 +165,8 @@ $(document).ready(
             }
         }).on('shown.bs.popover', function(e){
 	    var popover = $(this);
-            $("#id_popover_categorie_form").submit(loadCategories);
+            $('#id_popover_groupe').on('change', loadCategories);
+            //$("#id_popover_categorie_form").submit(loadCategories);
 	    $(this).parent().find('div.popover .close').on('click', function(e){
 		popover.popover('hide');
                 // pour eviter de clicker 2 fois
@@ -155,6 +174,8 @@ $(document).ready(
                 popover.popover('hide').data('bs.popover').inState.click = false
             });
         });
+
+        $('#id_popover_groupe').on('change', loadCategories);
         
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);
