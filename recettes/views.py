@@ -2,6 +2,7 @@
 
 import logging
 import io
+import traceback
 
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -74,9 +75,43 @@ def lis_photos_acces(request, acces):
 #
 # plus d'informations sur le Q ici
 # https://docs.djangoproject.com/fr/1.11/topics/db/queries/
-def list_photos(request,owner='me',acces=None,filter=None):
+def list_photos(request, owner='me', acces=None, filter=None):
+
     request.session[PAGE_COURANTE] = PHOTOS
+    
     detail = request.GET.dict().get('detail', 'true').lower() == "true"
+
+    groupe = request.GET.dict().get('groupe', None)
+    categorie = request.GET.dict().get('categorie', None)
+
+    # Maj session
+    if groupe is  None and request.session.get('groupe', None) is not None:
+        groupe = request.session.get('groupe', None)
+
+    if categorie is None and request.session.get('categorie', None) is not None:
+        categorie = request.session.get('categorie', None)
+
+    # Conversion None -> ALL
+    if groupe is None:
+        groupe = "ALL"
+    if categorie is None:
+        categorie = "ALL"
+        
+    categorie_obj = None
+    try:
+        # traiter le cas de ALL / ALL
+        logger.debug("list_photos_query/categorie_obj/{}/{}".format(groupe, categorie))
+        categorie_obj = Categorie.objects.get(Q(groupe=groupe) & Q(categorie=categorie)) #, categorie=categorie)
+        logger.debug("list_photos_result/categorie_obj/{}/{}".format(categorie_obj.groupe, categorie_obj.categorie))
+        #except Photo.DoesNotExist:
+    except:
+        just_the_string = traceback.format_exc()
+        logger.debug("list_photos/categorie_obj/{}".format(just_the_string))
+
+    
+    request.session['categorie'] = categorie
+    request.session['groupe'] = groupe
+        
     logger.debug("list_photos/acces/{}/owner/{}/auth/{}".format(acces, owner,request.user.is_authenticated))            
     template = loader.get_template('photolist.html')
 
@@ -112,13 +147,18 @@ def list_photos(request,owner='me',acces=None,filter=None):
         if filter:
             photo_list = photo_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter))
     else:
-        photo_list = Photo.objects.filter(owner='anonyme')
+        photo_list = Photo.objects.filter(Q(acces='PUB'))
            
         if filter:
             photo_list = photo_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter)).order_by('code')
         else:
             photo_list = photo_list.order_by('code')
 
+    if categorie_obj is not None:
+        photo_list = photo_list.filter(categorie=categorie_obj)
+    elif  groupe != "ALL":
+        photo_list = photo_list.filter(categorie__groupe = groupe)
+        
     if detail :
         # 10 lignes
         nb_elem = 10

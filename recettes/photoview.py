@@ -30,6 +30,7 @@ from PIL import ImageChops
 
 from fees import settings
 from .models import Photo
+from .models import Categorie
 from .forms import PhotoForm
 
 from django.db.utils import IntegrityError
@@ -63,6 +64,9 @@ class PhotoView(View):
     
     # Mofification d'une photo
     def post(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden('{ "message" : "il fat se logger" }')
+
         try:
             form = PhotoForm(request.POST)
             #if not form.is_valid():
@@ -99,13 +103,33 @@ class PhotoView(View):
                 img.save(f, "PNG")
                 f.seek(0)
 	        photo.thumbnail = f.read1(-1)
-                
+
             except MultiValueDictKeyError:
                 # pas de nouvelle photo
                 pass
             photo.description = request.POST.get('description', photo.description)
             photo.code = request.POST.get('code',photo.code)
             photo.acces = request.POST.get('acces',photo.acces)
+            
+            # traiter groupe / categorie
+            groupe = form['groupe'].value()
+            categorie  = form['categorie'].value()
+            
+            if groupe is not None and categorie is not None and groupe != "NONE" and categorie != "NONE":
+                groupe = groupe.upper()
+                categorie = categorie.upper()
+                
+                # 
+                queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(owner = request.user.username))
+                if queryset.count() == 1:
+                    photo.categorie = queryset.first()
+                else:
+                    queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(acces = 'PUB'))
+                    if queryset.count() == 1:
+                        photo.categorie = queryset.first()
+            else:
+                photo.categorie = None
+                        
             photo.save()
             return HttpResponse('{ "message" : "OK" }')
         
@@ -178,6 +202,9 @@ class PhotoView(View):
 
     # creation photo
     def put(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden('{ "message" : "il fat se logger" }')
+        
         if  not request.FILES['photo']:
             return HttpResponseServerError('{ "message" : "Il manque la photo" }')
             
@@ -193,6 +220,23 @@ class PhotoView(View):
                 photo.photo = filename
                 photo.owner = request.user
 
+                # traiter groupe / categorie
+                groupe = form['groupe'].value()
+                categorie  = form['categorie'].value()
+
+                if groupe is not None and categorie is not None:
+                    groupe = groupe.upper()
+                    categorie = categorie.upper()
+                    
+                    # 
+                    queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(owner = request.user.username))
+                    if queryset.count() == 1:
+                        photo.categorie = queryset.first()
+                    else:
+                        queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(acces = 'PUB'))
+                        if queryset.count() == 1:
+                            photo.categorie = queryset.first()
+                                                        
                 try:
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                     img = get_thumbnail(img)
@@ -208,6 +252,8 @@ class PhotoView(View):
                 f.close()
                 photo.save()
                 return HttpResponse('{ "message" : "OK" }')
+            else:
+                return HttpResponseServerError('{ "message" : "Données invalides" }')
         except IntegrityError:
             return HttpResponseServerError('{ "message" : "Le code est déjà utilisé" }')
         except Exception as error:
@@ -217,6 +263,9 @@ class PhotoView(View):
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
     def delete(self, request, photo_id=None) :
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden('{ "message" : "il fat se logger" }')
+        
         try:
             photo = Photo.objects.get(pk=photo_id)
         except Photo.DoesNotExist:
@@ -247,7 +296,6 @@ class PhotoView(View):
             photo.delete()
             return HttpResponse('{ "message" : "Suppression rélalisée" }')
         except Exception as error:
-
             just_the_string = traceback.format_exc()
             logger.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')

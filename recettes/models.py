@@ -36,17 +36,20 @@ class Categorie(models.Model):
         ('REC', 'recettes'),
         ('ING', 'ingrédients'),
         ('PREP', 'préparations'),
-        ('MAT', 'matériel')
+        ('MAT', 'matériel'),
+        ('SANS', 'non affecté'),
     )
 
     DEFAULT_PK = 1
-    categorie = models.CharField(max_length=10, null=False, blank=True)
+    categorie = models.CharField(max_length=10, null=False, blank=False)
     groupe = models.CharField(max_length=10, choices=GROUPE, default="ING", null=False)
-    description = models.CharField(max_length=30)
+    description = models.CharField(max_length=40)
     
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
+    class Meta:
+        unique_together = (("owner", "categorie", "groupe"),)
 
     def __unicode__(self):
         return "%s" % (self.description)
@@ -97,6 +100,9 @@ class Ingredient(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = (("owner", "code"),)
+    
     
     def __unicode__(self):
         return self.description 
@@ -107,7 +113,7 @@ class Element(models.Model):
     preparation = models.ForeignKey('Preparation', related_name='elements')
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
-    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
     
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -120,8 +126,8 @@ class EtapePreparation(models.Model):
     titre =  models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
 
-    #owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
-    #acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -143,6 +149,9 @@ class Preparation(models.Model):
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = (("owner", "code"),)
     
     def __unicode__(self):
         return self.description 
@@ -166,12 +175,11 @@ class EtapeRecette(models.Model):
     titre =  models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
-    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
-
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    
+
+    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
     
     def __unicode__(self):
         return self.titre
@@ -199,8 +207,12 @@ class Recette(models.Model):
     def image_tag(self):
         from django.utils.html import format_html
         return '<img width=200 height=200 src="/recettes/{}" />'.format(self.photo.url)
+
     image_tag.short_description = 'Image'
     image_tag.allow_tags = True
 
+    class Meta:
+        unique_together = (("owner", "code"),)
+    
     def __unicode__(self):
         return "{}-{}".format(self.code, self.description)

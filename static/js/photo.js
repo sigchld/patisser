@@ -8,8 +8,6 @@ function ask_delete_photo(id) {
 };
 
 function ask_edit_photo(id) {
-    // reset du formulaire
-    //$('#id_edit_photo').val('');
     $('#id_edit_photo_code').val($('#id_photo_code_'.concat(id)).text());
     $('#id_edit_photo_description').val($('#id_photo_description_'.concat(id)).text());
     $('#id_edit_photo_acces').val($('#id_photo_acces_'.concat(id)).text());
@@ -17,32 +15,16 @@ function ask_edit_photo(id) {
     $('#id_edit_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
     $('#id_edit_photo_id').val(id);
 
-    //reset du champ choix fichier file
-    //var el = $('#id_edit_photo');
-    //el.wrap('<form>').closest('form').get(0).reset();
-    //el.unwrap();
+    $('#id_edit_groupe').val($('#id_groupe_'.concat(id)).text());
+    $('#id_edit_categorie').data("current", $('#id_categorie_'.concat(id)).text());
 
     $('#id_edit_photo_label').text('');
+
+    loadCategoriesAtWork(false);
     $('#id_edit_photo_modal').modal('show')
 };
 
 function ask_import_photo() {
-    // reset du formulaire
-    //$('#id_import_photo').get(0).reset(); 
-    //$('#id_edit_photo_code').val($('#id_photo_code_'.concat(id)).text());
-    //$('#id_edit_photo_description').val($('#id_photo_description_'.concat(id)).text());
-    //$('#id_edit_photo_acces').val($('#id_photo_acces_'.concat(id)).text());
-    //$('#id_edit_photo_message').text("");
-    //$('#id_edit_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-    //$('#id_edit_photo_id').val(id);
-
-    //reset du champ choix fichier file
-    //var el = $('#id_edit_photo');
-    //el.wrap('<form>').closest('form').get(0).reset();
-    //el.unwrap();
-
-    //$('#id_edit_photo_label').text('');
-
     $('#id_import_photo_form').get(0).reset();
     $('#id_import_photo_img').attr('src', blank_photo);
     $('#modalAddPhoto').modal('show');
@@ -116,7 +98,7 @@ function loadCategoriesPopOver(event){
 
     event.preventDefault();
     $("#id_popover_message").text(" ");
-    //$("#id_loader").css("display","block");
+
     var csrftoken = getCookie('csrftoken');
     var u = $("#id_popover_categorie_form").data('action');
     var groupe = $("#id_popover_groupe");
@@ -143,33 +125,43 @@ function loadCategoriesPopOver(event){
                 var element = res[idx];
                 $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
             }
-            //$select.selectpicker('refresh');
-//            $("#id_popover_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
-            //alert(groupe.val());
-	    //window.location.reload();
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
-            //console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-	    //$("#id_loader").css("display","none");
             $("#id_popover_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
         }
     });    
 }
-
 function loadCategories(event) {
-
     event.preventDefault();
-    $("#id_import_photo_message").text(" ");
+    var create_form = event.target.id.match(/import/) != null ;
+    loadCategoriesAtWork(create_form);
+}
+
+function loadCategoriesAtWork(create_form) {
+    
+    var id_msg = '#id_edit_photo_message';
+    var id_groupe = "#id_edit_groupe";
+    var id_img_target = '#id_edit_photo_img'
+    var id_categorie = '#id_edit_categorie';
+
+    if (create_form) { 
+        id_msg = '#id_import_photo_message';
+        id_img_target = '#id_import_photo_img';
+        id_groupe = "#id_import_groupe";
+        id_categorie = "#id_import_categorie";
+    }
+
+    $(id_msg).text(" ");
     
     var csrftoken = getCookie('csrftoken');
     var u = $("#id_popover_categorie_form").data('action');
-    var groupe = $("#id_import_groupe");
+    var groupe = $(id_groupe);
     
     if (groupe.val() == "NONE") {
-        $selected = $("#id_import_categorie option[value='NONE']");
-        $select.empty();
-        $select.append('<option value="NONE" selected></option>');
+        var selected = $(id_categorie);
+        selected.empty();
+        selected.append('<option value="NONE" selected></option>');
         return ;
     }
     
@@ -177,21 +169,30 @@ function loadCategories(event) {
     $.ajax({
         'type' : 'post',
         'url' : u,
-        'data' : "groupe=".concat($('#id_import_groupe').val()),
+        'data' : "groupe=".concat($(id_groupe).val()),
            'success' : function(response)
            {
-               $select = $("#id_import_categorie");
+               $select = $(id_categorie);
+               var val = $select.data("current");
                $select.empty();
                var res = JSON.parse(response).message;
                $select.append('<option value="NONE"></option>');
                for (var idx=0; idx < res.length; idx++) { 
                    var element = res[idx];
-                   $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+                   if (element.categorie == val) {
+                       $select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
+                   } else {
+                       $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+                   }
                }
+               $select.val(val);
+               $select.change();
+               //$(id_categorie.concat(" option[value=").concat(val).concat("]")).attr("disabled", false);
+
            },
            'error': function(jqXHR, textStatus, errorThrown)
            {
-               $("#id_import_photo_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+               $(id_msg).text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
            }
           });    
 }
@@ -200,7 +201,8 @@ $(document).ready(
     function () {
         $('#id_edit_photo').change(handleFileSelect);
         $('#id_import_photo').change(handleFileSelect);
-
+        $('#id_import_groupe').on('change', loadCategories);
+        $('#id_edit_groupe').on('change', loadCategories);
 
         $('#id_sel_categorie').popover({
             html: true,
@@ -225,7 +227,7 @@ $(document).ready(
             });
         }).on("show.bs.popover", function(e){  $(this).data("bs.popover").tip().css({"max-width": "400px"}); });
 
-        $('#id_import_groupe').on('change', loadCategories);
+
         
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);

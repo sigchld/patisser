@@ -12,7 +12,7 @@
       <tr  style="margin:0;padding:0;border:0px;">
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
-          <span>Photos [</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >toutes</a><span>]</span>
+          <span>Photos [</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.groupe}}:{{ request.session.categorie}}</a><span>]</span>
 	  
 	  &nbsp;
 	  {% if acces %}
@@ -88,7 +88,7 @@
 	  {% else %}
 	  <a href="{% url 'list_photos' %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
-          <span>Photos [</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >toutes</a><span>]</span>
+          <span>Photos [</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.groupe}}:{{ request.session.categorie}}</a><span>]</span>
 
         </td>
 	{% endif %}
@@ -113,25 +113,6 @@
         </td>
       </tr>
 
-      <!-- tr >
-        <td colspan="2" style="margin:0;padding:0;border:0px;"></td>
-        <td  style="margin-top:1px;padding:0;border:0px;">
-          <select   id="id_groupe">
-	    <option value="PUB" selected>groupe recettes</option>
-	    <option value="PRIV">groupe preparations</option>
-            <option value="PRIV">groupe ingredients</option>
-            <option value="PRIV">groupe ustensiles</option>
-	  </select>
-        </td>
-        <td style="margin-top:0;padding:0;border:0px;">
-          <select   id="id_groupe">
-	    <option value="PUB" selected></option>
-	    <option value="PRIV">fruits frais</option>
-            <option value="PRIV">groupe ingredients</option>
-            <option value="PRIV">groupe ustensiles</option>
-	  </select>
-          </td>
-</tr -->
       {% if detail %}
       <tr>
         <th>code</th>
@@ -206,6 +187,7 @@
       {% for photo in photos %}
       <tr>
         <td>
+          <div><span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span></div>
           {% if request.user.username == photo.owner.username %}
           <div>
             <div>
@@ -215,8 +197,14 @@
               <a href="javascript:ask_edit_photo({{photo.id}});"  title="modifier une photo"><span class="glyphicon glyphicon-pencil"></span></a>
             </div>
           </div>
-          {% endif %}      
-          <span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span> 
+          {% endif %}
+          {% if photo.categorie %}
+          <div>
+            <span  data-toggle="tooltip" title="{{photo.categorie.description}}" >[{{photo.categorie.groupe}}:{{photo.categorie.categorie}}]</span>
+            <span style="display:none;" id="id_groupe_{{photo.id}}" >{{photo.categorie.groupe}}</span>
+            <span style="display:none;" id="id_categorie_{{photo.id}}" >{{photo.categorie.categorie}}</span>
+          </div>
+          {% endif %}
         </td> 
         <td><span id="id_photo_description_{{photo.id}}">{{photo.description}}</span></td>
         <td><span id="id_photo_username_{{photo.id}}">{{photo.owner.username}}</span></td>
@@ -249,7 +237,13 @@
               <a href="javascript:ask_delete_photo({{photo.id}});" title="supprimer une photo"><span class="glyphicon glyphicon-trash"></span></a>
               <a href="javascript:ask_edit_photo({{photo.id}});"  title="modifier une photo"><span class="glyphicon glyphicon-pencil"></span></a>
             </div>
-            {% endif %}      
+            {% endif %}
+            {% if photo.categorie %}
+            <span  data-toggle="tooltip" title="{{photo.categorie.description}}" >&nbsp; [{{photo.categorie.groupe}}:{{photo.categorie.categorie}}]</span>
+            <span style="display:none;" id="id_groupe_{{photo.id}}" >{{photo.categorie.groupe}}</span>
+            <span style="display:none;" id="id_categorie_{{photo.id}}" >{{photo.categorie.categorie}} </span>
+            {% endif %}
+
           </div>
         </td>
         {% if forloop.last %}
@@ -290,7 +284,7 @@
   
 <div id="popover-content" style="display:none;" >
 <div class="container">
-        <form  class="form" role="form" id="id_popover_categorie_form"  name="mainForm" method="post" action="{% url 'list_photos' %}" data-action="{% url 'get_category' %}">
+        <form  class="form" role="form" id="id_popover_categorie_form"  name="mainForm" method="get" action="{% url 'list_photos' %}" data-action="{% url 'get_category' %}">
           {% csrf_token %}
             <p>
 	      <label for="groupe">Groupe:</label>
@@ -344,7 +338,7 @@
               <div style="display:inline-block">  
 	        <div class="form-group">
 	          <label for="acces">Accès:</label>
-	          <select class="form_control" name="categorie" id="id_acces">
+	          <select class="form_control" name="acces" id="id_acces">
 		    <option value="PUB" selected>public</option>
 		    <option value="PRIV">privé</option>
 	          </select>
@@ -421,7 +415,7 @@
 	        </div>
              <p>
 	      <label for="groupe">Groupe:</label>
-              <select class=""  style="min-width: 40px;" id="id_import_groupe" name="groupe" placeholder="groupe">
+              <select class=""  style="min-width: 40px;" id="id_edit_groupe" name="groupe" placeholder="groupe">
 	        <option value="NONE" selected>aucun</option>
                 <option value="REC" >recettes</option>
 	        <option value="PREP">preparations</option>
@@ -429,10 +423,11 @@
                 <option value="MAT">ustensiles</option>
 	      </select>
             </p>
-            <p>
+
+                <p>
 	      <label for="categorie">Catégorie:</label>
-              <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_import_categorie" name="categorie" placeholder="categorie">
-	        <option value="NONE" selected></option>
+              <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_edit_categorie" name="categorie" placeholder="categorie">
+                <option value="NONE" selected>aucune</option>
 	      </select>
               </p>
             <p>
@@ -517,10 +512,10 @@
   {% if detail %}
   "columnDefs": [
   { "width": "10%", "targets": 0 },
-  { "width": "30%", "targets": 1 },
+  { "width": "20%", "targets": 1 },
   { "width": "20%", "targets": 2 },
   { "width": "20%", "targets": 3 },
-  { "width": "20%", "targets": 4 }
+  { "width": "30%", "targets": 4 }
   ]
   {% else %}
   "columnDefs": [
