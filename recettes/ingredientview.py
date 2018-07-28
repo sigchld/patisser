@@ -62,7 +62,7 @@ class IngredientView(View):
         return http.HttpResponseNotAllowed(self._allowed_methods(), '{ "message" : "Méthode non supportée" }')
         
     
-    # Mofification d'une photo
+    # Mofification d'un ingredient
     def post(self, request):
         try:
             form = PhotoForm(request.POST)

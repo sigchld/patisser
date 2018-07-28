@@ -94,44 +94,7 @@ function handleFileSelect(evt) {
 }
 
 
-function loadCategoriesPopOver(event){
 
-    event.preventDefault();
-    $("#id_popover_message").text(" ");
-
-    var csrftoken = getCookie('csrftoken');
-    var u = $("#id_popover_categorie_form").data('action');
-    var groupe = $("#id_popover_groupe");
-
-    if (groupe.val() == "ALL") {
-        $("#id_popover_categorie option[value='ALL']").prop('selected', true);
-        return ;
-    }
-    
-    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-    $.ajax({
-        //processData: true,
-        //contentType: true,
-        'type' : 'post',
-        'url' : u,
-        'data' : $("#id_popover_categorie_form").serialize(),        
-        'success' : function(response)
-        {
-            $select = $("#id_popover_categorie");
-            $select.empty();
-            var res = JSON.parse(response).message;
-            $select.append('<option value="ALL">toutes</option>');
-            for (var idx=0; idx < res.length; idx++) { 
-                var element = res[idx];
-                $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
-            }
-        },
-        'error': function(jqXHR, textStatus, errorThrown)
-        {
-            $("#id_popover_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
-        }
-    });    
-}
 function loadCategories(event) {
     event.preventDefault();
     var create_form = event.target.id.match(/import/) != null ;
@@ -203,30 +166,6 @@ $(document).ready(
         $('#id_import_photo').change(handleFileSelect);
         $('#id_import_groupe').on('change', loadCategories);
         $('#id_edit_groupe').on('change', loadCategories);
-
-        $('#id_sel_categorie').popover({
-            html: true,
-            placement: 'right',
-            content : function() {
-                return $('#popover-content').html();
-                //return $('#popover-content').children();
-            },
-            title: function(){
-		return $(this).data('title')+'<span class="close">&times;</span>';
-            }
-        }).on('shown.bs.popover', function(e){
-	    var popover = $(this);
-            //$('.selectpicker').selectpicker();
-            $('#id_popover_groupe').on('change', loadCategoriesPopOver);
-            //$("#id_popover_categorie_form").submit(loadCategoriesPopOver);
-	    $(this).parent().find('div.popover .close').on('click', function(e){
-		popover.popover('hide');
-                // pour eviter de clicker 2 fois
-                // https://stackoverflow.com/questions/11703093/how-to-dismiss-a-twitter-bootstrap-popover-by-clicking-outside/14857326#14857326
-                popover.popover('hide').data('bs.popover').inState.click = false
-            });
-        }).on("show.bs.popover", function(e){  $(this).data("bs.popover").tip().css({"max-width": "400px"}); });
-
 
         
         $('#id_owner_sel').on('change', function (e) {

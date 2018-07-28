@@ -126,6 +126,35 @@
 	                  </div>
                         </div>
                         {% endif %}
+                    <div id="popover-content" style="display:none;" >
+<div class="container">
+        <form  class="form" role="form" id="id_popover_categorie_form"  name="mainForm" method="get" action="" data-cat-action="{% url 'get_category' %}">
+          {% csrf_token %}
+            <p>
+	      <label for="groupe">Groupe:</label>
+              <select class="" id="id_popover_groupe" name="groupe" placeholder="groupe">
+	        <option value="ALL" selected>tous</option>
+                <option value="REC" >recettes</option>
+	        <option value="PREP">preparations</option>
+                <option value="ING">ingredients</option>
+                <option value="MAT">ustensiles</option>
+	      </select>
+            </p>
+            <p>
+	      <label for="categorie">Catégorie:</label>
+              <select class="" data-show-subtext="true" style="min-width:250px;" data-live-search="true" id="id_popover_categorie" name="categorie" placeholder="categorie">
+	        <option value="ALL" selected>toutes</option>
+	      </select>
+              </p>
+            <p>
+              <button id="id_submit_filter" type="submit"  class="btn btn-primary">Filtrer</button>
+              </p>
+        </form>
+        <div >
+          <span id="id_popover_message">&nbsp;</span>
+        </div>
+</div>
+</div>
 
                         <script type="text/javascript" src="{% static "js/jquery.easing.min.js" %}"></script>
                         <script type="text/javascript" src="{% static "js/plugins.js" %}"></script>
@@ -162,3 +191,4 @@
                         </script>
                       </body>
                     </html>
+

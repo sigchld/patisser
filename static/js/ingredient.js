@@ -34,6 +34,9 @@ function remplissage(no_ingredient) {
     $("#id_detail_ingredient_sel").text(ingredient.sel);
     $("#id_detail_ingredient_date_creation").text(ingredient.date_creation);
     $("#id_detail_ingredient_date_modification").text(ingredient.date_modification);
+    $("#id_detail_ingredient_categorie_description").val(ingredient.categorie_description);
+    $("#id_detail_ingredient_prix_unitaire").text(ingredient.pu);
+    $("#id_detail_ingredient_prix_poids").text(ingredient.pp);
     $('#id_detail_ingredient_img').attr('src', $('#id_ingredient_img_'.concat(ingredient.id)).attr('src'));    
 }
 

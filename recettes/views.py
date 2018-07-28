@@ -85,11 +85,11 @@ def list_photos(request, owner='me', acces=None, filter=None):
     categorie = request.GET.dict().get('categorie', None)
 
     # Maj session
-    if groupe is  None and request.session.get('groupe', None) is not None:
-        groupe = request.session.get('groupe', None)
+    if groupe is  None and request.session.get('photos_groupe', None) is not None:
+        groupe = request.session.get('photos_groupe', None)
 
-    if categorie is None and request.session.get('categorie', None) is not None:
-        categorie = request.session.get('categorie', None)
+    if categorie is None and request.session.get('photos_categorie', None) is not None:
+        categorie = request.session.get('photos_categorie', None)
 
     # Conversion None -> ALL
     if groupe is None:
@@ -109,8 +109,8 @@ def list_photos(request, owner='me', acces=None, filter=None):
         logger.debug("list_photos/categorie_obj/{}".format(just_the_string))
 
     
-    request.session['categorie'] = categorie
-    request.session['groupe'] = groupe
+    request.session['photos_categorie'] = categorie
+    request.session['photos_groupe'] = groupe
         
     logger.debug("list_photos/acces/{}/owner/{}/auth/{}".format(acces, owner,request.user.is_authenticated))            
     template = loader.get_template('photolist.html')
@@ -320,13 +320,44 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
     logger.debug("list_ingredients/acces/{}/owner/{}/auth/{}".format(acces, owner,request.user.is_authenticated))            
     template = loader.get_template('ingredientlist.html')
 
+    groupe = "ING" ; # request.GET.dict().get('groupe', None)
+    categorie = request.GET.dict().get('categorie', None)
+
+    # Recuperation groupe / categorie
+    #if groupe is  None and request.session.get('ingredients_groupe', None) is not None:
+    #    groupe = request.session.get('ingredients_groupe', None)
+
+    if categorie is None and request.session.get('ingredients_categorie', None) is not None:
+        categorie = request.session.get('ingredients_categorie', None)
+
+    # Conversion None -> ALL
+    #if groupe is None:
+    #    groupe = "ALL"
+    if categorie is None:
+        categorie = "ALL"
+        
+    categorie_obj = None
+    try:
+        # traiter le cas de ALL / ALL
+        logger.debug("list_ingredient_query/categorie_obj/{}/{}".format(groupe, categorie))
+        categorie_obj = Categorie.objects.get(Q(groupe=groupe) & Q(categorie=categorie)) #, categorie=categorie)
+        logger.debug("list_ingredient_result/categorie_obj/{}/{}".format(categorie_obj.groupe, categorie_obj.categorie))
+        # verifier les droits d'acces 
+        #except Photo.DoesNotExist:
+    except:
+        just_the_string = traceback.format_exc()
+        logger.debug("list_photos/categorie_obj/{}".format(just_the_string))
+
+    
+    request.session['ingredients_categorie'] = categorie
+    request.session['ingredients_groupe'] = groupe
+
     # recuperation du filtre dans la session
     if filter is None:
         filter = request.session.get('filter_ingredients', None)
     else:
         request.session['filter_ingredients']=filter
             
-
     if request.user.is_authenticated:
         if owner == 'all':
             ingredient_list = Ingredient.objects.filter((~Q(owner = request.user.username) & Q(acces = 'PUB'))| Q(owner = request.user.username)).order_by('code')
@@ -352,13 +383,17 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
         if filter:
             ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter))
     else:
-        ingredient_list =  Ingredient.objects.filter(owner='anonyme')
+        ingredient_list =  Ingredient.objects.filter(Q(acces='PUB'))
            
         if filter:
             ingredient_list = ingredient_list.filter(Q(code__icontains = filter) | Q(description__icontains = filter)).order_by('code')
         else:
             ingredient_list = ingredient_list.order_by('code')
 
+    if categorie_obj is not None:
+        logger.debug("*************************** list_ingredient_result/categorie_obj/filter/{}/{}".format(categorie_obj.groupe, categorie_obj.categorie))
+        ingredient_list = ingredient_list.filter(categorie=categorie_obj)
+                    
     if detail :
         # 10 lignes
         nb_elem = 10

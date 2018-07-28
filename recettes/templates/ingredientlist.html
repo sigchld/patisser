@@ -12,8 +12,8 @@
       <tr>
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
+          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_ingredients' %}" data-groupe="ING" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >ING:{{request.session.ingredients_categorie}}</a>]</span>
 	  
-	  Liste ingredients
 	  &nbsp;
 	  {% if acces %}
 	  {% if detail %}
@@ -83,7 +83,9 @@
 	</td>
 	{% else %}
 	<td colspan="4">
-	  Liste ingredients&nbsp;&nbsp;
+          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" data-groupe="ING" >ING:{{request.session.ingredients_categorie}}</a>]</span>
+
+	  &nbsp;&nbsp;
 	  {% if detail %}
 	  <a href="{% url 'list_ingredients' %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
@@ -188,7 +190,11 @@
       {% for ingredient in ingredients %}
       <tr role="row">
         <td>
+          
           {% if request.user.username == ingredient.owner.username %}
+          <div>
+            <span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span>
+          </div>
           <div>
             <div>
               <a href="javascript:ask_delete_ingredient({{forloop.counter0}});"><span class="glyphicon glyphicon-trash"></span></a>
@@ -197,8 +203,15 @@
               <a href="javascript:ask_edit_ingredient({{ingredient.id}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
             </div>
           </div>
-          {% endif %}      
-          <span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span> 
+          {% endif %}
+          {% if ingredient.categorie %}
+          <div>
+            <span  class="grpcat" data-toggle="tooltip" title="{{ingredient.categorie.description}}" >[{{ingredient.categorie.groupe}}:{{ingredient.categorie.categorie}}]</span>
+            <span style="display:none;" id="id_groupe_{{ingredient.id}}" >{{ingredient.categorie.groupe}}</span>
+            <span style="display:none;" id="id_categorie_{{ingredient.id}}" >{{ingredient.categorie.categorie}}</span>
+          </div>
+          {% endif %}
+
         </td> 
         <td><span id="id_ingredient_description_{{ingredient.id}}">{{ingredient.description}}</span></td>
         <td><span id="id_ingredient_username_{{ingredient.id}}">{{ingredient.owner.username}}</span></td>
@@ -233,12 +246,18 @@
             </div>
             <div style="display:none"><span id="id_ingredient_description_{{ingredient.id}}">{{ingredient.description}}</span></div>
             <div style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></div>
-            {% if request.user.username == ingredient.owner.username %}
-            <div class="row" style="vertical-align:bottom;margin-left:0px;">   
+
+            <div class="row" style="vertical-align:bottom;margin-left:0px;">
+              {% if request.user.username == ingredient.owner.username %}
               <a href="javascript:ask_delete_ingredient({{forloop.counter0}});" title="supprimer un ingredient"><span class="glyphicon glyphicon-trash"></span></a>
               <a href="javascript:ask_edit_ingredient({{forloop.counter0}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
+              {% endif %}
+              {% if ingredient.categorie %}
+              <span  class="grpcat" data-toggle="tooltip" title="{{ingredient.categorie.description}}" >&nbsp;[{{ingredient.categorie.groupe}}:{{ingredient.categorie.categorie}}]</span>
+              <span style="display:none;" id="id_groupe_{{ingredient.id}}" >{{ingredient.categorie.groupe}}</span>
+              <span style="display:none;" id="id_categorie_{{ingredient.id}}">{{ingredient.categorie.categorie}}</span>
+              {% endif %}
             </div>
-            {% endif %}      
           </div>
         </td>
         {% if forloop.last %}
@@ -255,7 +274,7 @@
 
     <tfoot>
       <tr>
-        <td colspan="4"><p>Liste ingredients</td>
+        <td colspan="4"><p>Ingredients</td>
         <td class="text-right">
           {% if ingredients %}
           <div class="pagination">
@@ -421,12 +440,33 @@
                 <span id="id_detail_ingredient_date_modification"></span>
               </div>
             </div>
-
             <div class="row">
-              <div class="greybox" style="min-height: 75px;">
-                <span class="font-weight-bold" >Description </span>
-                <span id="id_detail_ingredient_description"></span>
+              <div class="greybox">
+                <span class="font-weight-bold">Catégorie  </span>
+                <span id="id_detail_ingredient_categorie_description"></span>
               </div>
+            </div>
+            <div class="row">
+              <div class="greybox">
+                <span class="font-weight-bold">Prix </span>
+                <span id="id_detail_ingredient_prix_unitaire"></span>
+                <span class="font-weight-bold">&euro;</span>
+                <span> pour </span>
+                <span id="id_detail_ingredient_prix_poids"></span>
+                <span class="font-weight-bold">g</span>
+              </div>
+            </div>            
+            <div class="row">
+              <div class="greybox" style="min-height: 75px;">                
+	          <label for="description">Description:</label>
+	          <textarea disabled rows="2" class="form-control" id="id_detail_ingredient_description" name="description" required="required" maxlength="200"></textarea>
+
+
+<!--                <span class="font-weight-bold" >Description </span>
+                <input type="textarea"  id="id_detail_ingredient_description" disabled value="kkk">
+-->
+              </div>
+
               <div class="greybox" style="min-height: 75px;">
                 <span class="font-weight-bold" >Bon à savoir </span>
                 <span id="id_detail_ingredient_bonasavoir"></span>
@@ -588,7 +628,14 @@
   "sel_inf" : "{{ingredient.sel_inferieur|escapejs}}",
   "sel" : "{{ingredient.sel|escapejs}}",
   "date_creation" : "{{ingredient.date_creation|date:"l j F o G:H:i"}}",
-  "date_modification" : "{{ingredient.date_modification|date:"l j F o G:H:i"}}"
+  "date_modification" : "{{ingredient.date_modification|date:"l j F o G:H:i"}}",
+  {% if ingredient.categorie %}
+  "categorie_description" : "{{ingredient.categorie.description|escapejs}}",
+  {% else %}
+  "categorie_description" : "",
+  {% endif %}
+  "pu" : "{{ingredient.pu|escapejs}}",
+  "pp" : "{{ingredient.pp|escapejs}}",
   };
   {% endfor %}
 

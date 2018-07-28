@@ -12,7 +12,7 @@
       <tr  style="margin:0;padding:0;border:0px;">
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
-          <span>Photos [</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.groupe}}:{{ request.session.categorie}}</a><span>]</span>
+          <span>Photos </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_photos' %}" data-groupe="ALL" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.photos_groupe}}:{{ request.session.photos_categorie}}</a>]</span>
 	  
 	  &nbsp;
 	  {% if acces %}
@@ -88,7 +88,7 @@
 	  {% else %}
 	  <a href="{% url 'list_photos' %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
-          <span>Photos [</span><a href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.groupe}}:{{ request.session.categorie}}</a><span>]</span>
+          <span>Photos </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-groupe="ALL" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.photos_groupe}}:{{ request.session.photos_categorie}}</a>]</span>
 
         </td>
 	{% endif %}
@@ -200,7 +200,7 @@
           {% endif %}
           {% if photo.categorie %}
           <div>
-            <span  data-toggle="tooltip" title="{{photo.categorie.description}}" >[{{photo.categorie.groupe}}:{{photo.categorie.categorie}}]</span>
+            <span  class="grpcat" data-toggle="tooltip" title="{{photo.categorie.description}}" >[{{photo.categorie.groupe}}:{{photo.categorie.categorie}}]</span>
             <span style="display:none;" id="id_groupe_{{photo.id}}" >{{photo.categorie.groupe}}</span>
             <span style="display:none;" id="id_categorie_{{photo.id}}" >{{photo.categorie.categorie}}</span>
           </div>
@@ -232,18 +232,18 @@
             <div class="row" style="height:128px;text-align:center;"><img  id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{% url 'photo' photo.id %}"></div>
             <div style="display:none"><span id="id_photo_description_{{photo.id}}">{{photo.description}}</span></div>
             <div style="display:none"><span id="id_photo_acces_{{photo.id}}">{{photo.acces}}</span></div>
-            {% if request.user.username == photo.owner.username %}
-            <div class="row" style="vertical-align:bottom;margin-left:0px;">   
+
+            <div class="row" style="display:inline;vertical-align:bottom;margin-left:0px;">
+              {% if request.user.username == photo.owner.username %}
               <a href="javascript:ask_delete_photo({{photo.id}});" title="supprimer une photo"><span class="glyphicon glyphicon-trash"></span></a>
               <a href="javascript:ask_edit_photo({{photo.id}});"  title="modifier une photo"><span class="glyphicon glyphicon-pencil"></span></a>
+              {% endif %}
+              {% if photo.categorie %}
+              <span  class="grpcat" data-toggle="tooltip" title="{{photo.categorie.description}}" >&nbsp;[{{photo.categorie.groupe}}:{{photo.categorie.categorie}}]</span>
+              <span style="display:none;" id="id_groupe_{{photo.id}}" >{{photo.categorie.groupe}}</span>
+              <span style="display:none;" id="id_categorie_{{photo.id}}">{{photo.categorie.categorie}}</span>
+              {% endif %}
             </div>
-            {% endif %}
-            {% if photo.categorie %}
-            <span  data-toggle="tooltip" title="{{photo.categorie.description}}" >&nbsp; [{{photo.categorie.groupe}}:{{photo.categorie.categorie}}]</span>
-            <span style="display:none;" id="id_groupe_{{photo.id}}" >{{photo.categorie.groupe}}</span>
-            <span style="display:none;" id="id_categorie_{{photo.id}}" >{{photo.categorie.categorie}} </span>
-            {% endif %}
-
           </div>
         </td>
         {% if forloop.last %}
@@ -282,35 +282,6 @@
   </table>
 
   
-<div id="popover-content" style="display:none;" >
-<div class="container">
-        <form  class="form" role="form" id="id_popover_categorie_form"  name="mainForm" method="get" action="{% url 'list_photos' %}" data-action="{% url 'get_category' %}">
-          {% csrf_token %}
-            <p>
-	      <label for="groupe">Groupe:</label>
-              <select class="" id="id_popover_groupe" name="groupe" placeholder="groupe">
-	        <option value="ALL" selected>tous</option>
-                <option value="REC" >recettes</option>
-	        <option value="PREP">preparations</option>
-                <option value="ING">ingredients</option>
-                <option value="MAT">ustensiles</option>
-	      </select>
-            </p>
-            <p>
-	      <label for="categorie">Catégorie:</label>
-              <select class="" data-show-subtext="true" style="min-width:250px;" data-live-search="true" id="id_popover_categorie" name="categorie" placeholder="categorie">
-	        <option value="ALL" selected>toutes</option>
-	      </select>
-              </p>
-            <p>
-              <button id="id_submit_filter" type="submit"  class="btn btn-primary">Filtrer</button>
-              </p>
-        </form>
-        <div >
-          <span id="id_popover_message">&nbsp;</span>
-        </div>
-</div>
-</div>
   
   {% if request.user.is_authenticated %}
   <!-- Modal Creation d'une photo -->

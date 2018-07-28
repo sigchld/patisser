@@ -61,7 +61,7 @@ class Ingredient(models.Model):
     description = models.CharField(max_length=200)
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
-
+    pp = models.DecimalField(default=100, max_digits=6, decimal_places=0)
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
     
@@ -100,6 +100,8 @@ class Ingredient(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
+    categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
+    
     class Meta:
         unique_together = (("owner", "code"),)
     
