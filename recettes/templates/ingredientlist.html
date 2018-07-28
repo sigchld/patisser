@@ -12,7 +12,7 @@
       <tr>
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
-          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_ingredients' %}" data-groupe="ING" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >ING:{{request.session.ingredients_categorie}}</a>]</span>
+          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_ingredients' %}" data-groupe="ING" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{request.session.ingredients_categorie}}</a>]</span>
 	  
 	  &nbsp;
 	  {% if acces %}
@@ -83,7 +83,7 @@
 	</td>
 	{% else %}
 	<td colspan="4">
-          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" data-groupe="ING" >ING:{{request.session.ingredients_categorie}}</a>]</span>
+          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" data-groupe="ING" >{{request.session.ingredients_categorie}}</a>]</span>
 
 	  &nbsp;&nbsp;
 	  {% if detail %}
@@ -200,7 +200,7 @@
               <a href="javascript:ask_delete_ingredient({{forloop.counter0}});"><span class="glyphicon glyphicon-trash"></span></a>
             </div>
             <div>
-              <a href="javascript:ask_edit_ingredient({{ingredient.id}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
+              <a href="javascript:ask_edit_ingredient({{forloop.counter0}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
             </div>
           </div>
           {% endif %}
@@ -407,25 +407,32 @@
 {% endcomment %}
 {% endif %}
 
-  <!-- Modal detail d'un ingredient -->
+  <!-- Modal detail/modification d'un ingredient -->
   <div id="id_detail_ingredient_modal" class="modal fade">
     <span id="id_detail_ingredient_no" style="display:none"></span>
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header" id="id_detail_ingredient_modal_view_header">
-	  <h4 class="modal-title text-center">Détail ingredient</h4>
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	  <h4 class="modal-title text-center">Détail ingredient</h4>
         </div>
         <div class="modal-header" id="id_detail_ingredient_modal_delete_header">
-          <h4 class="modal-title text-center">Suppression ingredient</h4>	
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title text-center">Suppression ingredient</h4>
+        </div>
+
+        <div class="modal-header" id="id_detail_ingredient_modal_edit_header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title text-center">Modification ingredient</h4>
         </div>
 
         <div class="modal-body">
           <div class="container-fluid">
-            <div class="row">
-              <div class="greybox" style="width:30%">
-                <span class="font-weight-bold">Code </span>
-                <span id="id_detail_ingredient_code"></span>
+            <form id="id_detail_ingredient_form" action="">
+              <div class="row">
+              <div class="greybox" style="width:50%">
+                <label for="code">Code</label>
+                <input disabled name="code" type="text" id="id_detail_ingredient_code"></input>
               </div>
             </div>
             <div class="row">
@@ -443,143 +450,143 @@
             <div class="row">
               <div class="greybox">
                 <span class="font-weight-bold">Catégorie  </span>
-                <span id="id_detail_ingredient_categorie_description"></span>
+                <!-- span id="id_detail_ingredient_categorie_description"></span -->
+
+                <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_detail_categorie" name="categorie" placeholder="categorie">
+	        <option value="NONE" selected></option>
+	      </select>
               </div>
             </div>
+            
             <div class="row">
               <div class="greybox">
                 <span class="font-weight-bold">Prix </span>
-                <span id="id_detail_ingredient_prix_unitaire"></span>
+                <input maxlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_ingredient_prix_unitaire">
                 <span class="font-weight-bold">&euro;</span>
                 <span> pour </span>
-                <span id="id_detail_ingredient_prix_poids"></span>
+                <input class="text-right" name="pp" maxlength="8" style="width:8em;" id="id_detail_ingredient_prix_poids">
                 <span class="font-weight-bold">g</span>
               </div>
-            </div>            
+            </div>
+            
             <div class="row">
               <div class="greybox" style="min-height: 75px;">                
-	          <label for="description">Description:</label>
+	          <label for="description">Description</label>
 	          <textarea disabled rows="2" class="form-control" id="id_detail_ingredient_description" name="description" required="required" maxlength="200"></textarea>
-
-
-<!--                <span class="font-weight-bold" >Description </span>
-                <input type="textarea"  id="id_detail_ingredient_description" disabled value="kkk">
--->
               </div>
-
-              <div class="greybox" style="min-height: 75px;">
-                <span class="font-weight-bold" >Bon à savoir </span>
-                <span id="id_detail_ingredient_bonasavoir"></span>
-              </div>
-              <div>
+            </div>
+            <div class="row">
+              <div class="greybox" style="min-height: 75px;">                
+	        <label for="bonasavoir">Bon à savoir</label>
+	        <textarea disabled rows="2" class="form-control" id="id_detail_ingredient_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
               </div>
             </div>
             <div class="row">
               <div class="col-lg-8 greybox">
                 <div class="no-margin row">
-                  <div class="col-border col-lg-8" style="display:inline-block"><p class="font-lighter">Valeurs nutritionnelles moyennes</p>
-                  </div>
-                  <div class="col-border col-lg-4" style="display:inline-block"><p >Pour 100g</p>
+                  <div class="col-border col-lg-~!" style="display:inline-block"><p class="font-lighter">Valeurs nutritionnelles moyennes pour 100g</p>
                   </div>
                 </div>
                 <div class="no-margin row">
-                  <div class="col-border col-lg-8"><span>energie</span>
+                  <div class="col-border col-lg-7"><span>energie</span>
                   </div>
-                  <div class="col-border col-lg-4">
+                  <div class="col-border col-lg-5">
                     <div>
-                      <span id="id_detail_ingredient_kjoules"></span>
-                      <span>kj</span>
+                      <input disabled class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kjoules" id="id_detail_ingredient_kjoules">
+                      <span style="display:inline">kj</span>
                     </div>
                     <div>
-                      <span id="id_detail_ingredient_kcalories"></span>
-                      <span> kcal</span>
+                      <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kcalories" id="id_detail_ingredient_kcalories">
+                      <span style="display:inline;">kcal</span>
                     </div>
                   </div>
                 </div>
                 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-8">
+                  <div class="col-border col-lg-7">
                     <span>maitères grasses<span>
                   </div>
-                  <div  class="col-border col-lg-4">
-                    <span id="id_detail_ingredient_matieres_grasses_inf"></span>
-                    <span id="id_detail_ingredient_matieres_grasses"></span>
-                    <span> g</span>
+                  <div  class="col-border col-lg-5">
+                    <!-- span id="id_detail_ingredient_matieres_grasses_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses" id="id_detail_ingredient_matieres_grasses">
+                    <span>g</span>
                   </div>
                 </div>
                 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-8">
+                  <div class="col-border col-lg-7">
                     <span>dont acides gras saturés<span>
                   </div>
-                  <div class="col-border col-lg-4">
-                    <span id="id_detail_ingredient_matieres_grasses_saturees_inf"></span>
-                    <span id="id_detail_ingredient_matieres_grasses_saturees"></span>
-                    <span> g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-8">
-                    <span>Glucides<span>
-                  </div>
-                  <div class="col-border col-lg-4">
-                    <span id="id_detail_ingredient_glucides_inf"></span>
-                    <span id="id_detail_ingredient_glucides"></span>
-                    <span> g<span>
-                  </div>
-                </div>
-                
-                <div class="no-margin row">
-                  <div class="col-border col-lg-8">
-                    <span>dont sucres<span>
-                  </div>
-                  <div class="col-border col-lg-4">
-                    <span id="id_detail_ingredient_glucides_dont_sucres_inf"></span>
-                    <span id="id_detail_ingredient_glucides_dont_sucres"></span>
+                  <div class="col-border col-lg-5">
+                    <!-- span id="id_detail_ingredient_matieres_grasses_saturees_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses_saturees" id="id_detail_ingredient_matieres_grasses_saturees">
                     <span>g</span>
                   </div>
                 </div>
 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-8">
+                  <div class="col-border col-lg-7">
+                    <span>Glucides<span>
+                  </div>
+                  <div class="col-border col-lg-5">
+                    <!-- span id="id_detail_ingredient_glucides_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides" id="id_detail_ingredient_glucides">
+                    <span> g<span>
+                  </div>
+                </div>
+                
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7">
+                    <span>dont sucres<span>
+                  </div>
+                  <div class="col-border col-lg-5">
+                    <!-- span id="id_detail_ingredient_glucides_dont_sucres_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides_dont_sucres" id="id_detail_ingredient_glucides_dont_sucres">
+                    <span>g</span>
+                  </div>
+                </div>
+
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7">
                     <span>fibres<span>
                   </div>
-                  <div class="col-border col-lg-4">
-                    <span id="id_detail_ingredient_fibre_inf"></span>
-                    <span id="id_detail_ingredient_fibres"></span>
+                  <div class="col-border col-lg-5">
+                    <!-- span id="id_detail_ingredient_fibre_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name=span id="id_detail_ingredient_fibres"></span>
                     <span> g</span>
                   </div>
                 </div>
 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-8">
+                  <div class="col-border col-lg-7">
                     <span>proteines<span>
                   </div>
-                  <div class="col-border col-lg-4">
-                    <span id="id_detail_ingredient_proteines_inf"></span>
-                    <span id="id_detail_ingredient_proteines"></span>
+                  <div class="col-border col-lg-5">
+                    <!-- span id="id_detail_ingredient_proteines_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="preteines"  id="id_detail_ingredient_proteines">
                     <span> g</span>
                   </div>
                 </div>
 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-8">
+                  <div class="col-border col-lg-7">
                     <span>sel<span>
                   </div>
-                  <div class="col-border col-lg-4">
-                    <span id="id_detail_ingredient_sel_inf"></span>
-                    <span id="id_detail_ingredient_sel"></span>
-                    <span> g</span>
+                  <div class="col-border col-lg-5">
+                    <!-- span id="id_detail_ingredient_sel_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="sel" id="id_detail_ingredient_sel">
+                    <span>g</span>
                   </div>
                 </div>
                 
                 
               </div>
               <div class="col-lg-4">
-                <img style="height:128px;float:left;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
+                <img style="height:128px;width:!@*px;float:left;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
               </div>
             </div>
+            <input type="hidden" id="id_detail_ingredient_id" name="id">
+            </form>
           </div>
         </div>
         <div class="modal-footer" id="id_detail_ingredient_modal_view_footer">
@@ -596,6 +603,17 @@
             <span id="id_delete_ingredient_message">&nbsp;</span>
           </div>
         </div>
+
+        <div class="modal-footer" id="id_detail_ingredient_modal_edit_footer" style="display:none">
+          <div>
+            <span style="display:none;" id="id_edit_ingredient_id"></span>
+            <button type="button" id="id_edit_ingredient" class="btn btn-warning">Enregistrer</button>
+          </div>
+          <div class="alert-error text-center" >
+            <span id="id_edit_ingredient_message">&nbsp;</span>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -607,6 +625,7 @@
   {% for ingredient in ingredients %}
   ingredients[ {{ forloop.counter0 }} ] = {
   "id" : "{{ ingredient.id }}",
+  "idloop" : {{ forloop.counter0 }},
   "code" : "{{ ingredient.code|escapejs }}",
   "description" : "{{ ingredient.description|escapejs }}",
   "bonasavoir" :  "{{ ingredient.bonasavoir|escapejs }}",
@@ -631,8 +650,12 @@
   "date_modification" : "{{ingredient.date_modification|date:"l j F o G:H:i"}}",
   {% if ingredient.categorie %}
   "categorie_description" : "{{ingredient.categorie.description|escapejs}}",
+  "categorie_groupe" : "{{ingredient.categorie.groupe|escapejs}}",
+  "categorie_categorie" : "{{ingredient.categorie.categorie|escapejs}}",
   {% else %}
   "categorie_description" : "",
+  "categorie_groupe" : "",
+  "categorie_categorie" : "",
   {% endif %}
   "pu" : "{{ingredient.pu|escapejs}}",
   "pp" : "{{ingredient.pp|escapejs}}",

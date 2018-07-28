@@ -31,7 +31,7 @@ from PIL import ImageChops
 
 from fees import settings
 
-from .forms import PhotoForm
+from .forms import IngredientForm
 
 from django.db.utils import IntegrityError
 from django.utils.datastructures import MultiValueDictKeyError
@@ -52,7 +52,7 @@ logger = logging.getLogger('fees')
 
 class IngredientView(View):
     def __init__(self):
-        self.http_method_names = ['delete']
+        self.http_method_names = ['delete', 'post']
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         logger.warning(
@@ -65,20 +65,20 @@ class IngredientView(View):
     # Mofification d'un ingredient
     def post(self, request):
         try:
-            form = PhotoForm(request.POST)
+            form = IngredientForm(request.POST)
             #if not form.is_valid():
             #    return HttpResponseServerError('{ "message" : "saisie incomplète" }')
-            photo_id = request.POST.get('id', None)
-            photo = None
+            ingredient_id = request.POST.get('id', None)
+            ingredient = None
             try:
-                photo = Photo.objects.get(pk=photo_id)
-                #except Photo.DoesNotExist:
+                ingredient = Ingredient.objects.get(pk=ingredient_id)
+                #except Ingredient.DoesNotExist:
             except:
-                logger.error("Loading photos inconnue/{}".format(photo_id))
-                return HttpResponseServerError('{ "message" : "photo inconnue" }')
+                logger.error("Loading ingredient inconnue/{}".format(ingredient_id))
+                return HttpResponseServerError('{ "message" : "ingredient inconnu" }')
 
-            if not request.user.is_authenticated and  photo.owner.username != request.user.username:
-                return HttpResponseServerError('{ "message" : "la photo ne vous appartient pas" }')
+            if not request.user.is_authenticated and  ingredient.owner.username != request.user.username:
+                return HttpResponseServerError('{ "message" : "L\'ingredient ne vous appartient pas" }')
 
             try:
                 myfile = request.FILES['photo']
@@ -86,7 +86,7 @@ class IngredientView(View):
                 logger.debug(u"PhotoFileName {}".format(name))
                 fs = FileSystemStorage()
                 filename = fs.save(name, myfile)
-                photo.photo = filename
+                ingredient.photo = filename
                 
                 try:
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
@@ -104,10 +104,10 @@ class IngredientView(View):
             except MultiValueDictKeyError:
                 # pas de nouvelle photo
                 pass
-            photo.description = request.POST.get('description', photo.description)
-            photo.code = request.POST.get('code',photo.code)
-            photo.acces = request.POST.get('acces',photo.acces)
-            photo.save()
+            ingredient.description = request.POST.get('description', ingredient.description)
+            #photo.code = request.POST.get('code',photo.code)
+            #photo.acces = request.POST.get('acces',photo.acces)
+            ingredient.save()
             return HttpResponse('{ "message" : "OK" }')
         
         except IntegrityError:
