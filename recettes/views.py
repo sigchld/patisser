@@ -418,8 +418,21 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
         remplissage = range(0)
     else:
         remplissage = range(remplissage)
-        
-    return HttpResponse(template.render({'filter' : filter, 'ingredients' : ingredients, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail}, request))
+
+    #
+    # constitution de la liste des noms
+    categories = []
+    categories.append(('NONE', 'SANS'))
+    #categories.append(('ALL', 'TOUTES'))
+    categories.append(('ING', 'INGRÉDIENTS'))
+    #categories.append(('REC', 'RECETTES'))
+    #categories.append(('PREP','PRÉPARATIONS'))
+    #categories.append(('MAT', 'USTENSILES'))
+    categorie_ing = Categorie.objects.filter(groupe="ING")
+    for cat in categorie_ing :
+        categories.append((cat.id, cat.description))
+    
+    return HttpResponse(template.render({'filter' : filter, 'ingredients' : ingredients, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "" , "categories_photos" : categories}, request))
 
 
 

@@ -1,5 +1,39 @@
 var current_no_ingredient;
 
+function loadPhotosDescriptionAtWork(categorie, message, select, current) {
+    
+    var csrftoken = getCookie('csrftoken');
+    var u = "/mesrecettes/photos/categorie/".concat(categorie);
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'get',
+        'url' : u,
+           'success' : function(response)
+           {
+               select.empty();
+               var res = JSON.parse(response).message;
+               for (var idx=0; idx < res.length; idx++) { 
+                   var element = res[idx];
+                   if (element.id == current) {
+                       select.append('<option selected value=' + element.id + '>' + element.description.substring(0, 40) + '</option>');
+                   } else {
+                       select.append('<option value=' + element.id + '>' + element.description.substring(0, 40) + '</option>');
+                   }
+               }
+    
+               select.append('<option value="NONE">no photo</option>');
+               select.val(current);
+               //select.change();
+           },
+           'error': function(jqXHR, textStatus, errorThrown)
+           {
+               message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+           }
+          });    
+}
+
+
 function loadCategoriesAtWork(groupe, message, select, current) {
     
     var csrftoken = getCookie('csrftoken');
@@ -36,8 +70,8 @@ function loadCategoriesAtWork(groupe, message, select, current) {
 
 function remplissage(ingredient) {
 
-    //alert(no_ingredient);
-    //$('#id_detail_ingredient_no').text(no_ingredient.toString());
+    $("#id_detail_ingredient_form")[0].reset();
+    
     current_no_ingredient = ingredient.idloop;
     $('#id_delete_ingredient_id').text(ingredient.id);
     $("#id_detail_ingredient_id").val(ingredient.id)
@@ -47,7 +81,6 @@ function remplissage(ingredient) {
     $("#id_detail_ingredient_description").text(ingredient.description);
     $("#id_detail_ingredient_bonasavoir").text(ingredient.bonasavoir);
     $("#id_detail_ingredient_owner").text(ingredient.owner)
-    $("#id_detail_ingredient_acces").text(ingredient.acces);
 
     $("#id_detail_ingredient_kcalories").val(ingredient.kcalories);
     $("#id_detail_ingredient_kjoules").val(ingredient.kjoules);
@@ -73,7 +106,52 @@ function remplissage(ingredient) {
     $("#id_detail_ingredient_categorie_description").val(ingredient.categorie_description);
     $("#id_detail_ingredient_prix_unitaire").val(ingredient.pu);
     $("#id_detail_ingredient_prix_poids").val(ingredient.pp);
-    $('#id_detail_ingredient_img').attr('src', $('#id_ingredient_img_'.concat(ingredient.id)).attr('src'));    
+    $('#id_detail_ingredient_img').attr('src', $('#id_ingredient_img_'.concat(ingredient.id)).attr('src'));
+
+    if (ingredient.allergene == "True")
+        $('#id_detail_ingredient_allergene').attr('checked', true)
+    else
+        $('#id_detail_ingredient_allergene').attr('checked', false)
+
+    if (ingredient.acces == "PUB") {
+        $('#id_detail_ingredient_acces option[value="PUB"]').prop('selected', true)
+        // $('#id_detail_ingredient_acces option[value="PRIV"]').prop('selected', false)
+        //$('#id_detail_ingredient_acces').val("PUB")
+    }
+    else {
+        $('#id_detail_ingredient_acces option[value="PRIV"]').prop('selected', true)
+        //$('#id_detail_ingredient_acces option[value="PUB"]').prop('selected', false)
+        //$('#id_detail_ingredient_acces').val("PRIV")
+    }
+    $('#id_detail_ingredient_acces').change()
+
+    // remplissage Categorie Photo
+    var categorie_photo = $("#id_detail_categorie_photo");
+    categorie_photo.empty();
+    for (i=0; i < categories_photos.length; i++) {
+        categorie_photo.append('<option selected value="' + categories_photos[i].value + '">' + categories_photos[i].description + '</option>');
+    }
+
+    // selection categorie
+    $('#id_detail_id_photo').empty();
+    $('#id_detail_id_photo').append('<option selected value="NONE">no photo</option>');
+
+    if (ingredient.photo_groupe == null ||
+        ingredient.photo_id == null) {
+        $('#id_detail_categorie_photo OPTION[value="SANS"]').prop('selected', true);
+        $('#id_detail_id_photo OPTION[value="NONE"]').prop('selected', true);
+    }
+    else {
+        $('#id_detail_categorie_photo OPTION[value="'.concat(ingredient.photo_categorie_id).concat('"]')).prop('selected', true);
+        loadPhotosDescriptionAtWork(ingredient.photo_categorie_id,
+                                             $('#id_edit_ingredient_message'),
+                                             $('#id_detail_id_photo'),
+                                    ingredient.photo_id);
+    }
+    //categorie_photo.change();
+    //$('#id_detail_id_photo').change();
+    
+    
 }
 
 function detail_ingredient(id) {
@@ -85,39 +163,9 @@ function detail_ingredient(id) {
 
     var categorie = $("#id_detail_categorie");
     categorie.empty();
-    categorie.append('<option selected value=' + ingredient.categorie_categorie + '>' + ingredient.categorie_description + '</option>');
+    categorie.append('<option selected value="' + ingredient.categorie_categorie + '">' + ingredient.categorie_description + '</option>');
     categorie.change();
     
-    $('#id_detail_ingredient_previous').click( function(event) {
-        event.preventDefault();
-        var idx =  getNbIngredient();
-        var next_idx  = current_no_ingredient - 1;
-        if (next_idx < 0) {
-            next_idx  = idx - 1;
-        }
-        var ingredient = getIngredient(next_idx);
-        categorie.empty();
-        categorie.append('<option selected value=' + ingredient.categorie_categorie + '>' + ingredient.categorie_description + '</option>');
-        categorie.change();
-
-        remplissage(ingredient);
-    });
-
-    $('#id_detail_ingredient_next').click( function(event) {
-        event.preventDefault();
-        var idx =  getNbIngredient();
-        next_idx  = current_no_ingredient + 1;
-        if (next_idx >= idx) {
-            next_idx  = 0;
-        }
-        var ingredient = getIngredient(next_idx);
-        categorie.empty();
-        categorie.append('<option selected value=' + ingredient.categorie_categorie + '>' + ingredient.categorie_description + '</option>');
-        categorie.change();
-
-        remplissage(ingredient);
-    });
-
     $("#id_detail_ingredient_modal_view_footer").css("display", "block");
     $("#id_detail_ingredient_modal_view_header").css("display", "block");
     $('#id_detail_ingredient_modal_delete_footer').css("display", "none");
@@ -149,14 +197,6 @@ function ask_delete_ingredient(id) {
     
     $('#id_detail_ingredient_modal').modal('show');
     
-    return;
-    
-    $('#id_ingredient_photo_code').text($('#id_photo_code_'.concat(id)).text());
-    $('#id_delete_photo_description').text($('#id_photo_description_'.concat(id)).text());
-    $('#id_delete_photo_message').text("");
-    $('#id_delete_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-    $('#id_delete_photo_id').text(id);
-    $('#delete_photo').modal('show')
 };
 
 
@@ -269,6 +309,56 @@ $(document).ready(
     function () {
         $('#id_edit_photo').change(handleFileSelect);
         $('#id_import_photo').change(handleFileSelect);
+        $('#id_detail_categorie_photo').change(function(event) {
+            $('#id_detail_id_photo').empty();
+            $('#id_detail_id_photo').append('<option selected value="NONE">no photo</option>');
+
+            loadPhotosDescriptionAtWork($('#id_detail_categorie_photo').val(),
+                                        $('#id_edit_ingredient_message'),
+                                        $('#id_detail_id_photo'),
+                                        "NONE");
+            $("#id_detail_ingredient_img").attr("src",
+                                                "/mesrecettes/photos/");
+
+        });
+
+        $('#id_detail_id_photo').change(function(event) {
+            $("#id_detail_ingredient_img").attr("src",
+                                                "/mesrecettes/photos/".concat($('#id_detail_id_photo').val()).concat("?" + new Date().getTime()));
+            
+        });
+        
+        
+        $('#id_detail_ingredient_previous').click( function(event) {
+            var nb = getNbIngredient();
+            var next_idx  = current_no_ingredient - 1;
+            if (next_idx < 0) {
+                next_idx  = nb - 1;
+            }
+            var new_ingredient = getIngredient(next_idx);
+            var categorie = $("#id_detail_categorie");
+            categorie.empty();
+            categorie.append('<option selected value="' + new_ingredient.categorie_categorie + '">' + new_ingredient.categorie_description + '</option>');
+            categorie.change();
+            
+            remplissage(new_ingredient);
+        });
+        
+        $('#id_detail_ingredient_next').click( function(event) {
+            var nb = getNbIngredient();
+            next_idx  = current_no_ingredient + 1;
+            if (next_idx >= nb) {
+                next_idx  = 0;
+            }
+            var new_ingredient = getIngredient(next_idx);
+            var categorie = $("#id_detail_categorie");
+            categorie.empty();
+            categorie.append('<option selected value="' + new_ingredient.categorie_categorie + '">' + new_ingredient.categorie_description + '</option>');
+            categorie.change();
+            
+            remplissage(new_ingredient);
+        });
+                
         
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);

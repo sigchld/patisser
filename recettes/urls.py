@@ -22,6 +22,8 @@ urlpatterns = [
     url(r'^photos/$', photoview.PhotoView.as_view(), name='photo_create'),
     url(r'^photos/$', photoview.PhotoView.as_view(), name='photo_update'),
     url(r'^photos/(?P<photo_id>[0-9a-zA-Z._ -]+)$', photoview.PhotoView.as_view(), name='photo'),
+    url(r'^photos/categorie/(?P<categorie_id>[0-9a-zA-Z._ -]+)$', photoview.PhotoCategorieView.as_view(), name='photo_categorie'),
+    
     url(r'^listphotos$', views.list_photos, name='list_photos'),
     url(r'^listphotos/owner/(?P<owner>[a-z]+)$', views.list_photos, name='list_photos_owner'),
     url(r'^listphotos/acces/(?P<acces>[a-z]+)$', views.list_photos, name='list_photos_acces'),

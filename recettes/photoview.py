@@ -2,12 +2,13 @@
 import traceback
 import logging
 import io
+import json
 
 from django import http
 from django.http import HttpResponse
 from django.views.generic import ListView
 from recettes.models import Photo
-
+from django.core.serializers.json import DjangoJSONEncoder
 import traceback
 
 from django.shortcuts import render
@@ -39,13 +40,6 @@ from django.views import View
 from django.views.decorators.http import require_http_methods
 
 
-PAGE_COURANTE='page_courante'
-ACCUEIL='accueil'
-PHOTOS='photos'
-INGREDIENTS='ingredients'
-PREPARATIONS='preparations'
-RECETTES='recettes'
-
 
 # Get an instance of a logger
 logger = logging.getLogger('fees')
@@ -71,6 +65,12 @@ class PhotoView(View):
             form = PhotoForm(request.POST)
             #if not form.is_valid():
             #    return HttpResponseServerError('{ "message" : "saisie incomplète" }')
+            groupe = form['groupe'].value()
+            categorie  = form['categorie'].value()
+            
+
+            if groupe is None or categorie is None:
+                return HttpResponseServerError('{ "message" : "saisie incomplète, il manque le groupe ou la catégorie" }')
             photo_id = request.POST.get('id', None)
             photo = None
             try:
@@ -82,6 +82,14 @@ class PhotoView(View):
 
             if not request.user.is_authenticated and  photo.owner.username != request.user.username:
                 return HttpResponseServerError('{ "message" : "la photo ne vous appartient pas" }')
+
+            # on ne peut changer le groupe de la photo que si elle n'est pas utilisée.
+            if groupe <> photo.categorie.groupe:
+                nbref = len(photo.ingredient_set.all())
+                if nbref == 0: nbref = nbref + len(photo.recette_set.all())
+                if nbref == 0: nbref = nbref + len(photo.preparation_set.all())
+                if nbref <> 0:
+                    return HttpResponseServerError('{ "message" : "la photo est référencée, on ne peut pas changer de groupes" }')          
 
             try:
                 myfile = request.FILES['photo']
@@ -97,24 +105,21 @@ class PhotoView(View):
                 except IOError:
                     blank = Photo.objects.get(code='blank')
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
-                    img = get_thumbnail(img)
 
+                img = get_thumbnail(img)
                 f = io.BytesIO()
                 img.save(f, "PNG")
                 f.seek(0)
 	        photo.thumbnail = f.read1(-1)
 
             except MultiValueDictKeyError:
-                # pas de nouvelle photo
                 pass
+            
             photo.description = request.POST.get('description', photo.description)
             photo.code = request.POST.get('code',photo.code)
             photo.acces = request.POST.get('acces',photo.acces)
             
-            # traiter groupe / categorie
-            groupe = form['groupe'].value()
-            categorie  = form['categorie'].value()
-            
+            # traiter groupe / categorie            
             if groupe is not None and categorie is not None and groupe != "NONE" and categorie != "NONE":
                 groupe = groupe.upper()
                 categorie = categorie.upper()
@@ -211,6 +216,11 @@ class PhotoView(View):
         try:
             form = PhotoForm(request.PUT)
             if form.is_valid():
+                groupe = form['groupe'].value()
+                categorie  = form['categorie'].value()
+                if not groupe or not categorie:
+                    return HttpResponseServerError('{ "message" : "saisie incomplète, il manque le groupe ou la catégorie" }')
+                
                 myfile = request.FILES['photo']
                 name = myfile.name 
                 logger.debug(u"PhotoFileName {}".format(name))
@@ -221,22 +231,22 @@ class PhotoView(View):
                 photo.owner = request.user
 
                 # traiter groupe / categorie
-                groupe = form['groupe'].value()
-                categorie  = form['categorie'].value()
 
-                if groupe is not None and categorie is not None:
-                    groupe = groupe.upper()
-                    categorie = categorie.upper()
+                groupe = groupe.upper()
+                categorie = categorie.upper()
                     
-                    # 
-                    queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(owner = request.user.username))
+                # 
+                queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(owner = request.user.username))
+                if queryset.count() == 1:
+                    photo.categorie = queryset.first()
+                else:
+                    queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(acces = 'PUB'))
                     if queryset.count() == 1:
                         photo.categorie = queryset.first()
                     else:
-                        queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(acces = 'PUB'))
-                        if queryset.count() == 1:
-                            photo.categorie = queryset.first()
-                                                        
+                        return HttpResponseServerError('{ "message" : "saisie incomplète, groupe er catégorie inconnus" }')
+
+                    
                 try:
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                     img = get_thumbnail(img)
@@ -244,7 +254,7 @@ class PhotoView(View):
                     blank = Photo.objects.get(code='blank')
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
                     img = get_thumbnail(img)
-
+                
                 f = io.BytesIO()
                 img.save(f, "PNG")
                 f.seek(0)
@@ -277,8 +287,8 @@ class PhotoView(View):
         import time
         #time.sleep(3)
         nbref = len(photo.ingredient_set.all())
-        nbref = nbref + len(photo.recette_set.all())
-        nbref = nbref + len(photo.preparation_set.all())
+        if nbref == 0: nbref = nbref + len(photo.recette_set.all())
+        if nbref == 0: nbref = nbref + len(photo.preparation_set.all())
         
         logger.debug("nb photos ref dans ingredient : {}".format(len(photo.ingredient_set.all())))
         if nbref != 0:
@@ -365,3 +375,25 @@ def get_thumbnail1(img):
     img.thumbnail(size)
     return img
     
+
+
+class PhotoCategorieView(View):
+    def __init__(self):
+        self.http_method_names = ['get',]
+
+    def get(self, request, categorie_id):
+        try:
+            categorie = Categorie.objects.get(pk=categorie_id)
+        except:
+            return HttpResponseServerError('{ "message" : "erreur inattendue sur catégorie" }')
+        
+        if request.user.is_authenticated:
+            photos = Photo.objects.filter(Q(categorie = categorie) & (Q(owner = request.user.username) | Q(acces = "PUB")))
+        else:
+            photos = Photo.objects.filter(Q(categorie = categorie) & Q(acces = "PUB"))
+
+        photos = photos.values('id', 'description').order_by('description')
+
+        data = '{{ "message" : {} }}'.format(json.dumps(list(photos), cls=DjangoJSONEncoder))
+                                          
+        return HttpResponse(data)

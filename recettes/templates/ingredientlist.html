@@ -190,11 +190,11 @@
       {% for ingredient in ingredients %}
       <tr role="row">
         <td>
-          
-          {% if request.user.username == ingredient.owner.username %}
           <div>
             <span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span>
           </div>
+          
+          {% if request.user.username == ingredient.owner.username %}
           <div>
             <div>
               <a href="javascript:ask_delete_ingredient({{forloop.counter0}});"><span class="glyphicon glyphicon-trash"></span></a>
@@ -203,6 +203,9 @@
               <a href="javascript:ask_edit_ingredient({{forloop.counter0}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
             </div>
           </div>
+          {% else %}
+          <div>&nbsp;</div>
+          <div>&nbsp;</div>
           {% endif %}
           {% if ingredient.categorie %}
           <div>
@@ -219,7 +222,14 @@
         <td style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></td>
         <td>
 	  <a href="javascript:detail_ingredient({{forloop.counter0}});" title="détail de l'ingrédient" >
-            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}"></a>
+            {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
+            {% if ingredient.photo and ingredient.photo.id and ingredient.photo.id != '%s' %}
+            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}" >
+            {% else %}
+            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo_blank' %}">
+            {% endif %}
+          </a>
+          
         </td>
 
       </tr>
@@ -242,7 +252,18 @@
             <div class="row sticky-top" style="text-align:center;"><span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span></div>
             <div class="row" style="height:128px;text-align:center;">
 	      <a href="javascript:detail_ingredient({{forloop.counter0}});" title="détail de l'ingrédient" >
-                <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}"></a>
+
+                {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
+            {% if ingredient.photo and ingredient.photo.id and ingredient.photo.id != '%s' %}
+            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}">
+            {% else %}
+            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo_blank' %}">
+            {% endif %}
+                
+
+
+
+              </a>
             </div>
             <div style="display:none"><span id="id_ingredient_description_{{ingredient.id}}">{{ingredient.description}}</span></div>
             <div style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></div>
@@ -430,21 +451,29 @@
           <div class="container-fluid">
             <form id="id_detail_ingredient_form" action="">
               <div class="row">
-              <div class="greybox" style="width:50%">
-                <label for="code">Code</label>
-                <input disabled name="code" type="text" id="id_detail_ingredient_code"></input>
+                <div class="greybox" style="width:50%">
+                  <label for="code">Code</label>
+                  <input  name="code" type="text" id="id_detail_ingredient_code">
+                  <label for="allergene">Allergene</label>
+                <input name="allergene" type="checkbox" id="id_detail_ingredient_allergene">
+	        <label for="acces">Accès</label>
+	        <select name="acces" id="id_detail_ingredient_acces">
+		  <option value="PUB">public</option>
+		  <option value="PRIV">privé</option>
+	        </select>
+	        </div>
               </div>
-            </div>
+
             <div class="row">
               <div class="greybox">
+                <div>
                 <span class="font-weight-bold">Date création</span>
                 <span id="id_detail_ingredient_date_creation"></span>
-              </div>
-            </div>            
-            <div class="row">
-              <div class="greybox">
+                </div>
+                <div>
                 <span class="font-weight-bold">Date dernière modification </span>
                 <span id="id_detail_ingredient_date_modification"></span>
+                </div>
               </div>
             </div>
             <div class="row">
@@ -484,7 +513,7 @@
             <div class="row">
               <div class="col-lg-8 greybox">
                 <div class="no-margin row">
-                  <div class="col-border col-lg-~!" style="display:inline-block"><p class="font-lighter">Valeurs nutritionnelles moyennes pour 100g</p>
+                  <div class="col-border col-lg-12" style="display:inline-block;"><p class="font-lighter">Valeurs nutritionnelles moyennes pour 100g</p>
                   </div>
                 </div>
                 <div class="no-margin row">
@@ -552,7 +581,7 @@
                   </div>
                   <div class="col-border col-lg-5">
                     <!-- span id="id_detail_ingredient_fibre_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name=span id="id_detail_ingredient_fibres"></span>
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="fibres_alimentaires" id="id_detail_ingredient_fibres"></span>
                     <span> g</span>
                   </div>
                 </div>
@@ -563,7 +592,7 @@
                   </div>
                   <div class="col-border col-lg-5">
                     <!-- span id="id_detail_ingredient_proteines_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="preteines"  id="id_detail_ingredient_proteines">
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="proteines"  id="id_detail_ingredient_proteines">
                     <span> g</span>
                   </div>
                 </div>
@@ -582,8 +611,27 @@
                 
               </div>
               <div class="col-lg-4">
-                <img style="height:128px;width:!@*px;float:left;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
+                <span class="font-weight-bold text-center">Photo</span>
+                <img style="width:150px;height:200x;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
               </div>
+              
+              <div class="row">
+              <div class="col-lg-4">
+                <span >Catégorie</span>
+                <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
+	        <option value="NONE" selected>N/A</option>
+	        </select>
+                <span >Nom</span>
+                <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
+	          <option value="NONE" selected>no photo</option>
+	      </select>
+
+              </div>
+            </div>
+
+
+
+                          
             </div>
             <input type="hidden" id="id_detail_ingredient_id" name="id">
             </form>
@@ -621,6 +669,14 @@
 <script type="text/javascript" src="{% static "js/ingredient.js" %}"></script>
 <script  type="text/javascript">
 
+  var categories_photos = [];
+  {% for categorie in  categories_photos %}
+  categories_photos[ {{ forloop.counter0 }} ] = {
+  "value" : "{{categorie.0}}",
+  "description" : "{{categorie.1}}",
+  };
+  {% endfor %}
+  
   var ingredients = {};
   {% for ingredient in ingredients %}
   ingredients[ {{ forloop.counter0 }} ] = {
@@ -646,8 +702,9 @@
   "proteines" : "{{ingredient.proteines|escapejs}}",
   "sel_inf" : "{{ingredient.sel_inferieur|escapejs}}",
   "sel" : "{{ingredient.sel|escapejs}}",
-  "date_creation" : "{{ingredient.date_creation|date:"l j F o G:H:i"}}",
-  "date_modification" : "{{ingredient.date_modification|date:"l j F o G:H:i"}}",
+  "allergene" : "{{ingredient.allergene|escapejs}}",
+  "date_creation" : "{{ingredient.date_creation|date:"l j F o H:i"}}",
+  "date_modification" : "{{ingredient.date_modification|date:"l j F o H:i"}}",
   {% if ingredient.categorie %}
   "categorie_description" : "{{ingredient.categorie.description|escapejs}}",
   "categorie_groupe" : "{{ingredient.categorie.groupe|escapejs}}",
@@ -659,6 +716,28 @@
   {% endif %}
   "pu" : "{{ingredient.pu|escapejs}}",
   "pp" : "{{ingredient.pp|escapejs}}",
+  {% if ingredient.photo and ingredient.photo.id and ingredient.photo.id != '%s' %}
+    "photo_id" : "{{ingredient.photo.id|escapejs}}",
+    "photo_code" : "{{ingredient.photo.code|escapejs}}",
+    "photo_description" : "{{ingredient.photo.description|escapejs}}",
+    {% if ingredient.photo.categorie %}
+      "photo_groupe" : "{{ingredient.photo.categorie.groupe|escapejs}}",
+      "photo_categorie" : "{{ingredient.photo.categorie.categorie|escapejs}}",
+      "photo_categorie_id" : "{{ingredient.photo.categorie.id|escapejs}}",
+    {% else %}
+  "photo_groupe" : null,
+      "photo_categorie" : null,
+      "photo_categorie_id" : null,
+    {% endif %}
+  {% else %}
+  "photo_groupe" : null,
+
+    "photo_categorie" : null,
+    "photo_categorie_id" : null,
+    "photo_id" : null,
+    "photo_code" : null,
+    "photo_description" : null,
+  {% endif %}
   };
   {% endfor %}
 

@@ -26,8 +26,16 @@ class Photo(models.Model):
     
     def get_absolute_url(self):
         return "/mesrecettes/photos/{}".format(self.photo.name)
+
     def __unicode__(self):
-        return "%s-%s" % (self.code, self.description)
+        return "{}-{}".format(self.code, self.description)
+
+    def __repr__(self):
+        return "{}-{}".format(self.code, self.description)
+    
+    def __str__(self):
+        return "{}-{}".format(self.code, self.description)
+
     class Meta:
         unique_together = (("owner", "code"),)
 
@@ -42,7 +50,7 @@ class Categorie(models.Model):
 
     DEFAULT_PK = 1
     categorie = models.CharField(max_length=10, null=False, blank=False)
-    groupe = models.CharField(max_length=10, choices=GROUPE, default="ING", null=False)
+    groupe = models.CharField(max_length=10, choices=GROUPE, default="SANS", null=False)
     description = models.CharField(max_length=40)
     
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
@@ -76,24 +84,24 @@ class Ingredient(models.Model):
     # xx_inferieures indique valeur très faible non mesurable
 
     matieres_grasses_inferieures  = models.BooleanField(default=False)
-    matieres_grasses = models.DecimalField(max_digits=7, decimal_places=2, default=0)
-    matieres_grasses_saturees = models.DecimalField("Dont acides gras saturés", max_digits=7, decimal_places=2, default=0)
+    matieres_grasses = models.DecimalField(max_digits=7, decimal_places=3, default=0)
+    matieres_grasses_saturees = models.DecimalField("Dont acides gras saturés", max_digits=7, decimal_places=3, default=0)
 
     glucides_inferieures = models.BooleanField(default=False)
-    glucides = models.DecimalField(max_digits=7, decimal_places=2, default=0)
-    glucides_dont_sucres = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    glucides = models.DecimalField(max_digits=7, decimal_places=3, default=0)
+    glucides_dont_sucres = models.DecimalField(max_digits=7, decimal_places=3, default=0)
 
     fibres_alimentaires_inferieures = models.BooleanField(default=False)
-    fibres_alimentaires = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    fibres_alimentaires = models.DecimalField(max_digits=7, decimal_places=3, default=0)
 
     proteines_inferieures = models.BooleanField(default=False)
-    proteines = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    proteines = models.DecimalField(max_digits=7, decimal_places=3, default=0)
 
     sel_inferieur = models.BooleanField(default=False)
-    sel = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    sel = models.DecimalField(max_digits=7, decimal_places=3, default=0)
     
     #pas de default quand on ajoute un champ a Photo
-    photo = models.ForeignKey('Photo', on_delete=models.SET_NULL, null=True,)
+    photo = models.ForeignKey('Photo', on_delete=models.SET_NULL, null=True, blank=True)
     #photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
     allergene = models.BooleanField(default=False)
 

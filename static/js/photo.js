@@ -118,7 +118,7 @@ function loadCategoriesAtWork(create_form) {
     $(id_msg).text(" ");
     
     var csrftoken = getCookie('csrftoken');
-    var u = $("#id_popover_categorie_form").data('action');
+    var u = "/mesrecettes/categories"; //$("#id_popover_categorie_form").data('action');
     var groupe = $(id_groupe);
     
     if (groupe.val() == "NONE") {

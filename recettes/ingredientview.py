@@ -7,7 +7,7 @@ import time
 from django import http
 from django.http import HttpResponse
 from django.views.generic import ListView
-from recettes.models import Photo, Ingredient
+from recettes.models import Photo, Ingredient, Categorie
 
 import traceback
 
@@ -64,10 +64,16 @@ class IngredientView(View):
     
     # Mofification d'un ingredient
     def post(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponseServerError('{ "message" : "Il faut être authentifié pour modifier un imgredient" }')
+
         try:
             form = IngredientForm(request.POST)
-            #if not form.is_valid():
-            #    return HttpResponseServerError('{ "message" : "saisie incomplète" }')
+            if not form.is_valid():
+                champs = ""
+                for error in form.errors:
+                    champs = champs + error + ", "
+                return HttpResponseServerError('{{ "message" : "saisie erronée: {}" }}'.format(champs))
             ingredient_id = request.POST.get('id', None)
             ingredient = None
             try:
@@ -77,9 +83,10 @@ class IngredientView(View):
                 logger.error("Loading ingredient inconnue/{}".format(ingredient_id))
                 return HttpResponseServerError('{ "message" : "ingredient inconnu" }')
 
-            if not request.user.is_authenticated and  ingredient.owner.username != request.user.username:
+            if ingredient.owner.username != request.user.username:
                 return HttpResponseServerError('{ "message" : "L\'ingredient ne vous appartient pas" }')
-
+            
+            # chargement photo
             try:
                 myfile = request.FILES['photo']
                 name = myfile.name 
@@ -94,7 +101,7 @@ class IngredientView(View):
                 except IOError:
                     blank = Photo.objects.get(code='blank')
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
-                    img = get_thumbnail(img)
+                img = get_thumbnail(img)
 
                 f = io.BytesIO()
                 img.save(f, "PNG")
@@ -104,9 +111,41 @@ class IngredientView(View):
             except MultiValueDictKeyError:
                 # pas de nouvelle photo
                 pass
-            ingredient.description = request.POST.get('description', ingredient.description)
-            #photo.code = request.POST.get('code',photo.code)
-            #photo.acces = request.POST.get('acces',photo.acces)
+
+            # maj photo
+            new_photo_id = request.POST.get('photo_id', None)
+            if new_photo_id:
+                ingredient.photo = Photo.objects.get(pk=new_photo_id)
+                
+            # maj categorie
+            new_categorie = request.POST.get('categorie', None)
+            if new_categorie:
+                categorie_obj = None
+                try:
+                    categorie_obj = Categorie.objects.get(Q(groupe='ING') & Q(categorie=new_categorie))
+                    ingredient.categorie = categorie_obj
+                except:
+                    just_the_string = traceback.format_exc()
+                    logger.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
+
+            # maj des champs standards
+            for label in ('allergene',
+                          'sel',
+                          'fibres_alimentaires',
+                          'pu',
+                          'pp',
+                          'kcalories',
+                          'kjoules',
+                          'matieres_grasses',
+                          'matieres_grasses_saturees',
+                          'glucides',
+                          'glucides_dont_sucres',
+                          'proteines',
+                          'description',
+                          'bonasavoir',
+                          'acces') :
+                setattr(ingredient, label, form.cleaned_data[label])
+
             ingredient.save()
             return HttpResponse('{ "message" : "OK" }')
         
@@ -119,7 +158,7 @@ class IngredientView(View):
             logger.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
-    # Recherche une photo
+    # Recherche un ingredient
     def get(self, request, photo_id=None):
         # par defaut c'estt la photo blanche!
         if not photo_id:
@@ -179,6 +218,9 @@ class IngredientView(View):
 
     # creation photo
     def put(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponseServerError('{ "message" : "Il faut être cuthentifié pour supprimer un imgredient" }')
+
         if  not request.FILES['photo']:
             return HttpResponseServerError('{ "message" : "Il manque la photo" }')
             
@@ -220,7 +262,10 @@ class IngredientView(View):
     #
     # Suppresion d'un ingrédient
     #
-    def delete(self, request, ingredient_id=None) :
+    def delete(self, request, ingredient_id=None):
+        if not request.user.is_authenticated:
+                return HttpResponseServerError('{ "message" : "Il faut être cuthentifié pour supprimer un imgredient" }')
+
         try:
             ingredient = Ingredient.objects.get(pk=ingredient_id)
         except Ingredient.DoesNotExist:

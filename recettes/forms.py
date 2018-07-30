@@ -17,8 +17,21 @@ class IngredientForm(forms.ModelForm):
     #categorie = forms.CharField(label='categorie', max_length=20)
     class Meta:
         model = Ingredient
-        fields = ['code',
+        fields = ['id',
+                  'code',
                   'description',
                   'bonasavoir',
                   'pu',
-                  'pp']
+                  'pp',
+                  'kcalories',
+                  'kjoules',
+                  'matieres_grasses',
+                  'matieres_grasses_saturees',
+                  'glucides',
+                  'glucides_dont_sucres',
+                  'proteines',
+                  'sel',
+                  'fibres_alimentaires',
+                  'allergene',
+                  'acces',
+        ]

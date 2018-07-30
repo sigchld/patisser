@@ -197,6 +197,9 @@
               <a href="javascript:ask_edit_photo({{photo.id}});"  title="modifier une photo"><span class="glyphicon glyphicon-pencil"></span></a>
             </div>
           </div>
+          {% else %}
+          <div>&nbsp;</div>
+          <div>&nbsp;</div>
           {% endif %}
           {% if photo.categorie %}
           <div>
@@ -316,8 +319,7 @@
 	        </div>
              <p>
 	      <label for="groupe">Groupe:</label>
-              <select class=""  style="min-width: 40px;" id="id_import_groupe" name="groupe" placeholder="groupe">
-	        <option value="NONE" selected>aucun</option>
+              <select class="" required  style="min-width: 40px;" id="id_import_groupe" name="groupe" placeholder="groupe">
                 <option value="REC" >recettes</option>
 	        <option value="PREP">preparations</option>
                 <option value="ING">ingredients</option>
@@ -326,7 +328,7 @@
             </p>
             <p>
 	      <label for="categorie">Catégorie:</label>
-              <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_import_categorie" name="categorie" placeholder="categorie">
+              <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_import_categorie" name="categorie" placeholder="categorie">
 	        <option value="NONE" selected></option>
 	      </select>
               </p>
@@ -368,7 +370,7 @@
             <input type="hidden" name="id" id="id_edit_photo_id">
 	    <div class="form-group form-inline">
 	      <label for="code">Code:</label>
-	      <input type="text" class="form-control" id="id_edit_photo_code" name="code" placeholder="Code" required="required" maxlength="20">
+	      <input type="text" class="form-control" id="id_edit_photo_code" name="code" placeholder="Code" required maxlength="20">
 	    </div>
 	    <div class="form-group">
 	      <label for="description">Description:</label>
@@ -386,8 +388,7 @@
 	        </div>
              <p>
 	      <label for="groupe">Groupe:</label>
-              <select class=""  style="min-width: 40px;" id="id_edit_groupe" name="groupe" placeholder="groupe">
-	        <option value="NONE" selected>aucun</option>
+              <select class="" required style="min-width: 40px;" id="id_edit_groupe" name="groupe" placeholder="groupe">
                 <option value="REC" >recettes</option>
 	        <option value="PREP">preparations</option>
                 <option value="ING">ingredients</option>
@@ -397,7 +398,7 @@
 
                 <p>
 	      <label for="categorie">Catégorie:</label>
-              <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_edit_categorie" name="categorie" placeholder="categorie">
+              <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_edit_categorie" name="categorie" placeholder="categorie">
                 <option value="NONE" selected>aucune</option>
 	      </select>
               </p>
