@@ -12,10 +12,7 @@
       <tr>
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
-          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_ingredients' %}" data-groupe="ING" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{request.session.ingredients_categorie}}</a>]</span>
-	  
-	  &nbsp;
-	  {% if acces %}
+          {% if acces %}
 	  {% if detail %}
 	  <a href="{% url 'list_ingredients_acces' acces %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
@@ -29,8 +26,12 @@
 	  <a href="{% url 'list_ingredients_owner' owner %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 	  {% endif %}
+
+          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_ingredients' %}" data-groupe="ING" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{request.session.ingredients_categorie}}</a>]</span>
+	  
+	  &nbsp;
 	  &nbsp;&nbsp;
-	  <a href="javascript:ask_import_ingredient();" title="ajouter un ingrédient" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
+	  <a href="javascript:ask_new_ingredient();" title="ajouter un ingrédient" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
 	</td>
 
 	<td>
@@ -83,14 +84,15 @@
 	</td>
 	{% else %}
 	<td colspan="4">
-          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" data-groupe="ING" >{{request.session.ingredients_categorie}}</a>]</span>
-
-	  &nbsp;&nbsp;
 	  {% if detail %}
 	  <a href="{% url 'list_ingredients' %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
 	  {% else %}
 	  <a href="{% url 'list_ingredients' %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
+
+          <span>Ingredients </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" data-groupe="ING" >{{request.session.ingredients_categorie}}</a>]</span>
+
+	  &nbsp;&nbsp;
 	</td>
 	{% endif %}
 
@@ -250,14 +252,14 @@
         <td style="vertical-align:top">
           <div class="container-fluid" >
             <div class="row sticky-top" style="text-align:center;"><span id="id_ingredient_code_{{ingredient.id}}" >{{ingredient.code}}</span></div>
-            <div class="row" style="height:128px;text-align:center;">
+            <div class="row" style="text-align:center;height:128px;">
 	      <a href="javascript:detail_ingredient({{forloop.counter0}});" title="détail de l'ingrédient" >
 
                 {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
             {% if ingredient.photo and ingredient.photo.id and ingredient.photo.id != '%s' %}
-            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}">
+            <img style="width:128px;height:100px;" id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo' ingredient.photo.id %}">
             {% else %}
-            <img id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo_blank' %}">
+            <img  style="width:128px;height:128px;" id="id_ingredient_img_{{ingredient.id}}" src="{% url 'photo_blank' %}">
             {% endif %}
                 
 
@@ -268,7 +270,7 @@
             <div style="display:none"><span id="id_ingredient_description_{{ingredient.id}}">{{ingredient.description}}</span></div>
             <div style="display:none"><span id="id_ingredient_acces_{{ingredient.id}}">{{ingredient.acces}}</span></div>
 
-            <div class="row" style="vertical-align:bottom;margin-left:0px;">
+            <div class="row" style="vertical-align:bottom;margin-left:0px;text-align:center;">
               {% if request.user.username == ingredient.owner.username %}
               <a href="javascript:ask_delete_ingredient({{forloop.counter0}});" title="supprimer un ingredient"><span class="glyphicon glyphicon-trash"></span></a>
               <a href="javascript:ask_edit_ingredient({{forloop.counter0}});"  title="modifier un ingredient"><span class="glyphicon glyphicon-pencil"></span></a>
@@ -316,122 +318,11 @@
     </tfoot>
   </table>
 
-  {% if request.user.is_authenticated %}
-  {% comment %}
-  <!-- Modal Creation d'un ingredient -->
-  <div id="modalAddIngredient" class="modal fade">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-	  <h4 class="modal-title text-center">Ajouter un ingredient</h4>	
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        </div>
-        <div class="modal-body">
-	  <form id="id_import_ingredient_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'ingredient_create' %}">
-	    {% csrf_token %}
-	    <div class="form-group">
-	      <div class="form-group form-inline">
-	        <label for="code">Code:</label>
-	        <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
-	      </div>
-	      <div class="form-group">
-	        <label for="description">Description:</label>
-	        <textarea rows="5" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
-	      </div>
-
-            <div style="margin-bottom:10px;">
-              <div style="display:inline-block">  
-              
-	      <div class="form-group">
-	        <label for="acces">Accès:</label>
-	        <select class="form_control" name="acces" id="id_acces">
-		  <option value="PUB" selected>public</option>
-		  <option value="PRIV">privé</option>
-	        </select>
-	      </div>
-	      <div class="form-group">
-	        <label for="ingredient">Image:</label>
-	        <input type="file" class="form-control-file" id="id_import_ingredient" required name="ingredient" placeholder="Description" required="required" maxlength="200">
-	      </div>
-              </div>
-	      <div style="display:inline-block"><img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_import_ingredient_img">
-              </div>
-              </div>
-	      <div class="form-group">
-	        <button id="id_submit_ingredient" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
-	      </div>
-	    </div>
-	  </form>
-	</div>
-        <div class="modal-footer">
-          <div class="alert-warning text-center" >
-            <span id="id_import_ingredient_message"></span>
-            </div>
-	</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Modification d'un ingredient -->
-  <div id="id_edit_ingredient_modal" class="modal fade">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-	  <h4 class="modal-title text-center">Modifier un ingredient</h4>	
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        </div>
-        <div class="modal-body">
-	  <form id="id_edit_ingredient_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'ingredient_create' %}">
-	    {% csrf_token %}
-            <input type="hidden" name="id" id="id_edit_ingredient_id">
-	    <div class="form-group form-inline">
-	      <label for="code">Code:</label>
-	      <input type="text" class="form-control" id="id_edit_ingredient_code" name="code" placeholder="Code" required="required" maxlength="20">
-	    </div>
-	    <div class="form-group">
-	      <label for="description">Description:</label>
-	      <textarea rows="5" class="form-control" id="id_edit_ingredient_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
-	    </div>
-
-            <div style="margin-bottom:10px;">
-              <div style="display:inline-block">  
-	        <div class="form-group">
-	          <label for="acces">Accès:</label>
-	          <select class="form_control" name="acces" id="id_edit_ingredient_acces">
-		    <option value="PUB" selected>public</option>
-		    <option value="PRIV">privé</option>
-	          </select>
-	        </div>
-	        <div class="form-group">
-	          <label for="ingredient">Image:</label>
-	          <input type="file" class="form-control-file" id="id_edit_ingredient" name="ingredient" placeholder="Description"  maxlength="200">
-	        </div>
-              </div>
-	      <div style="display:inline-block"><img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_edit_ingredient_img">
-              </div>
-            </div>
-
-	<div class="form-group">
-	  <button id="id_edit_submit_ingredient" type="submit"  class="btn btn-primary btn-md btn-block">Engegistrer ici</button>
-	</div>
-	</form>
-      </div>
-      <div class="modal-footer">
-        <div class="alert-error text-center" >
-          <span id="id_edit_ingredient_message"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% endcomment %}
-{% endif %}
 
   <!-- Modal detail/modification d'un ingredient -->
   <div id="id_detail_ingredient_modal" class="modal fade">
     <span id="id_detail_ingredient_no" style="display:none"></span>
-    <div class="modal-dialog">
+    <div class="modal-dialog ">
       <div class="modal-content">
         <div class="modal-header" id="id_detail_ingredient_modal_view_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -441,19 +332,26 @@
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title text-center">Suppression ingredient</h4>
         </div>
-
         <div class="modal-header" id="id_detail_ingredient_modal_edit_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title text-center">Modification ingredient</h4>
         </div>
+        <div class="modal-header" id="id_detail_ingredient_modal_new_header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title text-center">Création ingredient</h4>
+        </div>
 
-        <div class="modal-body">
+        <div class="modal-body col-lg-12">
           <div class="container-fluid">
             <form id="id_detail_ingredient_form" action="">
+
               <div class="row">
-                <div class="greybox" style="width:50%">
+                <div class="greybox" >
+<div>
                   <label for="code">Code</label>
                   <input  name="code" type="text" id="id_detail_ingredient_code">
+</div>
+<div>
                   <label for="allergene">Allergene</label>
                 <input name="allergene" type="checkbox" id="id_detail_ingredient_allergene">
 	        <label for="acces">Accès</label>
@@ -462,6 +360,7 @@
 		  <option value="PRIV">privé</option>
 	        </select>
 	        </div>
+</div>
               </div>
 
             <div class="row">
@@ -479,10 +378,8 @@
             <div class="row">
               <div class="greybox">
                 <span class="font-weight-bold">Catégorie  </span>
-                <!-- span id="id_detail_ingredient_categorie_description"></span -->
-
                 <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_detail_categorie" name="categorie" placeholder="categorie">
-	        <option value="NONE" selected></option>
+	        <option value="NONE" selected>Choisir..</option>
 	      </select>
               </div>
             </div>
@@ -511,15 +408,15 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-lg-8 greybox">
+              <div class="col-lg-8 col-xs-8 greybox">
                 <div class="no-margin row">
-                  <div class="col-border col-lg-12" style="display:inline-block;"><p class="font-lighter">Valeurs nutritionnelles moyennes pour 100g</p>
+                  <div class="col-border col-lg-12 col-xs-12" style="display:inline-block;"><p class="font-lighter">Valeurs nutritionnelles moyennes pour 100g</p>
                   </div>
                 </div>
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7"><span>energie</span>
+                  <div class="col-border col-lg-7 col-xs-7"><span>energie</span>
                   </div>
-                  <div class="col-border col-lg-5">
+                  <div class="col-border col-lg-5 col-xs-5">
                     <div>
                       <input disabled class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kjoules" id="id_detail_ingredient_kjoules">
                       <span style="display:inline">kj</span>
@@ -532,10 +429,10 @@
                 </div>
                 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7">
+                  <div class="col-border col-lg-7 col-xs-7">
                     <span>maitères grasses<span>
                   </div>
-                  <div  class="col-border col-lg-5">
+                  <div  class="col-border col-lg-5 col-xs-5">
                     <!-- span id="id_detail_ingredient_matieres_grasses_inf"></span -->
                     <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses" id="id_detail_ingredient_matieres_grasses">
                     <span>g</span>
@@ -543,10 +440,10 @@
                 </div>
                 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7">
+                  <div class="col-border col-lg-7 col-xs-7">
                     <span>dont acides gras saturés<span>
                   </div>
-                  <div class="col-border col-lg-5">
+                  <div class="col-border col-5 col-xs-5">
                     <!-- span id="id_detail_ingredient_matieres_grasses_saturees_inf"></span -->
                     <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses_saturees" id="id_detail_ingredient_matieres_grasses_saturees">
                     <span>g</span>
@@ -554,10 +451,10 @@
                 </div>
 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7">
+                  <div class="col-border col-lg-7 col-xs-7">
                     <span>Glucides<span>
                   </div>
-                  <div class="col-border col-lg-5">
+                  <div class="col-border col-lg-5 col-xs-5">
                     <!-- span id="id_detail_ingredient_glucides_inf"></span -->
                     <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides" id="id_detail_ingredient_glucides">
                     <span> g<span>
@@ -565,10 +462,10 @@
                 </div>
                 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7">
+                  <div class="col-border col-lg-7 col-xs-7">
                     <span>dont sucres<span>
                   </div>
-                  <div class="col-border col-lg-5">
+                  <div class="col-border col-lg-5 col-xs-5">
                     <!-- span id="id_detail_ingredient_glucides_dont_sucres_inf"></span -->
                     <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides_dont_sucres" id="id_detail_ingredient_glucides_dont_sucres">
                     <span>g</span>
@@ -576,10 +473,10 @@
                 </div>
 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7">
+                  <div class="col-border col-lg-7 col-xs-7">
                     <span>fibres<span>
                   </div>
-                  <div class="col-border col-lg-5">
+                  <div class="col-border col-lg-5 col-xs-5">
                     <!-- span id="id_detail_ingredient_fibre_inf"></span -->
                     <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="fibres_alimentaires" id="id_detail_ingredient_fibres"></span>
                     <span> g</span>
@@ -587,10 +484,10 @@
                 </div>
 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7">
+                  <div class="col-border col-lg-7 col-xs-7">
                     <span>proteines<span>
                   </div>
-                  <div class="col-border col-lg-5">
+                  <div class="col-border col-lg-5 col-xs-5">
                     <!-- span id="id_detail_ingredient_proteines_inf"></span -->
                     <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="proteines"  id="id_detail_ingredient_proteines">
                     <span> g</span>
@@ -598,10 +495,10 @@
                 </div>
 
                 <div class="no-margin row">
-                  <div class="col-border col-lg-7">
+                  <div class="col-border col-lg-7 col-xs-7">
                     <span>sel<span>
                   </div>
-                  <div class="col-border col-lg-5">
+                  <div class="col-border col-lg-5 col-xs-5">
                     <!-- span id="id_detail_ingredient_sel_inf"></span -->
                     <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="sel" id="id_detail_ingredient_sel">
                     <span>g</span>
@@ -610,28 +507,24 @@
                 
                 
               </div>
-              <div class="col-lg-4">
+              <div class="col-lg-4 col-xs-4">
                 <span class="font-weight-bold text-center">Photo</span>
-                <img style="width:150px;height:200x;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
+                <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
               </div>
               
               <div class="row">
-              <div class="col-lg-4">
+              <div class="col-lg-4 col-xs-4">
                 <span >Catégorie</span>
                 <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
-	        <option value="NONE" selected>N/A</option>
+	        <option value="NONE" selected>Choisir..</option>
 	        </select>
                 <span >Nom</span>
                 <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
-	          <option value="NONE" selected>no photo</option>
-	      </select>
-
+	          <option value="NONE" selected>Choisir..</option>
+	        </select>
+                
               </div>
-            </div>
-
-
-
-                          
+              </div>                          
             </div>
             <input type="hidden" id="id_detail_ingredient_id" name="id">
             </form>
@@ -655,7 +548,7 @@
         <div class="modal-footer" id="id_detail_ingredient_modal_edit_footer" style="display:none">
           <div>
             <span style="display:none;" id="id_edit_ingredient_id"></span>
-            <button type="button" id="id_edit_ingredient" class="btn btn-warning">Enregistrer</button>
+            <button type="button" id="id_edit_ingredient" class="btn btn-primary">Enregistrer</button>
           </div>
           <div class="alert-error text-center" >
             <span id="id_edit_ingredient_message">&nbsp;</span>
@@ -764,7 +657,7 @@
     function () {
   $('#liste_ingredients').DataTable({
   "hover":true,
-  "compact":true,
+  "compact":false,
   "strip":true,
   "paging":false,
   "searching":false,

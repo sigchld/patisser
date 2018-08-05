@@ -14,7 +14,7 @@ ACCES = (
 
 class Photo(models.Model):
     DEFAULT_PK = 1
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=200)
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     photo = models.ImageField(default='blank.png')
@@ -65,7 +65,7 @@ class Categorie(models.Model):
 
     
 class Ingredient(models.Model):
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, blank=False, null=False)
     description = models.CharField(max_length=200)
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
@@ -112,8 +112,7 @@ class Ingredient(models.Model):
     
     class Meta:
         unique_together = (("owner", "code"),)
-    
-    
+        
     def __unicode__(self):
         return self.description 
 
@@ -146,7 +145,7 @@ class EtapePreparation(models.Model):
         return self.titre
 
 class Preparation(models.Model):
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, blank=False)
     titre =  models.CharField(max_length=200, default='')
     description = models.CharField(max_length=200, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
@@ -195,7 +194,7 @@ class EtapeRecette(models.Model):
         return self.titre
 
 class Recette(models.Model):
-    code = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, blank=False)
     titre = models.CharField(max_length=200)
     description = models.TextField(max_length=5000, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)

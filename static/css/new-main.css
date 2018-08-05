@@ -331,6 +331,9 @@ and (-webkit-min-device-pixel-ratio: 2) {
 }
 
 .greybox {
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-bottom: 5px;
   padding-top: 5px;
   padding-bottom: 5px;
   margin-bottom: 5px;

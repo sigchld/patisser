@@ -12,18 +12,19 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
            'success' : function(response)
            {
                select.empty();
+               select.append('<option value="NONE" selected>Choisir..</option>');
                var res = JSON.parse(response).message;
                for (var idx=0; idx < res.length; idx++) { 
                    var element = res[idx];
                    if (element.id == current) {
                        select.append('<option selected value=' + element.id + '>' + element.description.substring(0, 40) + '</option>');
+                       select.val(current);
                    } else {
                        select.append('<option value=' + element.id + '>' + element.description.substring(0, 40) + '</option>');
                    }
                }
     
-               select.append('<option value="NONE">no photo</option>');
-               select.val(current);
+
                //select.change();
            },
            'error': function(jqXHR, textStatus, errorThrown)
@@ -48,16 +49,16 @@ function loadCategoriesAtWork(groupe, message, select, current) {
            {
                select.empty();
                var res = JSON.parse(response).message;
-               select.append('<option value="NONE"></option>');
+               select.append('<option value="NONE" selected>Choisir..</option>');
                for (var idx=0; idx < res.length; idx++) { 
                    var element = res[idx];
                    if (element.categorie == current) {
                        select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
+                       select.val(current);
                    } else {
                        select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
                    }
                }
-               select.val(current);
                select.change();
            },
            'error': function(jqXHR, textStatus, errorThrown)
@@ -106,7 +107,11 @@ function remplissage(ingredient) {
     $("#id_detail_ingredient_categorie_description").val(ingredient.categorie_description);
     $("#id_detail_ingredient_prix_unitaire").val(ingredient.pu);
     $("#id_detail_ingredient_prix_poids").val(ingredient.pp);
-    $('#id_detail_ingredient_img').attr('src', $('#id_ingredient_img_'.concat(ingredient.id)).attr('src'));
+
+    var dummy = $('#id_ingredient_img_'.concat(ingredient.id)).attr('src');
+    if (dummy && dummy != "NONE") {
+        $('#id_detail_ingredient_img').attr('src', dummy);
+    }
 
     if (ingredient.allergene == "True")
         $('#id_detail_ingredient_allergene').attr('checked', true)
@@ -134,11 +139,11 @@ function remplissage(ingredient) {
 
     // selection categorie
     $('#id_detail_id_photo').empty();
-    $('#id_detail_id_photo').append('<option selected value="NONE">no photo</option>');
+    $('#id_detail_id_photo').append('<option selected value="NONE">Choisir..</option>');
 
     if (ingredient.photo_groupe == null ||
         ingredient.photo_id == null) {
-        $('#id_detail_categorie_photo OPTION[value="SANS"]').prop('selected', true);
+        $('#id_detail_categorie_photo OPTION[value="NONE"]').prop('selected', true);
         $('#id_detail_id_photo OPTION[value="NONE"]').prop('selected', true);
     }
     else {
@@ -147,11 +152,11 @@ function remplissage(ingredient) {
                                              $('#id_edit_ingredient_message'),
                                              $('#id_detail_id_photo'),
                                     ingredient.photo_id);
-    }
-    //categorie_photo.change();
-    //$('#id_detail_id_photo').change();
-    
-    
+    }    
+}
+
+function remplissage_vide() {
+    $("#id_detail_ingredient_form")[0].reset();    
 }
 
 function detail_ingredient(id) {
@@ -172,9 +177,56 @@ function detail_ingredient(id) {
     $('#id_detail_ingredient_modal_delete_header').css("display", "none");
     $('#id_detail_ingredient_modal_edit_footer').css("display", "none");
     $('#id_detail_ingredient_modal_edit_header').css("display", "none");
+    $('#id_detail_ingredient_modal_new_header').css("display", "none");
+
+
     
     $('#id_detail_ingredient_modal').modal('show');
 }
+
+function ask_new_ingredient() {
+    remplissage_vide();
+    $('#id_delete_ingredient_id').text(-1);
+    $("#id_detail_ingredient_id").val(-1)
+    
+    $("#id_detail_ingredient_modal_view_footer").css("display", "none");
+    $("#id_detail_ingredient_modal_view_header").css("display", "none");
+    $('#id_detail_ingredient_modal_delete_footer').css("display", "none");
+    $('#id_detail_ingredient_modal_delete_header').css("display", "none");
+    $('#id_detail_ingredient_modal_edit_header').css("display", "none");
+    $('#id_detail_ingredient_modal_edit_footer').css("display", "block");
+    $('#id_detail_ingredient_modal_new_header').css("display", "block");
+
+    loadCategoriesAtWork("ING",
+                         $("#id_edit_ingredient_message"),
+                         $("#id_detail_categorie"),
+                         ''
+                        );
+    // remplissage Categorie Photo
+    var categorie_photo = $("#id_detail_categorie_photo");
+    categorie_photo.empty();
+    for (i=0; i < categories_photos.length; i++) {
+        categorie_photo.append('<option selected value="' + categories_photos[i].value + '">' + categories_photos[i].description + '</option>');
+    }
+
+    // selection categorie
+    $('#id_detail_id_photo').empty();
+    $('#id_detail_id_photo').append('<option selected value="NONE">Choisir</option>');
+
+    $('#id_detail_categorie_photo OPTION[value="NONE"]').prop('selected', true);
+    $('#id_detail_id_photo OPTION[value="NONE"]').prop('selected', true);
+
+    $('#id_detail_ingredient_form input').prop("disabled", false);
+    $('#id_detail_ingredient_form textarea').prop("disabled", false);
+    $('#id_detail_ingredient_form select').prop("disabled", false);
+
+    $("#id_detail_ingredient_img").attr("src",
+                                        "/mesrecettes/photos/".concat("?" + new Date().getTime()));
+    
+    
+    $('#id_detail_ingredient_modal').modal('show');
+}
+
 
 //
 // Suppression d'un ingredient
@@ -189,6 +241,9 @@ function ask_delete_ingredient(id) {
     $('#id_detail_ingredient_modal_delete_header').css("display", "block");
     $('#id_detail_ingredient_modal_edit_footer').css("display", "none");
     $('#id_detail_ingredient_modal_edit_header').css("display", "none");
+    $('#id_detail_ingredient_modal_new_header').css("display", "none");
+    $('#id_detail_ingredient_modal_new_footer').css("display", "none");
+    $('#id_detail_ingredient_modal_new_header').css("display", "none");
 
     $('#id_detail_ingredient_form input').prop("disabled", true);
     $('#id_detail_ingredient_form textarea').prop("disabled", true);
@@ -208,11 +263,13 @@ function ask_edit_ingredient(id) {
     remplissage(ingredient);
 
     $("#id_detail_ingredient_modal_view_footer").css("display", "none");
-    $('#id_detail_ingredient_modal_delete_footer').css("display", "none");
     $("#id_detail_ingredient_modal_view_header").css("display", "none");
+    $('#id_detail_ingredient_modal_delete_footer').css("display", "none");
     $('#id_detail_ingredient_modal_delete_header').css("display", "none");
     $('#id_detail_ingredient_modal_edit_footer').css("display", "block");
     $('#id_detail_ingredient_modal_edit_header').css("display", "block");
+
+    $('#id_detail_ingredient_modal_new_header').css("display", "none");
 
     loadCategoriesAtWork("ING",
                          $("#id_edit_ingredient_message"),
@@ -223,31 +280,8 @@ function ask_edit_ingredient(id) {
     $('#id_detail_ingredient_form input').prop("disabled", false);
     $('#id_detail_ingredient_form textarea').prop("disabled", false);
     $('#id_detail_ingredient_form select').prop("disabled", false);
-    $('#id_edit_photo_label').text('');
     $('#id_detail_ingredient_modal').modal('show');
 
-};
-
-function ask_import_photo() {
-    // reset du formulaire
-    //$('#id_import_photo').get(0).reset(); 
-    //$('#id_edit_photo_code').val($('#id_photo_code_'.concat(id)).text());
-    //$('#id_edit_photo_description').val($('#id_photo_description_'.concat(id)).text());
-    //$('#id_edit_photo_acces').val($('#id_photo_acces_'.concat(id)).text());
-    //$('#id_edit_photo_message').text("");
-    //$('#id_edit_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-    //$('#id_edit_photo_id').val(id);
-
-    //reset du champ choix fichier file
-    //var el = $('#id_edit_photo');
-    //el.wrap('<form>').closest('form').get(0).reset();
-    //el.unwrap();
-
-    //$('#id_edit_photo_label').text('');
-
-    $('#id_import_photo_form').get(0).reset();
-    $('#id_import_photo_img').attr('src', blank_photo);
-    $('#modalAddPhoto').modal('show');
 };
 
 
@@ -311,14 +345,14 @@ $(document).ready(
         $('#id_import_photo').change(handleFileSelect);
         $('#id_detail_categorie_photo').change(function(event) {
             $('#id_detail_id_photo').empty();
-            $('#id_detail_id_photo').append('<option selected value="NONE">no photo</option>');
+            $('#id_detail_id_photo').append('<option selected value="NONE">Choisir..</option>');
 
             loadPhotosDescriptionAtWork($('#id_detail_categorie_photo').val(),
                                         $('#id_edit_ingredient_message'),
                                         $('#id_detail_id_photo'),
                                         "NONE");
             $("#id_detail_ingredient_img").attr("src",
-                                                "/mesrecettes/photos/");
+                                                "/mesrecettes/photos/".concat("?" + new Date().getTime()));
 
         });
 
@@ -388,43 +422,9 @@ $(document).ready(
             $('#id_loader').append(myForm);
             $('#selectForm').submit();
         });
-
         
 
-        // soumission de l'import de la photo
-        $("#id_import_photo_form").submit(
-            function(event){
-                event.preventDefault();
-                $("#id_import_photo_message").text("");
-                var formdata = new FormData($(this)[0]);
-                $("#id_loader").css("display","block");
-                var csrftoken = getCookie('csrftoken');
-                var u = getPhotoCreateUrl();
-
-                $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-                //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
-                $.ajax({
-                    //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
-                    processData: false,
-                    contentType:false,
-                    'type': 'put',
-                    'url': u,
-                    data: formdata,
-                    
-                    'success': function(response)
-                    {
-	                window.location.reload();
-                    },
-                    'error': function(jqXHR, textStatus, errorThrown)
-                    {
-                        console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-	                $("#id_loader").css("display","none");
-                        $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
-                    }
-                });    
-            });
-                
-        // soumission de l'import de la photo
+        // soumission modification
         $("#id_edit_ingredient").click(
             function(){
                 //event.preventDefault();
@@ -432,14 +432,20 @@ $(document).ready(
                 var formdata = new FormData($("#id_detail_ingredient_form")[0]);
                 $("#id_loader").css("display","block");
                 var csrftoken = getCookie('csrftoken');
-                var u = "/mesrecettes/ingredient/";
-
+                var u = "/mesrecettes/ingredient/";;
+                if ($("#id_detail_ingredient_id").val() == -1) {
+                    t = 'put';
+                }
+                else {
+                    t  = 'post';
+                }
+                
                 $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
                 $.ajax({
                     //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
                     processData: false,
                     contentType: false,
-                    'type': 'post',
+                    'type': t,
                     'url': u,
                     data: formdata,
                     

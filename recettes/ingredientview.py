@@ -52,7 +52,7 @@ logger = logging.getLogger('fees')
 
 class IngredientView(View):
     def __init__(self):
-        self.http_method_names = ['delete', 'post']
+        self.http_method_names = ['delete', 'post', 'put']
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         logger.warning(
@@ -115,19 +115,29 @@ class IngredientView(View):
             # maj photo
             new_photo_id = request.POST.get('photo_id', None)
             if new_photo_id:
-                ingredient.photo = Photo.objects.get(pk=new_photo_id)
-                
+                if new_photo_id.isdigit():
+                    ingredient.photo = Photo.objects.get(pk=new_photo_id)
+                elif new_photo_id == "NONE":
+                    ingredient.photo = None
+                    
             # maj categorie
             new_categorie = request.POST.get('categorie', None)
             if new_categorie:
-                categorie_obj = None
                 try:
-                    categorie_obj = Categorie.objects.get(Q(groupe='ING') & Q(categorie=new_categorie))
-                    ingredient.categorie = categorie_obj
+                    queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(owner = request.user.username))
+                    if queryset.count() == 1:
+                        ingredient.categorie = queryset.first()
+                    else:
+                        queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(acces = 'PUB'))
+                        if queryset.count() == 1:
+                            ingredient.categorie = queryset.first()
+                        else:
+                            return HttpResponseServerError('{ "message" : "saisie incomplète,  catégorie inconnues" }')
                 except:
                     just_the_string = traceback.format_exc()
                     logger.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
 
+                    
             # maj des champs standards
             for label in ('allergene',
                           'sel',
@@ -146,6 +156,9 @@ class IngredientView(View):
                           'acces') :
                 setattr(ingredient, label, form.cleaned_data[label])
 
+            # cas spécifique du code qui est en lettres majuscules
+            setattr(ingredient, 'code', form.cleaned_data['code'].upper())
+
             ingredient.save()
             return HttpResponse('{ "message" : "OK" }')
         
@@ -157,6 +170,87 @@ class IngredientView(View):
             just_the_string = traceback.format_exc()
             logger.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
+
+
+    # Création d'un ingredient
+    def put(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponseServerError('{ "message" : "Il faut être authentifié pour créer un imgredient" }')
+
+        try:
+            form = IngredientForm(request.PUT)
+            if not form.is_valid():
+                champs = ""
+                for error in form.errors:
+                    champs = champs + error + ", "
+                return HttpResponseServerError('{{ "message" : "saisie erronée: {}" }}'.format(champs))
+
+            ingredient = Ingredient()
+            # maj photo
+            try:
+                new_photo_id = request.PUT.get('photo_id', None)
+                if new_photo_id and new_photo_id.isdigit():
+                    ingredient.photo = Photo.objects.get(pk=new_photo_id)
+            except:
+                just_the_string = traceback.format_exc()
+                logger.debug("ingredient_creation/photo/{}".format(just_the_string))
+                
+            # categorie
+            new_categorie = request.POST.get('categorie', None)
+            if new_categorie:
+                try:
+                    queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(owner = request.user.username))
+                    if queryset.count() == 1:
+                        ingredient.categorie = queryset.first()
+                    else:
+                        queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(acces = 'PUB'))
+                        if queryset.count() == 1:
+                            ingredient.categorie = queryset.first()
+
+                except:
+                    just_the_string = traceback.format_exc()
+                    logger.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
+                    ingredient.categorie = None
+
+            if not ingredient.categorie:
+                return HttpResponseServerError('{ "message" : "saisie incomplète,  catégorie inconnue ou privée" }')
+            
+            # maj des champs standards
+            for label in (
+                          'allergene',
+                          'sel',
+                          'fibres_alimentaires',
+                          'pu',
+                          'pp',
+                          'kcalories',
+                          'kjoules',
+                          'matieres_grasses',
+                          'matieres_grasses_saturees',
+                          'glucides',
+                          'glucides_dont_sucres',
+                          'proteines',
+                          'description',
+                          'bonasavoir',
+                          'acces') :
+                setattr(ingredient, label, form.cleaned_data[label])
+                
+            # cas spécifique du code qui est en lettres majuscules
+            setattr(ingredient, 'code', form.cleaned_data['code'].upper())
+            
+            ingredient.owner = request.user
+            ingredient.save()
+            return HttpResponse('{ "message" : "OK" }')
+        
+        except IntegrityError:
+            just_the_string = traceback.format_exc()
+            logger.debug(just_the_string)
+            return HttpResponseServerError('{ "message" : "modification impossible" }')
+        except Exception as error:
+            just_the_string = traceback.format_exc()
+            logger.debug(just_the_string)
+            return HttpResponseServerError('{ "message" : "erreur inattendue" }')
+
+        return HttpResponse('{ "message" : "OK" }')
 
     # Recherche un ingredient
     def get(self, request, photo_id=None):
@@ -215,49 +309,6 @@ class IngredientView(View):
         except IOError:
             logger.error("Loading IOError /photos/{}".format(photo_id))
             return blank_photo()
-
-    # creation photo
-    def put(self, request):
-        if not request.user.is_authenticated:
-            return HttpResponseServerError('{ "message" : "Il faut être cuthentifié pour supprimer un imgredient" }')
-
-        if  not request.FILES['photo']:
-            return HttpResponseServerError('{ "message" : "Il manque la photo" }')
-            
-        try:
-            form = PhotoForm(request.PUT)
-            if form.is_valid():
-                myfile = request.FILES['photo']
-                name = myfile.name 
-                logger.debug(u"PhotoFileName {}".format(name))
-                fs = FileSystemStorage()
-                filename = fs.save(name, myfile)
-                photo = form.save(commit=False)
-                photo.photo = filename
-                photo.owner = request.user
-
-                try:
-                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
-                    img = get_thumbnail(img)
-                except IOError:
-                    blank = Photo.objects.get(code='blank')
-                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
-                    img = get_thumbnail(img)
-
-                f = io.BytesIO()
-                img.save(f, "PNG")
-                f.seek(0)
-	        photo.thumbnail = f.read1(-1)
-                f.close()
-                photo.save()
-                return HttpResponse('{ "message" : "OK" }')
-        except IntegrityError:
-            return HttpResponseServerError('{ "message" : "Le code est déjà utilisé" }')
-        except Exception as error:
-            import traceback
-            just_the_string = traceback.format_exc()
-            logger.debug(just_the_string)
-            return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
     #
     # Suppresion d'un ingrédient

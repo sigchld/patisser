@@ -27,6 +27,10 @@ function ask_edit_photo(id) {
 function ask_import_photo() {
     $('#id_import_photo_form').get(0).reset();
     $('#id_import_photo_img').attr('src', blank_photo);
+    var selected = $('#id_import_categorie');
+    
+    selected.empty();
+    selected.append("<option value='NONE'>Choisir..</option>");
     $('#modalAddPhoto').modal('show');
 };
 
@@ -121,10 +125,12 @@ function loadCategoriesAtWork(create_form) {
     var u = "/mesrecettes/categories"; //$("#id_popover_categorie_form").data('action');
     var groupe = $(id_groupe);
     
-    if (groupe.val() == "NONE") {
+    if (groupe.val() == "NONE" || !groupe.val()) {
         var selected = $(id_categorie);
         selected.empty();
-        selected.append('<option value="NONE" selected></option>');
+        selected.append("<option value='NONE' selected>Choisir..</option>");
+        selected.val("NONE");
+        selected.data("current", "NONE");
         return ;
     }
     
@@ -139,7 +145,7 @@ function loadCategoriesAtWork(create_form) {
                var val = $select.data("current");
                $select.empty();
                var res = JSON.parse(response).message;
-               $select.append('<option value="NONE"></option>');
+               $select.append("<option value='NONE' selected>Choisir..</option>");
                for (var idx=0; idx < res.length; idx++) { 
                    var element = res[idx];
                    if (element.categorie == val) {
@@ -148,7 +154,10 @@ function loadCategoriesAtWork(create_form) {
                        $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
                    }
                }
-               $select.val(val);
+               if (val) {
+                   $select.val(val);
+               }
+               
                $select.change();
                //$(id_categorie.concat(" option[value=").concat(val).concat("]")).attr("disabled", false);
 

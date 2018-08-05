@@ -12,9 +12,7 @@
       <tr  style="margin:0;padding:0;border:0px;">
 	{% if request.user.is_authenticated %}
 	<td colspan="2">
-          <span>Photos </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_photos' %}" data-groupe="ALL" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.photos_groupe}}:{{ request.session.photos_categorie}}</a>]</span>
-	  
-	  &nbsp;
+
 	  {% if acces %}
 	  {% if detail %}
 	  <a href="{% url 'list_photos_acces' acces %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
@@ -29,6 +27,12 @@
 	  <a href="{% url 'list_photos_owner' owner %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
 	  {% endif %}
 	  {% endif %}
+          
+
+          <span>Photos </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_photos' %}" data-groupe="ALL" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{ request.session.photos_groupe}}:{{ request.session.photos_categorie}}</a>]</span>
+
+	  
+	  &nbsp;
 	  &nbsp;&nbsp;
 	  <a href="javascript:ask_import_photo();" title="importer une photo" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
 
@@ -232,7 +236,7 @@
         <td style="vertical-align:top">
           <div class="container-fluid" >
             <div class="row sticky-top" style="text-align:center;"><span id="id_photo_code_{{photo.id}}" >{{photo.code}}</span></div>
-            <div class="row" style="height:128px;text-align:center;"><img  id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{% url 'photo' photo.id %}"></div>
+            <div class="row" xstyle="height:100px;width:100px;text-align:center;"><img style="height:100px;width:100px;" id="id_photo_img_{{photo.id}}"  data-toggle="tooltip" title="{{photo.description}}" src="{% url 'photo' photo.id %}"></div>
             <div style="display:none"><span id="id_photo_description_{{photo.id}}">{{photo.description}}</span></div>
             <div style="display:none"><span id="id_photo_acces_{{photo.id}}">{{photo.acces}}</span></div>
 
@@ -299,50 +303,64 @@
 	  <form id="id_import_photo_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
 	    {% csrf_token %}
 	    <div class="form-group">
-	      <div class="form-group form-inline">
-	        <label for="code">Code:</label>
-	        <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
-	      </div>
+
+              <div class="form-group row">              
+	        <label class="col-sm-2 col-form-label" for="code">Code:</label>
+                <div class="col-sm-4">
+	          <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
+	        </div>
+              </div>
+              
 	      <div class="form-group">
 	        <label for="description">Description:</label>
 	        <textarea rows="5" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
 	      </div>
 
-            <div style="margin-bottom:10px;">
-              <div style="display:inline-block">  
-	        <div class="form-group">
-	          <label for="acces">Accès:</label>
+              <div class="form-group row">              
+	        <label for="acces"  class="col-sm-2 col-form-label" >Accès:</label>
+                <div class="col-sm-10">
 	          <select class="form_control" name="acces" id="id_acces">
 		    <option value="PUB" selected>public</option>
 		    <option value="PRIV">privé</option>
 	          </select>
 	        </div>
-             <p>
-	      <label for="groupe">Groupe:</label>
-              <select class="" required  style="min-width: 40px;" id="id_import_groupe" name="groupe" placeholder="groupe">
-                <option value="REC" >recettes</option>
-	        <option value="PREP">preparations</option>
-                <option value="ING">ingredients</option>
-                <option value="MAT">ustensiles</option>
-	      </select>
-            </p>
-            <p>
-	      <label for="categorie">Catégorie:</label>
-              <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_import_categorie" name="categorie" placeholder="categorie">
-	        <option value="NONE" selected></option>
-	      </select>
-              </p>
-            <p>
-	        <div class="form-group form-inline">
-	        <label for="photo">Image:</label>
-	        <input type="file" class="form-control-file" id="id_import_photo" required name="photo" placeholder="Description" required="required" maxlength="200">
-	      </div>
               </div>
-	      <div style="display:block"><img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_import_photo_img">
+              
+              <div class="form-group row">              
+	        <label class="col-sm-2 col-form-label" for="groupe">Groupe:</label>
+                <div class="col-sm-10">
+                  <select class="" required  style="min-width: 40px;" id="id_import_groupe" name="groupe" placeholder="groupe">
+                    <option value="NONE" selected>Choisir..</option>
+                    <option value="REC" >recettes</option>
+	            <option value="PREP">preparations</option>
+                    <option value="ING">ingredients</option>
+                    <option value="MAT">ustensiles</option>
+	          </select>
+                </div>
               </div>
+              
+              <div class="form-group row">              
+	        <label class="col-sm-2 col-form-label" for="categorie">Catégorie:</label>
+                <div class="col-sm-10">
+                  <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_import_categorie" name="categorie" placeholder="categorie">
+	            <option selected>Choisir..</option>
+	          </select>
+                </div>
               </div>
-	    <div class="form-group">
-	        <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md ">Engegistrer</button>
+              
+              <div class="form-group row">              
+	        <label class="col-sm-2 col-form-label" for="photo">Image:</label>
+                <div class="col-sm-10">
+	          <input type="file" class="form-control-file" id="id_import_photo" required name="photo" placeholder="Description" required= maxlength="200">
+	        </div>
+              </div>
+              
+	      <div>
+                <img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_import_photo_img">
+              </div>
+              
+	      <div class="form-group text-right">
+	        <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md">Engegistrer</button>
 	      </div>
 	    </div>
 	  </form>
@@ -350,7 +368,7 @@
         <div class="modal-footer">
           <div class="alert-warning text-center" >
             <span id="id_import_photo_message"></span>
-            </div>
+          </div>
 	</div>
       </div>
     </div>
@@ -368,56 +386,73 @@
 	  <form id="id_edit_photo_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
 	    {% csrf_token %}
             <input type="hidden" name="id" id="id_edit_photo_id">
-	    <div class="form-group form-inline">
-	      <label for="code">Code:</label>
-	      <input type="text" class="form-control" id="id_edit_photo_code" name="code" placeholder="Code" required maxlength="20">
-	    </div>
+            
+            <div class="form-group row">              
+	      <label class="col-sm-2 col-form-label" for="code">Code:</label>
+              <div class="col-sm-4">
+	        <input type="text" class="form-control" id="id_edit_photo_code" name="code" placeholder="Code" required maxlength="20">
+	      </div>
+            </div>
+            
 	    <div class="form-group">
 	      <label for="description">Description:</label>
-	      <textarea rows="5" class="form-control" id="id_edit_photo_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
+	      <textarea rows="5" class="form-control" id="id_edit_photo_description" name="description" placeholder="Description" required maxlength="200"></textarea>
 	    </div>
 
-            <div style="margin-bottom:10px;">
-              <div style="display:inline-block">  
-	        <div class="form-group">
-	          <label for="acces">Accès:</label>
-	          <select class="form_control" name="acces" id="id_edit_photo_acces">
-		    <option value="PUB" selected>public</option>
-		    <option value="PRIV">privé</option>
-	          </select>
-	        </div>
-             <p>
-	      <label for="groupe">Groupe:</label>
-              <select class="" required style="min-width: 40px;" id="id_edit_groupe" name="groupe" placeholder="groupe">
-                <option value="REC" >recettes</option>
-	        <option value="PREP">preparations</option>
-                <option value="ING">ingredients</option>
-                <option value="MAT">ustensiles</option>
-	      </select>
-            </p>
+	    <div class="form-group">
+	      <label for="description">Description:</label>
 
-                <p>
-	      <label for="categorie">Catégorie:</label>
-              <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_edit_categorie" name="categorie" placeholder="categorie">
-                <option value="NONE" selected>aucune</option>
-	      </select>
-              </p>
-            <p>
+	    </div>
 
-	        <div class="form-group">
-	          <label for="photo">Image:</label>
-	          <input type="file" class="form-control-file" id="id_edit_photo" name="photo" placeholder="Description"  maxlength="200">
-	        </div>
-              </div>
-	      <div style="display:inline-block"><img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_edit_photo_img">
-              </div>
+            <div class="form-group row">              
+	      <label for="acces"  class="col-sm-2 col-form-label" >Accès:</label>
+              <div class="col-sm-10">
+	        <select class="form_control" name="acces" id="id_edit_photo_acces">
+		  <option value="PUB" selected>public</option>
+		  <option value="PRIV">privé</option>
+	        </select>
+	      </div>
             </div>
 
-	<div class="form-group">
-	  <button id="id_edit_submit_photo" type="submit"  class="btn btn-primary btn-md">Engegistrer</button>
-	</div>
-	</form>
-      </div>
+            
+            <div class="form-group row">              
+	      <label class="col-sm-2 col-form-label" for="groupe">Groupe:</label>
+              <div class="col-sm-10">
+                <select class="" required style="min-width: 40px;" id="id_edit_groupe" name="groupe" placeholder="groupe">
+                  <option value="NONE" selected>Choisir..</option>
+                  <option value="REC" >recettes</option>
+	          <option value="PREP">preparations</option>
+                  <option value="ING">ingredients</option>
+                  <option value="MAT">ustensiles</option>
+	        </select>
+              </div>
+            </div>
+            
+            <div class="form-group row">              
+	      <label class="col-sm-2 col-form-label" for="categorie">Catégorie:</label>
+              <div class="col-sm-10">
+                <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_edit_categorie" name="categorie" placeholder="categorie">
+	          <option selected>Choisir..</option>
+	        </select>
+              </div>
+            </div>
+            
+            <div class="form-group row">              
+	      <label class="col-sm-2 col-form-label" for="photo">Image:</label>
+              <div class="col-sm-10">
+                <input type="file" class="form-control-file" id="id_edit_photo" name="photo" placeholder="Description" maxlength="200">
+	      </div>
+            </div>
+
+	    <div>
+              <img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_edit_photo_img">
+            </div>
+
+	    <div class="form-group text-right">
+	      <button id="id_edit_submit_photo" type="submit"  class="btn btn-primary btn-md">Engegistrer</button>
+	    </div>
+	  </form>
+        </div>
       <div class="modal-footer">
         <div class="alert-error text-center" >
           <span id="id_edit_photo_message"></span>
@@ -474,7 +509,7 @@
     function () {
   $('#liste_photos').DataTable({
   "hover":true,
-  "compact":true,
+  "compact":false,
   "strip":true,
   "paging":false,
   "searching":false,

@@ -16,7 +16,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
-
+from django.db.models.functions import Lower
 from PIL import Image
 from PIL import ImageMath
 from PIL import ImageChops
@@ -422,13 +422,13 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
     #
     # constitution de la liste des noms
     categories = []
-    categories.append(('NONE', 'SANS'))
+    categories.append(('NONE', 'Choisir..'))
     #categories.append(('ALL', 'TOUTES'))
     categories.append(('ING', 'INGRÉDIENTS'))
     #categories.append(('REC', 'RECETTES'))
     #categories.append(('PREP','PRÉPARATIONS'))
     #categories.append(('MAT', 'USTENSILES'))
-    categorie_ing = Categorie.objects.filter(groupe="ING")
+    categorie_ing = Categorie.objects.filter(groupe="ING").order_by(Lower('description'))
     for cat in categorie_ing :
         categories.append((cat.id, cat.description))
     

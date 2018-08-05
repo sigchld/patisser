@@ -17,6 +17,7 @@ from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.core.files.storage import FileSystemStorage
+from django.db.models.functions import Lower
 
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden, HttpResponseRedirect
@@ -69,8 +70,9 @@ class PhotoView(View):
             categorie  = form['categorie'].value()
             
 
-            if groupe is None or categorie is None:
+            if groupe is None or categorie is None or groupe == "NONE" or categorie == "NONE":
                 return HttpResponseServerError('{ "message" : "saisie incomplète, il manque le groupe ou la catégorie" }')
+            
             photo_id = request.POST.get('id', None)
             photo = None
             try:
@@ -84,7 +86,7 @@ class PhotoView(View):
                 return HttpResponseServerError('{ "message" : "la photo ne vous appartient pas" }')
 
             # on ne peut changer le groupe de la photo que si elle n'est pas utilisée.
-            if groupe <> photo.categorie.groupe:
+            if photo.categorie is not None and groupe != photo.categorie.groupe:
                 nbref = len(photo.ingredient_set.all())
                 if nbref == 0: nbref = nbref + len(photo.recette_set.all())
                 if nbref == 0: nbref = nbref + len(photo.preparation_set.all())
@@ -218,7 +220,8 @@ class PhotoView(View):
             if form.is_valid():
                 groupe = form['groupe'].value()
                 categorie  = form['categorie'].value()
-                if not groupe or not categorie:
+
+                if not groupe or not categorie or groupe == "NONE" or categorie == "NONE":
                     return HttpResponseServerError('{ "message" : "saisie incomplète, il manque le groupe ou la catégorie" }')
                 
                 myfile = request.FILES['photo']
@@ -284,13 +287,10 @@ class PhotoView(View):
         if photo.owner.username != request.user.username:
             return HttpResponseForbidden('{ "message" : "seul le propriétaire peu supprimer la photo" }')
 
-        import time
-        #time.sleep(3)
         nbref = len(photo.ingredient_set.all())
         if nbref == 0: nbref = nbref + len(photo.recette_set.all())
         if nbref == 0: nbref = nbref + len(photo.preparation_set.all())
         
-        logger.debug("nb photos ref dans ingredient : {}".format(len(photo.ingredient_set.all())))
         if nbref != 0:
             return HttpResponseForbidden("{{ \"message\" : \"Suppression impossible, la photo est referencée {} fois\" }}".format(nbref))
         try:
@@ -384,16 +384,18 @@ class PhotoCategorieView(View):
     def get(self, request, categorie_id):
         try:
             categorie = Categorie.objects.get(pk=categorie_id)
+
+            if request.user.is_authenticated:
+                photos = Photo.objects.filter(Q(categorie = categorie)  & (Q(owner = request.user.username) | Q(acces = "PUB")))
+            else:
+                photos = Photo.objects.filter(Q(categorie = categorie)  & Q(acces = "PUB"))
         except:
-            return HttpResponseServerError('{ "message" : "erreur inattendue sur catégorie" }')
-        
-        if request.user.is_authenticated:
-            photos = Photo.objects.filter(Q(categorie = categorie) & (Q(owner = request.user.username) | Q(acces = "PUB")))
-        else:
-            photos = Photo.objects.filter(Q(categorie = categorie) & Q(acces = "PUB"))
-
-        photos = photos.values('id', 'description').order_by('description')
-
+            if request.user.is_authenticated:
+                photos = Photo.objects.filter(Q(categorie__groupe = categorie_id) & (Q(owner = request.user.username) | Q(acces = "PUB")))
+            else:
+                photos = Photo.objects.filter(Q(categorie__groupe = categorie_id) & Q(acces = "PUB"))
+            
+        photos = photos.values('id', 'description').order_by(Lower('description'))
         data = '{{ "message" : {} }}'.format(json.dumps(list(photos), cls=DjangoJSONEncoder))
                                           
         return HttpResponse(data)
