@@ -94,12 +94,12 @@ $(document).ready(function(){
         }
     }).on('shown.bs.popover', function(event){
 	var popover = $(this);
-        var groupe = popover.data('groupe'); //$('#'.concat(event.target.id)).data('groupe');
-        var action = popover.data('myaction');
-        $("#id_popover_categorie_form").attr("action", action);        
-        console.log(action);
-        if (groupe != "ALL") {
-            console.log(groupe);
+        var groupe = popover.data('groupe');
+        //var action = popover.data('myaction');
+        //$("#id_popover_categorie_form").attr("action", action);        
+        //console.log("action="+action);
+        if (groupe && groupe != "ALL") {
+            console.log("groupe=" + groupe);
             
             var grp = $("#id_popover_groupe");
             grp.val(groupe);

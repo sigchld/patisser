@@ -6,55 +6,667 @@
 {% block title%}Main menu{% endblock %}
 {% block head %}Liste des Recettes{% endblock %}
 {% block content %}
-{% if recettes %}
-<table class="table" id="liste">
-<div class="pagination">
-  <span class="step-links">
-    {% if recettes.has_previous %}
-    <a href="?page={{ recettes.previous_page_number }}">previous</a>
-    {% endif %}
-    <span class="current">
-      Page {{ recettes.number }} of {{ recettes.paginator.num_pages }}.
-    </span>
-    {% if recettes.has_next %}
-    <a href="?page={{ recettes.next_page_number }}">next</a>
-    {% endif %}
-  </span>
+<div class="container">
+  <table class="table-striped"  id="liste_recettes">
+    <thead>
+      <tr>
+	{% if request.user.is_authenticated %}
+	<td colspan="2">
+          {% if acces %}
+	  {% if detail %}
+	  <a href="{% url 'list_recettes_acces' acces %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_recettes_acces' acces %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
 
+	  {% else %}
+	  {% if detail %}
+	  <a href="{% url 'list_recettes_owner' owner %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_recettes_owner' owner %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
+	  {% endif %}
+
+          <span>Recettes </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-myaction="{% url 'list_recettes' %}" data-groupe="REC" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" >{{request.session.recettes_categorie}}</a>]</span>
+	  
+	  &nbsp;
+	  &nbsp;&nbsp;
+	  <a href="javascript:ask_new_recette();" title="ajouter un ingrédient" ><span class="glyphicon glyphicon-plus"></span> ajouter</a>
+	</td>
+
+	<td>
+          {% if owner == 'me' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_recettes_owner' 'me' %}" selected>les miens</option> 
+	    <option value="{% url 'list_recettes_owner' 'others' %}">les autres publics</option>
+	    <option value="{% url 'list_recettes_owner' 'all' %}">les miens et les autres</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'others' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_recettes_owner' 'me' %}">les miens</option>
+	    <option value="{% url 'list_recettes_owner' 'others' %}" selected>les autres plubics</option>
+	    <option value="{% url 'list_recettes_owner' 'all' %}">les miens et les autres</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'all' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Propriétaire">
+	    <option value="{% url 'list_recettes_owner' 'me' %}">les miens</option>
+	    <option value="{% url 'list_recettes_owner' 'others' %}">les autres plubics</option>
+	    <option value="{% url 'list_recettes_owner' 'all' %}" selected>les miens et les autres</option>
+	  </select>
+          {% endif %}
+	  
+	</td>
+
+	<td>
+	  {% if owner == 'me' %}
+          <!-- span class="glyphicon glyphicon-filter"></span -->
+          <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+            {% if acces == 'public' %}
+            <option value="{% url 'list_recettes_acces' 'private' %}">privés</option>      
+            <option value="{% url 'list_recettes_acces' 'public' %}" selected>plubics</option>
+            <option value="{% url 'list_recettes_acces' 'all' %}">plubics ou privés</option>
+            {% elif acces == 'private' %}
+            <option value="{% url 'list_recettes_acces' 'private' %}" selected>privés</option>
+            <option value="{% url 'list_recettes_acces' 'public' %}">plubics</option>
+            <option value="{% url 'list_recettes_acces' 'all' %}">plubics ou privés</option>
+            {% else %}
+            <option value="{% url 'list_recettes_acces' 'private' %}">privés</option>      
+            <option value="{% url 'list_recettes_acces' 'public' %}">plubics</option>
+            <option value="{% url 'list_recettes_acces' 'all' %}" selected>plubics ou privés</option>
+            {% endif %}
+          </select>
+          
+          {% endif %}
+	</td>
+	{% else %}
+	<td colspan="4">
+	  {% if detail %}
+	  <a href="{% url 'list_recettes' %}?detail=false" data-toggle="tooltip" title="mode grille"><span class="glyphicon glyphicon-th"></span></a>
+	  {% else %}
+	  <a href="{% url 'list_recettes' %}?detail=true" data-toggle="tooltip" title="mode liste"><span class="glyphicon glyphicon-th-list"></span></a>
+	  {% endif %}
+
+          <span>Recettes </span><span class="grpcat">[<a  href="javascript:;" id="id_sel_categorie" data-toggle="popover" data-trigger="click" data-title="filtre par catégorie"  data-content="" data-groupe="REC" >{{request.session.recettes_categorie}}</a>]</span>
+
+	  &nbsp;&nbsp;
+	</td>
+	{% endif %}
+
+
+	<td class="text-right">
+          {% if recettes %}
+	  <div class="pagination">
+	    <span class="step-links">
+	      {% if recettes.has_previous %}
+	      <a href="?page={{ recettes.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+	      {% endif %}
+	      <span class="current">
+		Page {{ recettes.number }} of {{ recettes.paginator.num_pages }}
+	      </span>
+	      {% if recettes.has_next %}
+	      <a href="?page={{ recettes.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+	      {% endif %}
+	    </span>
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+
+      {% if detail %}
+      <tr>
+        <th>code</th>
+        <th>description</th>
+        <th>
+          propriétaire
+        </th>
+
+        <th colspan="2">
+          accès
+      </tr>
+      {% endif %}
+
+      {% comment %}
+      {% if request.user.is_authenticated %}
+      <tr>
+        <td colspan="2">&nbsp</td>
+        <td >
+          <!-- span class="glyphicon glyphicon-filter"></span -->
+          {% if owner == 'me' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	    <option value="{% url 'list_recettes_owner' 'me' %}" selected>les miens</option> 
+	    <option value="{% url 'list_recettes_owner' 'others' %}">les autres</option>
+	    <option value="{% url 'list_recettes_owner' 'all' %}">plubics privés</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'others' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	    <option value="{% url 'list_recettes_owner' 'me' %}">les miens</option>
+	    <option value="{% url 'list_recettes_owner' 'others' %}" selected>les autres</option>
+	    <option value="{% url 'list_recettes_owner' 'all' %}">plubics privés</option>
+	  </select>
+          {% endif %}
+          
+          {% if owner == 'all' %}
+	  <select name="acces" id="id_owner_sel" data-toggle="tooltip" title="Visibilité">
+	    <option value="{% url 'list_recettes_owner' 'me' %}">les miens</option>
+	    <option value="{% url 'list_recettes_owner' 'others' %}">les autres</option>
+	    <option value="{% url 'list_recettes_owner' 'all' %}" selected>plubics privés</option>
+	  </select>
+          {% endif %}
+        </td>
+        
+        <td colspan="3">
+          {% if owner == 'me' %}
+          <!-- span class="glyphicon glyphicon-filter"></span -->
+          <select id="id_acces_sel" data-toggle="tooltip" title="Visibilité">
+            {% if acces == 'public' %}
+            <option value="{% url 'list_recettes_acces' 'private' %}">privé</option>      
+            <option value="{% url 'list_recettes_acces' 'public' %}" selected>public</option>
+            <option value="{% url 'list_recettes_acces' 'all' %}">plubics privés</option>
+            {% elif acces == 'private' %}
+            <option value="{% url 'list_recettes_acces' 'private' %}" selected>privé</option>
+            <option value="{% url 'list_recettes_acces' 'public' %}">public</option>
+            <option value="{% url 'list_recettes_acces' 'all' %}">plubics privés</option>
+            {% else %}
+            <option value="{% url 'list_recettes_acces' 'private' %}">privé</option>      
+            <option value="{% url 'list_recettes_acces' 'public' %}">public</option>
+            <option value="{% url 'list_recettes_acces' 'all' %}" selected>plubics privés</option>      
+            {% endif %}
+          </select>
+          {% endif %}
+        </td>
+        
+      </tr>
+      {% endif %}
+      {% endcomment %}
+    </thead>
+
+    <tbody>
+      {% if recettes %}
+      {% if detail %}
+      {% for recette in recettes %}
+      <tr role="row">
+        <td>
+          <div>
+            <span id="id_recette_code_{{recette.id}}" >{{recette.code}}</span>
+          </div>
+          
+          {% if request.user.username == recette.owner.username %}
+          <div>
+            <div>
+              <a href="javascript:ask_delete_recette({{forloop.counter0}});"><span class="glyphicon glyphicon-trash"></span></a>
+            </div>
+            <div>
+              <a href="javascript:ask_edit_recette({{forloop.counter0}});"  title="modifier un recette"><span class="glyphicon glyphicon-pencil"></span></a>
+            </div>
+          </div>
+          {% else %}
+          <div>&nbsp;</div>
+          <div>&nbsp;</div>
+          {% endif %}
+          {% if recette.categorie %}
+          <div>
+            <span  class="grpcat" data-toggle="tooltip" title="{{recette.categorie.description}}" >[{{recette.categorie.groupe}}:{{recette.categorie.categorie}}]</span>
+            <span style="display:none;" id="id_groupe_{{recette.id}}" >{{recette.categorie.groupe}}</span>
+            <span style="display:none;" id="id_categorie_{{recette.id}}" >{{recette.categorie.categorie}}</span>
+          </div>
+          {% endif %}
+
+        </td> 
+        <td><span id="id_recette_description_{{recette.id}}">{{recette.description}}</span></td>
+        <td><span id="id_recette_username_{{recette.id}}">{{recette.owner.username}}</span></td>
+        <td><span >{{recette.get_acces_display}}</span></td>
+        <td style="display:none"><span id="id_recette_acces_{{recette.id}}">{{recette.acces}}</span></td>
+        <td>
+	  <a href="javascript:detail_recette({{forloop.counter0}});" title="détail de l'ingrédient" >
+            {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
+            {% if recette.photo and recette.photo.id and recette.photo.id != '%s' %}
+            <img id="id_recette_img_{{recette.id}}" src="{% url 'photo' recette.photo.id %}" >
+            {% else %}
+            <img id="id_recette_img_{{recette.id}}" src="{% url 'photo_blank' %}">
+            {% endif %}
+          </a>
+          
+        </td>
+
+      </tr>
+      {% endfor %}
+      {% else %}
+      {% for recette in recettes %}
+      {% if forloop.first %}
+      <tr>
+        {% elif forloop.counter0|divisibleby:"5" %}
+      </tr>
+      <tr>
+        {% endif %}  
+        {% comment %}
+        http://fr.learnlayout.com/position-example.html
+        la cellule est aligne en haut,
+        il faut specifier une hauteur de 128 pour les images
+        {% endcomment %}
+        <td style="vertical-align:top">
+          <div class="container-fluid" >
+            <div class="row sticky-top" style="text-align:center;"><span id="id_recette_code_{{recette.id}}" >{{recette.code}}</span></div>
+            <div class="row" style="text-align:center;height:128px;">
+	      <a href="javascript:detail_recette({{forloop.counter0}});" title="détail de l'ingrédient" >
+
+                {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
+            {% if recette.photo and recette.photo.id and recette.photo.id != '%s' %}
+            <img style="width:128px;height:100px;" id="id_recette_img_{{recette.id}}" src="{% url 'photo' recette.photo.id %}">
+            {% else %}
+            <img  style="width:128px;height:128px;" id="id_recette_img_{{recette.id}}" src="{% url 'photo_blank' %}">
+            {% endif %}
+                
+
+
+
+              </a>
+            </div>
+            <div style="display:none"><span id="id_recette_description_{{recette.id}}">{{recette.description}}</span></div>
+            <div style="display:none"><span id="id_recette_acces_{{recette.id}}">{{recette.acces}}</span></div>
+
+            <div class="row" style="vertical-align:bottom;margin-left:0px;text-align:center;">
+              {% if request.user.username == recette.owner.username %}
+              <a href="javascript:ask_delete_recette({{forloop.counter0}});" title="supprimer un recette"><span class="glyphicon glyphicon-trash"></span></a>
+              <a href="javascript:ask_edit_recette({{forloop.counter0}});"  title="modifier un recette"><span class="glyphicon glyphicon-pencil"></span></a>
+              {% endif %}
+              {% if recette.categorie %}
+              <span  class="grpcat" data-toggle="tooltip" title="{{recette.categorie.description}}" >&nbsp;[{{recette.categorie.groupe}}:{{recette.categorie.categorie}}]</span>
+              <span style="display:none;" id="id_groupe_{{recette.id}}" >{{recette.categorie.groupe}}</span>
+              <span style="display:none;" id="id_categorie_{{recette.id}}">{{recette.categorie.categorie}}</span>
+              {% endif %}
+            </div>
+          </div>
+        </td>
+        {% if forloop.last %}
+        {% for i in remplissage %}
+        <td></td>     
+        {% endfor %}
+      </tr>
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+      {% endif %}
+      
+    </tbody> 
+
+    <tfoot>
+      <tr>
+        <td colspan="4"><p>Recettes</td>
+        <td class="text-right">
+          {% if recettes %}
+          <div class="pagination">
+            <span class="step-links">
+              {% if recettes.has_previous %}
+              <a href="?page={{ recettes.previous_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-left"></span></a>
+	      {% endif %}
+	      <span class="current">
+		Page {{ recettes.number }} of {{ recettes.paginator.num_pages }}
+	      </span>
+	      {% if recettes.has_next %}
+	      <a href="?page={{ recettes.next_page_number }}&detail={{ detail }}"><span class="glyphicon glyphicon-arrow-right"></span></a>
+	      {% endif %}
+	    </span>
+          </div>
+          {% endif %}
+        </td>
+    </tfoot>
+  </table>
+
+
+  <!-- Modal detail/modification d'un recette -->
+  <div id="id_detail_recette_modal" class="modal fade">
+    <span id="id_detail_recette_no" style="display:none"></span>
+    <div class="modal-dialog ">
+      <div class="modal-content">
+        <div class="modal-header" id="id_detail_recette_modal_view_header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	  <h4 class="modal-title text-center">Détail recette</h4>
+        </div>
+        <div class="modal-header" id="id_detail_recette_modal_delete_header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title text-center">Suppression recette</h4>
+        </div>
+        <div class="modal-header" id="id_detail_recette_modal_edit_header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title text-center">Modification recette</h4>
+        </div>
+        <div class="modal-header" id="id_detail_recette_modal_new_header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title text-center">Création recette</h4>
+        </div>
+
+        <div class="modal-body col-lg-12">
+          <div class="container-fluid">
+            <form id="id_detail_recette_form" action="">
+
+              <div class="row">
+                <div class="greybox" >
+<div>
+                  <label for="code">Code</label>
+                  <input  name="code" type="text" id="id_detail_recette_code">
+</div>
+<div>
+                  <label for="allergene">Allergene</label>
+                <input name="allergene" type="checkbox" id="id_detail_recette_allergene">
+	        <label for="acces">Accès</label>
+	        <select name="acces" id="id_detail_recette_acces">
+		  <option value="PUB">public</option>
+		  <option value="PRIV">privé</option>
+	        </select>
+	        </div>
+</div>
+              </div>
+
+            <div class="row">
+              <div class="greybox">
+                <div>
+                <span class="font-weight-bold">Date création</span>
+                <span id="id_detail_recette_date_creation"></span>
+                </div>
+                <div>
+                <span class="font-weight-bold">Date dernière modification </span>
+                <span id="id_detail_recette_date_modification"></span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="greybox">
+                <span class="font-weight-bold">Catégorie  </span>
+                <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_detail_categorie" name="categorie" placeholder="categorie">
+	        <option value="NONE" selected>Choisir..</option>
+	      </select>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="greybox">
+                <span class="font-weight-bold">Prix </span>
+                <input maxlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_recette_prix_unitaire">
+                <span class="font-weight-bold">&euro;</span>
+                <span> pour </span>
+                <input class="text-right" name="pp" maxlength="8" style="width:8em;" id="id_detail_recette_prix_poids">
+                <span class="font-weight-bold">g</span>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="greybox" style="min-height: 75px;">                
+	          <label for="description">Description</label>
+	          <textarea disabled rows="2" class="form-control" id="id_detail_recette_description" name="description" required="required" maxlength="200"></textarea>
+              </div>
+            </div>
+            <div class="row">
+              <div class="greybox" style="min-height: 75px;">                
+	        <label for="bonasavoir">Bon à savoir</label>
+	        <textarea disabled rows="2" class="form-control" id="id_detail_recette_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-8 col-xs-8 greybox">
+                <div class="no-margin row">
+                  <div class="col-border col-lg-12 col-xs-12" style="display:inline-block;"><p class="font-lighter">Valeurs nutritionnelles moyennes pour 100g</p>
+                  </div>
+                </div>
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7"><span>energie</span>
+                  </div>
+                  <div class="col-border col-lg-5 col-xs-5">
+                    <div>
+                      <input disabled class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kjoules" id="id_detail_recette_kjoules">
+                      <span style="display:inline">kj</span>
+                    </div>
+                    <div>
+                      <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kcalories" id="id_detail_recette_kcalories">
+                      <span style="display:inline;">kcal</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7">
+                    <span>maitères grasses<span>
+                  </div>
+                  <div  class="col-border col-lg-5 col-xs-5">
+                    <!-- span id="id_detail_recette_matieres_grasses_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses" id="id_detail_recette_matieres_grasses">
+                    <span>g</span>
+                  </div>
+                </div>
+                
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7">
+                    <span>dont acides gras saturés<span>
+                  </div>
+                  <div class="col-border col-5 col-xs-5">
+                    <!-- span id="id_detail_recette_matieres_grasses_saturees_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses_saturees" id="id_detail_recette_matieres_grasses_saturees">
+                    <span>g</span>
+                  </div>
+                </div>
+
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7">
+                    <span>Glucides<span>
+                  </div>
+                  <div class="col-border col-lg-5 col-xs-5">
+                    <!-- span id="id_detail_recette_glucides_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides" id="id_detail_recette_glucides">
+                    <span> g<span>
+                  </div>
+                </div>
+                
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7">
+                    <span>dont sucres<span>
+                  </div>
+                  <div class="col-border col-lg-5 col-xs-5">
+                    <!-- span id="id_detail_recette_glucides_dont_sucres_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides_dont_sucres" id="id_detail_recette_glucides_dont_sucres">
+                    <span>g</span>
+                  </div>
+                </div>
+
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7">
+                    <span>fibres<span>
+                  </div>
+                  <div class="col-border col-lg-5 col-xs-5">
+                    <!-- span id="id_detail_recette_fibre_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="fibres_alimentaires" id="id_detail_recette_fibres"></span>
+                    <span> g</span>
+                  </div>
+                </div>
+
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7">
+                    <span>proteines<span>
+                  </div>
+                  <div class="col-border col-lg-5 col-xs-5">
+                    <!-- span id="id_detail_recette_proteines_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="proteines"  id="id_detail_recette_proteines">
+                    <span> g</span>
+                  </div>
+                </div>
+
+                <div class="no-margin row">
+                  <div class="col-border col-lg-7 col-xs-7">
+                    <span>sel<span>
+                  </div>
+                  <div class="col-border col-lg-5 col-xs-5">
+                    <!-- span id="id_detail_recette_sel_inf"></span -->
+                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="sel" id="id_detail_recette_sel">
+                    <span>g</span>
+                  </div>
+                </div>
+                
+                
+              </div>
+              <div class="col-lg-4 col-xs-4">
+                <span class="font-weight-bold text-center">Photo</span>
+                <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_recette_img">
+              </div>
+              
+              <div class="row">
+              <div class="col-lg-4 col-xs-4">
+                <span >Catégorie</span>
+                <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
+	        <option value="NONE" selected>Choisir..</option>
+	        </select>
+                <span >Nom</span>
+                <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
+	          <option value="NONE" selected>Choisir..</option>
+	        </select>
+                
+              </div>
+              </div>                          
+            </div>
+            <input type="hidden" id="id_detail_recette_id" name="id">
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer" id="id_detail_recette_modal_view_footer">
+          <a id="id_detail_recette_previous" href="#"><span class="step-link glyphicon glyphicon-arrow-left"></span></a>
+	  <a id="id_detail_recette_next" href="#"><span class="step-link glyphicon glyphicon-arrow-right"></span></a>
+        </div>
+        <div class="modal-footer" id="id_detail_recette_modal_delete_footer" style="display:none">
+          <div>
+            <span style="display:none;" id="id_delete_recette_id"></span>
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_recette_abandon" >Abandon</button>
+            <button type="button" id="id_delete_recette" class="btn btn-warning">Suppression</button>
+          </div>
+          <div class="alert-error text-center" >
+            <span id="id_delete_recette_message">&nbsp;</span>
+          </div>
+        </div>
+
+        <div class="modal-footer" id="id_detail_recette_modal_edit_footer" style="display:none">
+          <div>
+            <span style="display:none;" id="id_edit_recette_id"></span>
+            <button type="button" id="id_edit_recette" class="btn btn-primary">Enregistrer</button>
+          </div>
+          <div class="alert-error text-center" >
+            <span id="id_edit_recette_message">&nbsp;</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="{% static "js/recette.js" %}"></script>
+<script  type="text/javascript">
+
+  var categories_photos = [];
+  {% for categorie in  categories_photos %}
+  categories_photos[ {{ forloop.counter0 }} ] = {
+  "value" : "{{categorie.0}}",
+  "description" : "{{categorie.1}}",
+  };
+  {% endfor %}
+  
+  var recettes = {};
   {% for recette in recettes %}
-  <tr>
-    <td><a href="/mesrecettes/detailr/{{ recette.id }}"><img src="{{ recette.photo.get_absolute_url }}"></a></td>
-    <td><a href="/mesrecettes/detailr/{{ recette.id }}">{{recette.titre}}</a></td>
-    <td>{{ recette.description }}</td>
-  </tr>
+  recettes[ {{ forloop.counter0 }} ] = {
+  "id" : "{{ recette.id }}",
+  "idloop" : {{ forloop.counter0 }},
+  "code" : "{{ recette.code|escapejs }}",
+  "description" : "{{ recette.description|escapejs }}",
+  "bonasavoir" :  "{{ recette.bonasavoir|escapejs }}",
+  "owner" : "{{ recette.owner.username|escapejs }}",
+  "acces" : "{{recette.acces|escapejs}}",
+  
+  "date_creation" : "{{recette.date_creation|date:"l j F o H:i"}}",
+  "date_modification" : "{{recette.date_modification|date:"l j F o H:i"}}",
+  {% if recette.categorie %}
+  "categorie_description" : "{{recette.categorie.description|escapejs}}",
+  "categorie_groupe" : "{{recette.categorie.groupe|escapejs}}",
+  "categorie_categorie" : "{{recette.categorie.categorie|escapejs}}",
+  {% else %}
+  "categorie_description" : "",
+  "categorie_groupe" : "",
+  "categorie_categorie" : "",
+  {% endif %}
+  {% if recette.photo and recette.photo.id and recette.photo.id != '%s' %}
+    "photo_id" : "{{recette.photo.id|escapejs}}",
+    "photo_code" : "{{recette.photo.code|escapejs}}",
+    "photo_description" : "{{recette.photo.description|escapejs}}",
+    {% if recette.photo.categorie %}
+      "photo_groupe" : "{{recette.photo.categorie.groupe|escapejs}}",
+      "photo_categorie" : "{{recette.photo.categorie.categorie|escapejs}}",
+      "photo_categorie_id" : "{{recette.photo.categorie.id|escapejs}}",
+    {% else %}
+  "photo_groupe" : null,
+      "photo_categorie" : null,
+      "photo_categorie_id" : null,
+    {% endif %}
+  {% else %}
+  "photo_groupe" : null,
+
+    "photo_categorie" : null,
+    "photo_categorie_id" : null,
+    "photo_id" : null,
+    "photo_code" : null,
+    "photo_description" : null,
+  {% endif %}
+  };
   {% endfor %}
 
-  <!-- 
-  {% for idx in nb_line %}
-  {% if  recettes|length <= idx %}
-  <tr style="height: 100px;">
-   <td></td>
-   <td></td>
-   <td></td>
-  </tr>
- {% endif %}
-{% endfor %}
--->
-</table>
-<div class="pagination">
-  <span class="step-links">
-    {% if recettes.has_previous %}
-    <a href="?page={{ recettes.previous_page_number }}">previous</a>
-    {% endif %}
-    <span class="current">
-      Page {{ recettes.number }} of {{ recettes.paginator.num_pages }}.
-    </span>
-    {% if recettes.has_next %}
-    <a href="?page={{ recettes.next_page_number }}">next</a>
-    {% endif %}
-  </span>
+  function getRecette(no) {
+  return recettes[no];
+  }
+  function getNbRecette() {
+  return Object.keys(recettes).length;
+
+  }
+  
+  function getDetailValue() {
+  return "{{detail}}";
+  }
+  function getRecetteCreateUrl() {
+  return "{% url 'recette_create' %}";
+  }
+
+  function getGetRecetteUrl() {
+  return "{% url 'recette_empty' %}";
+  }
+
+  $(document).ready(
+    function () {
+  $('#liste_recettes').DataTable({
+  "hover":true,
+  "compact":false,
+  "strip":true,
+  "paging":false,
+  "searching":false,
+  "info":false,
+  "ordering":false,
+  "autoWidth":false,
+  {% if detail %}
+  "columnDefs": [
+  { "width": "10%", "targets": 0 },
+  { "width": "30%", "targets": 1 },
+  { "width": "20%", "targets": 2 },
+  { "width": "20%", "targets": 3 },
+  { "width": "20%", "targets": 4 }
+  ]
+  {% else %}
+  "columnDefs": [
+  { "width": "20%", "targets": 0 },
+  { "width": "20%", "targets": 1 },
+  { "width": "20%", "targets": 2 },
+  { "width": "20%", "targets": 3 },
+  { "width": "20%", "targets": 4 }
+  ]
+  {% endif %}    
+  });
+});
+
+</script>
 </div>
-{% else %}
-<p>Il n'y a pas de recettes.</p>
-{% endif %}
 {% endblock %}

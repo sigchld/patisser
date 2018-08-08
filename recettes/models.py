@@ -118,7 +118,7 @@ class Ingredient(models.Model):
 
 class Element(models.Model):
     quantite = models.DecimalField(default=0, max_digits=6, decimal_places=2)
-    ingredient = models.ForeignKey(Ingredient)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.SET_NULL, null=True)
     preparation = models.ForeignKey('Preparation', related_name='elements')
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
@@ -132,7 +132,7 @@ class Element(models.Model):
 
 class EtapePreparation(models.Model):
     preparation = models.ForeignKey('Preparation', related_name='etapes')
-    titre =  models.CharField(max_length=200, default='')
+    nom =  models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
@@ -142,11 +142,11 @@ class EtapePreparation(models.Model):
     date_modification = models.DateTimeField(auto_now=True)
     
     def __unicode__(self):
-        return self.titre
+        return self.nom
 
 class Preparation(models.Model):
     code = models.CharField(max_length=50, blank=False)
-    titre =  models.CharField(max_length=200, default='')
+    nom =  models.CharField(max_length=200, default='')
     description = models.CharField(max_length=200, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     #pas de default quand on ajoute un champ a Photo
@@ -156,6 +156,8 @@ class Preparation(models.Model):
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
+    categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
+    
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -181,7 +183,7 @@ class PreparationRecette(models.Model):
 
 class EtapeRecette(models.Model):
     recette = models.ForeignKey('Recette', related_name='etapes')
-    titre =  models.CharField(max_length=200, default='')
+    nom =  models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
 
     date_creation = models.DateTimeField(auto_now_add=True)
@@ -191,11 +193,11 @@ class EtapeRecette(models.Model):
     acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
     
     def __unicode__(self):
-        return self.titre
+        return self.nom
 
 class Recette(models.Model):
     code = models.CharField(max_length=50, blank=False)
-    titre = models.CharField(max_length=200)
+    nom = models.CharField(max_length=200)
     description = models.TextField(max_length=5000, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     difficulte = models.IntegerField(default=0)
@@ -208,6 +210,8 @@ class Recette(models.Model):
 
     owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+
+    categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)

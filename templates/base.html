@@ -128,7 +128,8 @@
                         {% endif %}
                     <div id="popover-content" style="display:none;" >
 <div class="container">
-        <form  class="form" role="form" id="id_popover_categorie_form"  name="mainForm" method="get" action="" data-cat-action="{% url 'get_category' %}">
+  <form  class="form" role="form" id="id_popover_categorie_form"  name="mainForm" method="get" action="" data-cat-action="{% url 'get_category' %}">
+    {% comment %} action par defaut = url actuelle {% endcomment %}
           {% csrf_token %}
             <p>
 	      <label for="groupe">Groupe:</label>
