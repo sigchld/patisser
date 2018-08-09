@@ -264,7 +264,11 @@ def calculIngredientsRecette(recette):
 
   return (energie, allergene, ingredients.values(), preparations, cout)
 
+#
+# Retourne le détail d'une recette
+# NE PAS UTILISER
 def detail_recette(request, recette_id):
+  """ détail recette """
   from decimal import getcontext
   getcontext().prec = 2
 
@@ -283,30 +287,32 @@ def detail_recette(request, recette_id):
                                      'allergene' : allergene}, request))
 
 #
-# Appelé pour retrouver les ingredients
+# Retourne la liste des ingredients
 # owner = me ou others ou all
-
 def list_ingredients_owner(request, owner):
+  """ retournr la liste des ingrédients sur le critère owner (me/others/all) """
   list_ingredients(request, owner=owner)
 
 #
 # Appelé pour retrouver les ingredients
 # acces = private ou public
 def list_ingredients_acces(request, acces):
+  """ retournr la liste des ingrédients sur le critère de l'accès (private/public)"""
   list_ingredients(request, acces=acces)
 
 #
 # Appelé pour retrouver les ingredients
-# owner = me  que les miens publics ou privées
-# owner = others ingredients publics sauf les miens
-# owner = all les miens et ceux des autres qui sont publics
-#
-# acces = public les miens publics
-# acces = private les miens privés
-#
 # plus d'informations sur le Q ici
 # https://docs.djangoproject.com/fr/1.11/topics/db/queries/
-def list_ingredients(request,owner='me',acces=None,filter=None):
+def list_ingredients(request, owner='me', acces=None, filter=None):
+  """ liste des ingrédients sartisfaisant les critères suivants :
+  owner = me  que les miens publics ou privées
+  owner = others ingredients publics sauf les miens
+  owner = all les miens et ceux des autres qui sont publics
+
+  acces = public les miens publics
+  acces = private les miens privés
+  """
   request.session[PAGE_COURANTE] = INGREDIENTS
   detail = request.GET.dict().get('detail', 'true').lower() == "true"
   logger.debug("list_ingredients/acces/{}/owner/{}/auth/{}".format(acces, owner,request.user.is_authenticated))
@@ -314,10 +320,6 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
 
   groupe = "ING"
   categorie = request.GET.dict().get('categorie', None)
-
-  # Recuperation groupe / categorie
-  #if groupe is  None and request.session.get('ingredients_groupe', None) is not None:
-  #    groupe = request.session.get('ingredients_groupe', None)
 
   if categorie is None and request.session.get('ingredients_categorie', None) is not None:
     categorie = request.session.get('ingredients_categorie', None)
@@ -422,8 +424,10 @@ def list_ingredients(request,owner='me',acces=None,filter=None):
   return HttpResponse(template.render({'filter' : filter, 'ingredients' : ingredients, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "" , "categories_photos" : categories}, request))
 
 
-
+#
+# NE PLUS UTILISER 
 def detail_ingredient(request, ingredient_id):
+  """ détail d'un ingrédient """
   template = loader.get_template('ingredientdetail.html')
   ingredient = Ingredient.objects.get(id=ingredient_id)
   return HttpResponse(template.render({'ingredient' : ingredient}, request))
@@ -432,28 +436,33 @@ def detail_ingredient(request, ingredient_id):
 #
 # Appelé pour retrouver les préparations
 # owner = me ou others ou all
-
 def list_preparations_owner(request, owner):
+  """ retourne les préparations sue le critère owner """
   list_preparations(request, owner=owner)
 
 #
 # Appelé pour retrouver les préparations
 # acces = private ou public
 def list_preparations_acces(request, acces):
+  """ retourne les préparations sur le critère d'accès """
   list_preparations(request, acces=acces)
 
 #
-# Appelé pour retrouver les ingredients
-# owner = me  que les miens publics ou privées
-# owner = others ingredients publics sauf les miens
-# owner = all les miens et ceux des autres qui sont publics
-#
-# acces = public les miens publics
-# acces = private les miens privés
+# Appelé pour retrouver les préparations
 #
 # plus d'informations sur le Q ici
 # https://docs.djangoproject.com/fr/1.11/topics/db/queries/
 def list_preparations(request, owner='me', acces=None, filter=None):
+  """ liste des préparations satisfaisant les critères suivants :
+  owner = me  que les miens publics ou privées
+  owner = others ingredients publics sauf les miens
+  owner = all les miens et ceux des autres qui sont publics
+
+  acces = public les miens publics
+  acces = private les miens privés
+
+  filter ...
+  """
   request.session[PAGE_COURANTE] = PREPARATIONS
   detail = request.GET.dict().get('detail', 'true').lower() == "true"
   template = loader.get_template('preparationlist.html')
@@ -574,8 +583,10 @@ def list_preparations(request, owner='me', acces=None, filter=None):
   return HttpResponse(template.render({'filter' : filter, 'preparations' : preparations, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "" , "categories_photos" : categories}, request))
 
 
-
+#
+# Retourne le détail (HTML) d'une préraration
 def detail_preparation(request, preparation_id):
+  """ formulaire de présentation d'une préparation """
   template = loader.get_template('preparationdetail.html')
   preparation = Preparation.objects.get(id=preparation_id)
   energie, allergene, ingredients, cout = calculIngredientsPreparation(preparation)
@@ -589,28 +600,31 @@ def detail_preparation(request, preparation_id):
 #
 # Appelé pour retrouver les recettes
 # owner = me ou others ou all
-
 def list_recettes_owner(request, owner):
+  """ liste recettes critère owner me, others, all """
   list_recettes(request, owner=owner)
 
 #
 # Appelé pour retrouver les préparations
 # acces = private ou public
 def list_recettes_acces(request, acces):
+  """ lite recettes sur critère acces : PUB / PRIV """
   list_recettes(request, acces=acces)
 
 #
-# Appelé pour retrouver les ingredients
-# owner = me  que les miens publics ou privées
-# owner = others ingredients publics sauf les miens
-# owner = all les miens et ceux des autres qui sont publics
-#
-# acces = public les miens publics
-# acces = private les miens privés
-#
+# Appelé pour retrouver les recettes
 # plus d'informations sur le Q ici
 # https://docs.djangoproject.com/fr/1.11/topics/db/queries/
 def list_recettes(request, owner='me', acces=None, filter=None):
+  """ retourne la page html de la liste des recettes suivants les critères suivants  :
+ owner = me  que les miens publics ou privées
+ owner = others ingredients publics sauf les miens
+ owner = all les miens et ceux des autres qui sont publics
+
+ acces = public les miens publics
+ acces = private les miens privés
+
+  """
   request.session[PAGE_COURANTE] = RECETTES
   detail = request.GET.dict().get('detail', 'true').lower() == "true"
   template = loader.get_template('recettelist.html')
@@ -732,23 +746,12 @@ def list_recettes(request, owner='me', acces=None, filter=None):
   for cat in categorie_ing:
     categories.append((cat.id, cat.description))
 
-  return HttpResponse(template.render({'filter' : filter, 'recettes' : recettes, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "" , "categories_photos" : categories}, request))
-
-
-
-def detail_recette(request, recette_id):
-  template = loader.get_template('recettedetail.html')
-  recette = Recette.objects.get(id=recette_id)
-  energie, allergene, ingredients, cout = calculIngredientsRecette(recette)
-  return HttpResponse(template.render({'recette' : preparation, 
-                                     'ingredients' : ingredients,
-                                     'energie' : energie,
-                                     'cout' : cout,
-                                     'allergene' : allergene}, request))
+  return HttpResponse(template.render({'filter' : filter, 'recettes' : recettes, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "", "categories_photos" : categories}, request))
 
 
 
 def search(request):
+  """ recherche textuelle, à partir de la loupe """
   filter = request.GET.get('_', None)
   logger.debug("search/{}/{}".format('photos', filter))
   page_courante = request.session.get(PAGE_COURANTE, ACCUEIL)
@@ -762,6 +765,7 @@ def search(request):
   return index(request, filter=filter)
 
 def my_logout(request):
+  """ deconnexion de l'utilisateur """
   logout(request)
   return redirect('/mesrecettes/')
   return index(request)
@@ -786,6 +790,7 @@ def my_login(request):
 
 
 def get_categorie(request):
+  """ retourne une liste de catégories associées au groupe """
   import json
   groupe = None
 
