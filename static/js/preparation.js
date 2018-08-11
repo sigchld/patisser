@@ -35,6 +35,45 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
 }
 
 
+function loadKalories(preparation_id) {
+    var csrftoken = getCookie('csrftoken');
+    var u = "/mesrecettes/preparation/energie/".concat(preparation_id);
+
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'get',
+        'url' : u,
+           'success' : function(response)
+        {
+            var reponse = JSON.parse(response);
+            if (reponse.status == 0 ) {
+                var valeurs = reponse.valeurs;
+                $("#id_detail_preparation_kcalories").val(valeurs.kcalories);
+                $("#id_detail_preparation_kjoules").val(valeurs.kjoules);
+
+                $("#id_detail_preparation_matieres_grasses").val(valeurs.matieres_grasses);
+                $("#id_detail_preparation_matieres_grasses_saturees").val(valeurs.matieres_grasses_saturees);
+    
+                $("#id_detail_preparation_glucides").val(valeurs.glucides);
+                $("#id_detail_preparation_glucides_dont_sucres").val(valeurs.glucides_dont_sucres);
+           
+                $("#id_detail_preparation_fibres").val(valeurs.fibres_alimentaires);
+    
+                $("#id_detail_preparation_proteines").val(valeurs.proteines);
+                $("#id_detail_preparation_sel").val(valeurs.sel);
+                
+                $("#id_detail_preparation_prix_unitaire").val(valeurs.cout);
+                $("#id_detail_preparation_prix_poids").val(valeurs.pp);
+            }
+           },
+           'error': function(jqXHR, textStatus, errorThrown)
+           {
+               message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+           }
+          });    
+    
+}
+
 function loadCategoriesAtWork(groupe, message, select, current) {
     
     var csrftoken = getCookie('csrftoken');
@@ -146,7 +185,7 @@ function detail_preparation(id) {
     $('#id_detail_preparation_modal_new_header').css("display", "none");
 
 
-    
+    loadKalories(preparation.id);    
     $('#id_detail_preparation_modal').modal('show');
 }
 

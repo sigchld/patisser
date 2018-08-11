@@ -1,37 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import io
 import traceback
+import json
 
-from django.shortcuts import render
 from django.shortcuts import redirect
-from django.template import RequestContext, loader
+from django.template import loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.http import HttpResponseNotModified, HttpResponseServerError
+from django.http import HttpResponseForbidden
+from django.http import HttpResponseServerError
 from django.contrib.auth import authenticate, login, logout
-from django.views.decorators.csrf import csrf_exempt
-from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import Lower
 from django.http import HttpResponse
-from PIL import Image
-from PIL import ImageMath
-from PIL import ImageChops
 
-from fees import settings
 from .models import Recette
 from .models import Ingredient
 from .models import Preparation
 from .models import Photo
 from .models import Categorie
 
-from .forms import PhotoForm
-
-from django.db.utils import IntegrityError
+from .energie import calcul_ingredients_recette
+from .energie import calcul_ingredients_preparation
 
 PAGE_COURANTE = 'current_page'
 ACCUEIL = 'accueil'
@@ -192,100 +183,10 @@ def list_photos(request, owner='me', acces=None, filtre=None):
         remplissage = range(remplissage)
 
     return HttpResponse(template.render({'filter' : filtre, 'photos' : photos,
-                                           'remplissage': remplissage,
-                                           'owner': owner, 'acces' :
-                                           acces, 'detail' : detail},
-                                          request))
-
-#
-# calcul cout ingredient allergene pour une preparation
-#
-def calculIngredientsPreparation(preparation):
-    from decimal import Decimal, getcontext
-    getcontext().prec = 4
-    ingredients = {}
-    allergene = False
-    energie = 0
-    cout = Decimal(0)
-
-    for element in preparation.elements.all():
-        ingredient = element.ingredient
-        allergene = allergene or ingredient.allergene
-
-        cout += ((element.quantite * ingredient.pu)/Decimal(1000))
-        energie_ingredient = (((element.quantite)/Decimal(100)) * ingredient.calorie)
-        energie += energie_ingredient
-
-        tmp = ingredients.get(ingredient.id)
-        if tmp is None:
-              tmp = {}
-              tmp['quantite'] = 0
-              tmp['energie'] = 0
-              tmp['nom'] = ingredient.description
-              ingredients[ingredient.id] = tmp
-
-        tmp['quantite'] += element.quantite
-        tmp['energie'] += energie_ingredient
-
-    return (energie, allergene, ingredients.values(), cout)
-
-
-def calculIngredientsRecette(recette):
-    from decimal import Decimal, getcontext
-    getcontext().prec = 4
-    ingredients = {}
-    allergene = False
-    energie = 0
-    cout = Decimal(0)
-    preparations = recette.preparations.all()
-
-    for preparationRecette in recette.preparations.all():
-        preparation = preparationRecette.preparation
-        quantite = preparationRecette.quantite
-
-        for element in preparation.elements.all():
-            ingredient = element.ingredient
-            allergene = allergene or ingredient.allergene
-
-            cout += (quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))
-            energie_ingredient = (quantite/Decimal(100)) * (((element.quantite)/Decimal(100)) * ingredient.calorie)
-            energie += energie_ingredient
-
-            LOGGER.debug(u"ingredient :{}/{}/{}/{}".format(ingredient.description,ingredient.pu,element.quantite,(quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))))
-            tmp = ingredients.get(ingredient.id)
-            if tmp is None:
-              tmp = {}
-              tmp['quantite'] = 0
-              tmp['energie'] = 0
-              tmp['nom'] = ingredient.description
-              ingredients[ingredient.id] = tmp
-
-            tmp['quantite'] += element.quantite
-            tmp['energie'] += energie_ingredient
-
-    return (energie, allergene, ingredients.values(), preparations, cout)
-
-#
-# Retourne le détail d'une recette
-# NE PAS UTILISER
-def detail_recette(request, recette_id):
-    """ détail recette """
-    from decimal import getcontext
-    getcontext().prec = 2
-
-    template = loader.get_template('recettedetail.html')
-    recette = Recette.objects.get(id=recette_id)
-    energie, allergene, ingredients, preparations, cout_total = calculIngredientsRecette(recette)
-    energie_portion = energie / recette.portion
-    cout_portion = cout_total / recette.portion
-    return HttpResponse(template.render({'recette' : recette,
-                                         'ingredients' : ingredients,
-                                         'preparations': preparations,
-                                         'energie' : energie,
-                                         'energie_portion' : energie_portion,
-                                         'cout_total' : cout_total,
-                                         'cout_portion' : cout_portion,
-                                         'allergene' : allergene}, request))
+                                         'remplissage': remplissage,
+                                         'owner': owner, 'acces' :
+                                         acces, 'detail' : detail},
+                                        request))
 
 #
 # Retourne la liste des ingredients
@@ -787,12 +688,10 @@ def my_login(request):
             return HttpResponseForbidden('{ "message" : "Acces interdit" }')
     else:
         return HttpResponseForbidden('{ "message" : "Login ou mot de passe erroné" }')
-    #return render_to_response('login.html', context_instance=RequestContext(request))
 
 
 def get_categorie(request):
     """ retourne une liste de catégories associées au groupe """
-    import json
     groupe = None
 
     if request.POST:

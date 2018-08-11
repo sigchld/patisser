@@ -5,12 +5,13 @@ import io
 import time
 import math
 
+from PIL import Image
+from PIL import ImageMath
+from PIL import ImageChops
+
 from django import http
 from django.http import HttpResponse
 from django.views.generic import ListView
-from recettes.models import Photo, Ingredient, Categorie
-
-import traceback
 
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -18,40 +19,25 @@ from django.template import RequestContext, loader
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.core.files.storage import FileSystemStorage
-
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.http import HttpResponseNotModified, HttpResponseServerError
-
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
-
-from PIL import Image
-from PIL import ImageMath
-from PIL import ImageChops
-
-from fees import settings
-
-from .forms import IngredientForm
-
 from django.db.utils import IntegrityError
 from django.utils.datastructures import MultiValueDictKeyError
 from django.views import View
 from django.views.decorators.http import require_http_methods
 
-
-PAGE_COURANTE='page_courante'
-ACCUEIL='accueil'
-PHOTOS='photos'
-INGREDIENTS='ingredients'
-PREPARATIONS='preparations'
-RECETTES='recettes'
+from recettes.models import Photo, Ingredient, Categorie
+from fees import settings
+from .forms import IngredientForm
 
 
 # Get an instance of a logger
 logger = logging.getLogger('fees')
 
-class IngredientView(View):
+class IngredientRest(View):
     def __init__(self):
         self.http_method_names = ['delete', 'post', 'put']
 
@@ -263,7 +249,7 @@ class IngredientView(View):
 
             if not ingredient.categorie:
                 return HttpResponseServerError('{ "message" : "saisie incomplète,  catégorie inconnue ou privée" }')
-            
+
             # maj des champs standards
             for label in (
                     'allergene',
@@ -305,7 +291,7 @@ class IngredientView(View):
         # par defaut c'estt la photo blanche!
         if not photo_id:
             return  blank_photo()
-        
+
         # il faut charger la photo...
         photo = None
         try:
@@ -313,21 +299,21 @@ class IngredientView(View):
             #except Photo.DoesNotExist:
         except:
             logger.error("Loading photos inconnue/{}".format(photo_id))
-            
+
         try:
             if photo is not None:
                 if photo.acces != "PUB":
                     if not request.user.is_authenticated and  photo.owner.username != request.user.username:
                         logger.error("Loading acces interdit1 /photos/{}/{}/{}/{}/{}/".format(photo_id, request.user.is_authenticated, request.user.username, photo.acces, photo.owner))
                         return blank_photo()
-                
+
                 if photo.thumbnail is not None:
                     logger.debug("Loading thumbnail /photos/{}".format(photo_id))
 
                     response = HttpResponse(content_type="image/png")
                     response.write(photo.thumbnail)
                     return response
-                
+
                 photo_id = photo.photo
 
             # ************************** ATTENTION
@@ -353,7 +339,7 @@ class IngredientView(View):
 	    response = HttpResponse(content_type="image/png")
 	    img.save(response, "PNG")
 	    return response
-        
+
         except IOError:
             logger.error("Loading IOError /photos/{}".format(photo_id))
             return blank_photo()
@@ -376,7 +362,7 @@ class IngredientView(View):
 
         #time.sleep(3)
         nbref = len(ingredient.element_set.all())
-        
+
         logger.debug("Cette ingrédient est utilisé  {} fois".format(nbref))
         if nbref != 0:
             return HttpResponseForbidden("{{ \"message\" : \"Suppression impossible, l'ingrédient est referencé {} fois\" }}".format(nbref))
@@ -388,7 +374,7 @@ class IngredientView(View):
             logger.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
-        
+
 
 
 def blank_photo():
@@ -415,7 +401,7 @@ def get_thumbnail0(img):
     size = (128, 128)
     img.thumbnail(size)
     return img
-    
+
 def get_thumbnail(img):
     color = (255,255,255)
     thresh2=0
@@ -431,16 +417,15 @@ def get_thumbnail(img):
 def get_thumbnail1(img):
     img = img.convert("RGBA")
     datas = img.getdata()
-    
+
     newData = []
     for item in datas:
         if item[0] == 255 and item[1] == 255 and item[2] == 255:
             newData.append((255, 255, 255, 0))
         else:
             newData.append(item)
-            
+
     img.putdata(newData)
     size = (128, 128)
     img.thumbnail(size)
     return img
-    

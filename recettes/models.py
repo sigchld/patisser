@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+"""
+Toutes les classes des différents objets qui seront persistés en BD
+"""
 
+from __future__ import unicode_literals
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -13,17 +16,20 @@ ACCES = (
 
 
 class Photo(models.Model):
+    """
+    Stockage des images qui sont associées aux recettes préparations et ingrédients
+    """
     DEFAULT_PK = 1
     code = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=200)
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     photo = models.ImageField(default='blank.png')
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB", null=False)
     thumbnail = models.BinaryField(null=True, blank=True)
     categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    
+
     def get_absolute_url(self):
         return "/mesrecettes/photos/{}".format(self.photo.name)
 
@@ -32,28 +38,31 @@ class Photo(models.Model):
 
     def __repr__(self):
         return "{}-{}".format(self.code, self.description)
-    
+
     def __str__(self):
         return "{}-{}".format(self.code, self.description)
 
     class Meta:
         unique_together = (("owner", "code"),)
 
+
 class Categorie(models.Model):
+    """
+    Regroupement des photos recettes préparations et ingredients
+    """
     GROUPE = (
         ('REC', 'recettes'),
         ('ING', 'ingrédients'),
         ('PREP', 'préparations'),
         ('MAT', 'matériel'),
-        ('SANS', 'non affecté'),
-    )
+        ('SANS', 'non affecté'),)
 
     DEFAULT_PK = 1
     categorie = models.CharField(max_length=10, null=False, blank=False)
     groupe = models.CharField(max_length=10, choices=GROUPE, default="SANS", null=False)
     description = models.CharField(max_length=40)
-    
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
     class Meta:
@@ -63,27 +72,29 @@ class Categorie(models.Model):
         return "%s" % (self.description)
 
 
-    
 class Ingredient(models.Model):
+    """
+    Ingrédient, la base, kcalorie pu ...
+    """
     code = models.CharField(max_length=50, blank=False, null=False)
     description = models.CharField(max_length=200)
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     pu = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     pp = models.DecimalField(default=100, max_digits=6, decimal_places=0)
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_DEFAULT, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
-    
+
     # ancien champ
     calorie = models.IntegerField(default=0)
 
     # nouveaux champs
     kcalories = models.IntegerField("Kilo calories", default=0)
-    kjoules = models.IntegerField("Kilo joules", default=0);
+    kjoules = models.IntegerField("Kilo joules", default=0)
 
     # détail de la composition de l'ingeédient
     # xx_inferieures indique valeur très faible non mesurable
 
-    matieres_grasses_inferieures  = models.BooleanField(default=False)
+    matieres_grasses_inferieures = models.BooleanField(default=False)
     matieres_grasses = models.DecimalField(max_digits=7, decimal_places=3, default=0)
     matieres_grasses_saturees = models.DecimalField("Dont acides gras saturés", max_digits=7, decimal_places=3, default=0)
 
@@ -99,7 +110,7 @@ class Ingredient(models.Model):
 
     sel_inferieur = models.BooleanField(default=False)
     sel = models.DecimalField(max_digits=7, decimal_places=3, default=0)
-    
+
     #pas de default quand on ajoute un champ a Photo
     photo = models.ForeignKey('Photo', on_delete=models.SET_NULL, null=True, blank=True)
     #photo = models.ForeignKey('Photo', default=Photo.objects.get(code='blank').id)
@@ -109,93 +120,113 @@ class Ingredient(models.Model):
     date_modification = models.DateTimeField(auto_now=True)
 
     categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
-    
+
     class Meta:
         unique_together = (("owner", "code"),)
-        
+
     def __unicode__(self):
-        return self.description 
+        return self.description
 
 class Element(models.Model):
+    """
+    Ingrédients nécessaires á la réalisation d'une préparation
+    """
     quantite = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.SET_NULL, null=True)
     preparation = models.ForeignKey('Preparation', related_name='elements')
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
-    
+
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    
+
     def __unicode__(self):
         return "%s %s" % (self.ingredient.code,self.quantite)
 
 class EtapePreparation(models.Model):
+    """
+    Étapes de réalisation d'une préparation
+    """
     preparation = models.ForeignKey('Preparation', related_name='etapes')
-    nom =  models.CharField(max_length=200, default='')
+    nom = models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    
+
     def __unicode__(self):
         return self.nom
 
 class Preparation(models.Model):
+    """
+    Préparation composée d'ingrédients
+    TODO: et d'autres préparations i.e. crème au beure á base de meringue
+    """
     code = models.CharField(max_length=50, blank=False)
-    nom =  models.CharField(max_length=200, default='')
+    nom = models.CharField(max_length=200, default='')
     description = models.CharField(max_length=200, default='')
     bonasavoir = models.TextField(max_length=5000, default='', blank=True)
     #pas de default quand on ajoute un champ a Photo
     photo = models.ForeignKey(Photo, on_delete=models.SET_NULL, null=True)
     #photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
     categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
-    
+
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = (("owner", "code"),)
-    
+
     def __unicode__(self):
-        return self.description 
+        return self.description
 
 class PreparationRecette(models.Model):
+    """
+    Association des Préparation à une recette
+    """
     quantite = models.IntegerField(default=100)
     preparation = models.ForeignKey(Preparation)
     recette = models.ForeignKey('Recette', related_name='preparations')
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
-    
+
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    
+
     def __unicode__(self):
         return "{}".format(self.preparation.code)
 
 class EtapeRecette(models.Model):
+    """
+    Les étapes de réalisation d'une recette
+    """
     recette = models.ForeignKey('Recette', related_name='etapes')
-    nom =  models.CharField(max_length=200, default='')
+    nom = models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
-    
+
     def __unicode__(self):
         return self.nom
 
 class Recette(models.Model):
+    """
+    Recette, composés de préparations et détapes de réalisation
+    TODO: et pourquoi pas d'ingrédients supplémentaires
+    """
     code = models.CharField(max_length=50, blank=False)
     nom = models.CharField(max_length=200)
     description = models.TextField(max_length=5000, default='')
@@ -208,7 +239,7 @@ class Recette(models.Model):
     photo = models.ForeignKey(Photo, on_delete=models.SET_NULL, null=True)
     #photo = models.ForeignKey(Photo, default=Photo.objects.get(code='blank').id)
 
-    owner = models.ForeignKey(get_user_model() , on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
 
     categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
@@ -216,7 +247,6 @@ class Recette(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
-    
     def image_tag(self):
         from django.utils.html import format_html
         return '<img width=200 height=200 src="/recettes/{}" />'.format(self.photo.url)
@@ -226,6 +256,6 @@ class Recette(models.Model):
 
     class Meta:
         unique_together = (("owner", "code"),)
-    
+
     def __unicode__(self):
         return "{}-{}".format(self.code, self.description)

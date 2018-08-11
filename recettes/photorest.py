@@ -45,7 +45,7 @@ from django.views.decorators.http import require_http_methods
 # Get an instance of a logger
 logger = logging.getLogger('fees')
 
-class PhotoView(View):
+class PhotoRest(View):
     def __init__(self):
         self.http_method_names = ['get', 'post', 'put', 'delete']
 
@@ -55,8 +55,8 @@ class PhotoView(View):
             extra={'status_code': 405, 'request': request}
         )
         return http.HttpResponseNotAllowed(self._allowed_methods(), '{ "message" : "Méthode non supportée" }')
-        
-    
+
+
     # Mofification d'une photo
     def post(self, request):
         if not request.user.is_authenticated:
@@ -68,11 +68,11 @@ class PhotoView(View):
             #    return HttpResponseServerError('{ "message" : "saisie incomplète" }')
             groupe = form['groupe'].value()
             categorie  = form['categorie'].value()
-            
+
 
             if groupe is None or categorie is None or groupe == "NONE" or categorie == "NONE":
                 return HttpResponseServerError('{ "message" : "saisie incomplète, il manque le groupe ou la catégorie" }')
-            
+
             photo_id = request.POST.get('id', None)
             photo = None
             try:
@@ -88,19 +88,21 @@ class PhotoView(View):
             # on ne peut changer le groupe de la photo que si elle n'est pas utilisée.
             if photo.categorie is not None and groupe != photo.categorie.groupe:
                 nbref = len(photo.ingredient_set.all())
-                if nbref == 0: nbref = nbref + len(photo.recette_set.all())
-                if nbref == 0: nbref = nbref + len(photo.preparation_set.all())
+                if nbref == 0:
+                    nbref = nbref + len(photo.recette_set.all())
+                if nbref == 0:
+                    nbref = nbref + len(photo.preparation_set.all())
                 if nbref <> 0:
-                    return HttpResponseServerError('{ "message" : "la photo est référencée, on ne peut pas changer de groupes" }')          
+                    return HttpResponseServerError('{ "message" : "la photo est référencée, on ne peut pas changer de groupes" }')
 
             try:
                 myfile = request.FILES['photo']
-                name = myfile.name 
+                name = myfile.name
                 logger.debug(u"PhotoFileName {}".format(name))
-                fs = FileSystemStorage()
-                filename = fs.save(name, myfile)
+                file_storage = FileSystemStorage()
+                filename = file_storage.save(name, myfile)
                 photo.photo = filename
-                
+
                 try:
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                     img = get_thumbnail(img)
@@ -109,24 +111,24 @@ class PhotoView(View):
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
 
                 img = get_thumbnail(img)
-                f = io.BytesIO()
-                img.save(f, "PNG")
-                f.seek(0)
-                photo.thumbnail = f.read1(-1)
+                f_bytes = io.BytesIO()
+                img.save(f_bytes, "PNG")
+                f_bytes.seek(0)
+                photo.thumbnail = f_bytes.read1(-1)
 
             except MultiValueDictKeyError:
                 pass
-            
+
             photo.description = request.POST.get('description', photo.description)
-            photo.code = request.POST.get('code',photo.code)
-            photo.acces = request.POST.get('acces',photo.acces)
-            
-            # traiter groupe / categorie            
+            photo.code = request.POST.get('code', photo.code)
+            photo.acces = request.POST.get('acces', photo.acces)
+
+            # traiter groupe / categorie
             if groupe is not None and categorie is not None and groupe != "NONE" and categorie != "NONE":
                 groupe = groupe.upper()
                 categorie = categorie.upper()
-                
-                # 
+
+                #
                 queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(owner = request.user.username))
                 if queryset.count() == 1:
                     photo.categorie = queryset.first()
@@ -136,10 +138,10 @@ class PhotoView(View):
                         photo.categorie = queryset.first()
             else:
                 photo.categorie = None
-                        
+
             photo.save()
             return HttpResponse('{ "message" : "OK" }')
-        
+
         except IntegrityError:
             just_the_string = traceback.format_exc()
             logger.debug(just_the_string)
@@ -151,10 +153,13 @@ class PhotoView(View):
 
     # Recherche une photo
     def get(self, request, photo_id=None):
-        # par defaut c'estt la photo blanche!
+        """
+        Retrouve une photo via son id
+        si on ne trouve pas c'est la photo no_photo qui est retourée
+        """
         if not photo_id:
             return  blank_photo()
-        
+
         # il faut charger la photo...
         photo = None
         try:
@@ -162,21 +167,21 @@ class PhotoView(View):
             #except Photo.DoesNotExist:
         except:
             logger.error("Loading photos inconnue/{}".format(photo_id))
-            
+
         try:
             if photo is not None:
                 if photo.acces != "PUB":
                     if not request.user.is_authenticated and  photo.owner.username != request.user.username:
                         logger.error("Loading acces interdit1 /photos/{}/{}/{}/{}/{}/".format(photo_id, request.user.is_authenticated, request.user.username, photo.acces, photo.owner))
                         return blank_photo()
-                
+
                 if photo.thumbnail is not None:
                     logger.debug("Loading thumbnail /photos/{}".format(photo_id))
 
                     response = HttpResponse(content_type="image/png")
                     response.write(photo.thumbnail)
                     return response
-                
+
                 photo_id = photo.photo
 
             # ************************** ATTENTION
@@ -237,8 +242,8 @@ class PhotoView(View):
 
                 groupe = groupe.upper()
                 categorie = categorie.upper()
-                    
-                # 
+
+                #
                 queryset = Categorie.objects.filter(Q(categorie = categorie) & Q(groupe = groupe) & Q(owner = request.user.username))
                 if queryset.count() == 1:
                     photo.categorie = queryset.first()
@@ -249,7 +254,7 @@ class PhotoView(View):
                     else:
                         return HttpResponseServerError('{ "message" : "saisie incomplète, groupe er catégorie inconnus" }')
 
-                    
+
                 try:
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                     img = get_thumbnail(img)
@@ -257,7 +262,7 @@ class PhotoView(View):
                     blank = Photo.objects.get(code='blank')
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
                     img = get_thumbnail(img)
-                
+
                 f = io.BytesIO()
                 img.save(f, "PNG")
                 f.seek(0)
@@ -278,7 +283,7 @@ class PhotoView(View):
     def delete(self, request, photo_id=None) :
         if not request.user.is_authenticated:
             return HttpResponseForbidden('{ "message" : "il fat se logger" }')
-        
+
         try:
             photo = Photo.objects.get(pk=photo_id)
         except Photo.DoesNotExist:
@@ -290,7 +295,7 @@ class PhotoView(View):
         nbref = len(photo.ingredient_set.all())
         if nbref == 0: nbref = nbref + len(photo.recette_set.all())
         if nbref == 0: nbref = nbref + len(photo.preparation_set.all())
-        
+
         if nbref != 0:
             return HttpResponseForbidden("{{ \"message\" : \"Suppression impossible, la photo est referencée {} fois\" }}".format(nbref))
         try:
@@ -302,7 +307,7 @@ class PhotoView(View):
                     logger.error(u"Suppression de {}".format(filename))
                 except:
                     logger.error(u"Suppression impossible de {}".format(filename))
-                    
+
             photo.delete()
             return HttpResponse('{ "message" : "Suppression rélalisée" }')
         except Exception as error:
@@ -310,7 +315,7 @@ class PhotoView(View):
             logger.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
-        
+
     @staticmethod
     def blank_photo():
         blank = Photo.objects.get(code='blank')
@@ -346,7 +351,7 @@ def get_thumbnail0(img):
     size = (128, 128)
     img.thumbnail(size)
     return img
-    
+
 def get_thumbnail(img):
     color = (255,255,255)
     thresh2=0
@@ -362,19 +367,19 @@ def get_thumbnail(img):
 def get_thumbnail1(img):
     img = img.convert("RGBA")
     datas = img.getdata()
-    
+
     newData = []
     for item in datas:
         if item[0] == 255 and item[1] == 255 and item[2] == 255:
             newData.append((255, 255, 255, 0))
         else:
             newData.append(item)
-            
+
     img.putdata(newData)
     size = (128, 128)
     img.thumbnail(size)
     return img
-    
+
 
 
 class PhotoCategorieView(View):
@@ -394,8 +399,8 @@ class PhotoCategorieView(View):
                 photos = Photo.objects.filter(Q(categorie__groupe = categorie_id) & (Q(owner = request.user.username) | Q(acces = "PUB")))
             else:
                 photos = Photo.objects.filter(Q(categorie__groupe = categorie_id) & Q(acces = "PUB"))
-            
+
         photos = photos.values('id', 'description').order_by(Lower('description'))
         data = '{{ "message" : {} }}'.format(json.dumps(list(photos), cls=DjangoJSONEncoder))
-                                          
+
         return HttpResponse(data)
