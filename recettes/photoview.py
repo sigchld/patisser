@@ -112,7 +112,7 @@ class PhotoView(View):
                 f = io.BytesIO()
                 img.save(f, "PNG")
                 f.seek(0)
-	        photo.thumbnail = f.read1(-1)
+                photo.thumbnail = f.read1(-1)
 
             except MultiValueDictKeyError:
                 pass
@@ -184,7 +184,7 @@ class PhotoView(View):
             # ON maintient le chargent direct
 
             logger.debug("Loading img {}/photos/{}".format(settings.BASE_DIR, photo_id))
-            img = Image.open("{}/photos/{}".format(settings.BASE_DIR,photo_id))
+            img = Image.open("{}/photos/{}".format(settings.BASE_DIR, photo_id))
             img = get_thumbnail(img)
 
             if photo:
@@ -193,16 +193,16 @@ class PhotoView(View):
                     f = io.BytesIO()
                     img.save(f, "PNG")
                     f.seek(0)
-	            photo.thumbnail = f.read1(-1)
+                    photo.thumbnail = f.read1(-1)
                     f.close()
                     photo.save()
                 except:
                     pass
 
-	    response = HttpResponse(content_type="image/png")
-	    img.save(response, "PNG")
-	    return response
-        
+            response = HttpResponse(content_type="image/png")
+            img.save(response, "PNG")
+            return response
+
         except IOError:
             logger.error("Loading IOError /photos/{}".format(photo_id))
             return blank_photo()
@@ -211,21 +211,21 @@ class PhotoView(View):
     def put(self, request):
         if not request.user.is_authenticated:
             return HttpResponseForbidden('{ "message" : "il fat se logger" }')
-        
+
         if  not request.FILES['photo']:
             return HttpResponseServerError('{ "message" : "Il manque la photo" }')
-            
+
         try:
             form = PhotoForm(request.PUT)
             if form.is_valid():
                 groupe = form['groupe'].value()
-                categorie  = form['categorie'].value()
+                categorie = form['categorie'].value()
 
                 if not groupe or not categorie or groupe == "NONE" or categorie == "NONE":
                     return HttpResponseServerError('{ "message" : "saisie incomplète, il manque le groupe ou la catégorie" }')
-                
+
                 myfile = request.FILES['photo']
-                name = myfile.name 
+                name = myfile.name
                 logger.debug(u"PhotoFileName {}".format(name))
                 fs = FileSystemStorage()
                 filename = fs.save(name, myfile)

@@ -398,13 +398,13 @@
             <div class="row">
               <div class="greybox" style="min-height: 75px;">                
 	          <label for="description">Description</label>
-	          <textarea disabled rows="2" class="form-control" id="id_detail_ingredient_description" name="description" required="required" maxlength="200"></textarea>
+	          <textarea rows="2" class="form-control" id="id_detail_ingredient_description" name="description" required="required" maxlength="200" ></textarea>
               </div>
             </div>
             <div class="row">
               <div class="greybox" style="min-height: 75px;">                
 	        <label for="bonasavoir">Bon à savoir</label>
-	        <textarea disabled rows="2" class="form-control" id="id_detail_ingredient_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
+	        <textarea  rows="2" class="form-control" id="id_detail_ingredient_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
               </div>
             </div>
             <div class="row">
@@ -418,7 +418,7 @@
                   </div>
                   <div class="col-border col-lg-5 col-xs-5">
                     <div>
-                      <input disabled class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kjoules" id="id_detail_ingredient_kjoules">
+                      <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kjoules" id="id_detail_ingredient_kjoules">
                       <span style="display:inline">kj</span>
                     </div>
                     <div>
@@ -508,21 +508,29 @@
                 
               </div>
               <div class="col-lg-4 col-xs-4">
-                <span class="font-weight-bold text-center">Photo</span>
+                <span class="font-weight-bold text-center" style="display:block;">Photo</span>
                 <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_ingredient_img">
               </div>
               
               <div class="row">
               <div class="col-lg-4 col-xs-4">
-                <span >Catégorie</span>
+                <span style="display:block;">Catégorie</span>
                 <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
 	        <option value="NONE" selected>Choisir..</option>
 	        </select>
-                <span >Nom</span>
+                <span style="display:block;">Nom</span>
                 <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
 	          <option value="NONE" selected>Choisir..</option>
 	        </select>
-                
+                <span style="display:block;">Nouvelle</span>
+                <div class="input-group">
+                  <label class="input-group-btn">
+                    <span class="btn btn-primary glyphicon glyphicon-folder-open" >
+                    <input type="file" style="display: none;" name="photo" id="id_import_photo" >
+                    </span>
+                  </label>
+                  <input type="text" class="form-control" id="toto" readonly>
+                </div>                            
               </div>
               </div>                          
             </div>

@@ -156,7 +156,10 @@ function remplissage(ingredient) {
 }
 
 function remplissage_vide() {
-    $("#id_detail_ingredient_form")[0].reset();    
+    // ne marche pas pour les textareas
+    //$("#id_detail_ingredient_form")[0].reset();
+    $('#id_detail_ingredient_form').find('input:text, input:password, select, textarea').val('');
+    $('#id_detail_ingredient_form').find('input:radio, input:checkbox').prop('checked', false);
 }
 
 function detail_ingredient(id) {
@@ -185,7 +188,13 @@ function detail_ingredient(id) {
 }
 
 function ask_new_ingredient() {
+
+    $('#id_detail_ingredient_form input').prop("disabled", false);
+    $('#id_detail_ingredient_form textarea').prop("disabled", false);
+    $('#id_detail_ingredient_form select').prop("disabled", false);
+
     remplissage_vide();
+
     $('#id_delete_ingredient_id').text(-1);
     $("#id_detail_ingredient_id").val(-1)
     
@@ -285,29 +294,19 @@ function ask_edit_ingredient(id) {
 };
 
 
-function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
+function handleFileSelect(inp) {
+    var files = inp.get(0).files; // FileList object
 
     var msg_id = '#id_edit_photo_message';
-    var img_target_id = '#id_edit_photo_img'
+    var img_target_id = "#id_detail_ingredient_img"
 
-    if (evt.target.id.match(/import/)) {
-        msg_id = '#id_import_photo_message';
-        img_target_id = '#id_import_photo_img'
-    }
-    
     if (files.length !=1) {
         $(msg_id).text("Il faut sélectionner un fichier");
         return false;
     }
 
 
-    // files is a FileList of File objects. List some properties.
     var f = files[0];
-    // output.push(escape(f.name), ' ', f.type || 'n/a', ' - ',
-    //            f.size, ' bytes, last modified: ',
-    //            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-
     var error = "";
     if (f.size == 0 || f.size > 300000) {
            error = f.name.concat(", fichier trop gros 300000 caractères au maximum");
@@ -339,9 +338,41 @@ function handleFileSelect(evt) {
     return false;
 }
 
+$(document).on('change', ':file', function() {
+    var input = $(this),
+        numFiles = input.get(0).files ? input.get(0).files.length : 1,
+        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    input.trigger('fileselect', [numFiles, label]);
+    handleFileSelect(input);
+    // remplissage Categorie Photo
+    var categorie_photo = $("#id_detail_categorie_photo");
+    categorie_photo.empty();
+    for (i=0; i < categories_photos.length; i++) {
+        categorie_photo.append('<option selected value="' + categories_photos[i].value + '">' + categories_photos[i].description + '</option>');
+    }
+
+    // selection categorie
+    $('#id_detail_id_photo').empty();
+    $('#id_detail_id_photo').append('<option selected value="NONE">Choisir</option>');
+
+    $('#id_detail_categorie_photo OPTION[value="NONE"]').prop('selected', true);
+    $('#id_detail_id_photo OPTION[value="NONE"]').prop('selected', true);
+    
+});
+
+
+
 $(document).ready(
     function () {
-        $('#id_edit_photo').change(handleFileSelect);
+
+        $(':file').on('fileselect', function(event, numFiles, label) {
+            var input = $(this).parents('.input-group').find(':text'),
+                log = numFiles > 1 ? numFiles + ' files selected' : label;
+            if ( input.length ) {
+                input.val(log);
+            }
+        });
+        
         $('#id_import_photo').change(handleFileSelect);
         $('#id_detail_categorie_photo').change(function(event) {
             $('#id_detail_id_photo').empty();
@@ -354,6 +385,9 @@ $(document).ready(
             $("#id_detail_ingredient_img").attr("src",
                                                 "/mesrecettes/photos/".concat("?" + new Date().getTime()));
 
+            // reset selection image locale
+            $('#id_import_photo').val('');
+            $('#toto').val('');
         });
 
         $('#id_detail_id_photo').change(function(event) {
@@ -433,6 +467,7 @@ $(document).ready(
                 $("#id_loader").css("display","block");
                 var csrftoken = getCookie('csrftoken');
                 var u = "/mesrecettes/ingredient/";;
+                // création ou modification celon valeur id
                 if ($("#id_detail_ingredient_id").val() == -1) {
                     t = 'put';
                 }

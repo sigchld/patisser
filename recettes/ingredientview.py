@@ -3,6 +3,7 @@ import traceback
 import logging
 import io
 import time
+import math
 
 from django import http
 from django.http import HttpResponse
@@ -60,8 +61,7 @@ class IngredientView(View):
             extra={'status_code': 405, 'request': request}
         )
         return http.HttpResponseNotAllowed(self._allowed_methods(), '{ "message" : "Méthode non supportée" }')
-        
-    
+
     # Mofification d'un ingredient
     def post(self, request):
         if not request.user.is_authenticated:
@@ -85,50 +85,62 @@ class IngredientView(View):
 
             if ingredient.owner.username != request.user.username:
                 return HttpResponseServerError('{ "message" : "L\'ingredient ne vous appartient pas" }')
-            
-            # chargement photo
+
+            # chargement photo si il y a lieu
+            imported_photo = False
             try:
                 myfile = request.FILES['photo']
-                name = myfile.name 
+                name = myfile.name
                 logger.debug(u"PhotoFileName {}".format(name))
                 fs = FileSystemStorage()
                 filename = fs.save(name, myfile)
-                ingredient.photo = filename
-                
+
                 try:
                     img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
                     img = get_thumbnail(img)
-                except IOError:
-                    blank = Photo.objects.get(code='blank')
-                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
-                img = get_thumbnail(img)
+                    photo = Photo()
+                    img = get_thumbnail(img)
 
-                f = io.BytesIO()
-                img.save(f, "PNG")
-                f.seek(0)
-	        photo.thumbnail = f.read1(-1)
-                
+                    f = io.BytesIO()
+                    img.save(f, "PNG")
+                    f.seek(0)
+                    photo.thumbnail = f.read1(-1)
+                    photo.owner = ingredient.owner
+                    photo.acces = "PRIV"
+                    photo.code = "I{}".format(math.trunc(time.time()))
+                    photo.description = "Importée depuis formulaire ingrédient"
+                    if ingredient.photo and  ingredient.photo.categorie:
+                        photo.categorie = ingredient.photo.categorie
+                    else:
+                        photo.categorie = Categorie.objects.filter(Q(groupe="ING") & Q(categorie="aucune")).first()
+                    photo.save()
+                    ingredient.photo = photo
+                    imported_photo = True
+                except IOError:
+                    pass
+
             except MultiValueDictKeyError:
                 # pas de nouvelle photo
                 pass
 
             # maj photo
-            new_photo_id = request.POST.get('photo_id', None)
-            if new_photo_id:
-                if new_photo_id.isdigit():
-                    ingredient.photo = Photo.objects.get(pk=new_photo_id)
-                elif new_photo_id == "NONE":
-                    ingredient.photo = None
-                    
+            if not imported_photo:
+                new_photo_id = request.POST.get('photo_id', None)
+                if new_photo_id:
+                    if new_photo_id.isdigit() and ingredient.photo and new_photo_id != ingredient.photo.id:
+                        ingredient.photo = Photo.objects.get(pk=new_photo_id)
+                    elif new_photo_id == "NONE":
+                        ingredient.photo = None
+
             # maj categorie
             new_categorie = request.POST.get('categorie', None)
             if new_categorie:
                 try:
-                    queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(owner = request.user.username))
+                    queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="ING") & Q(owner=request.user.username))
                     if queryset.count() == 1:
                         ingredient.categorie = queryset.first()
                     else:
-                        queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(acces = 'PUB'))
+                        queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="ING") & Q(acces='PUB'))
                         if queryset.count() == 1:
                             ingredient.categorie = queryset.first()
                         else:
@@ -137,7 +149,7 @@ class IngredientView(View):
                     just_the_string = traceback.format_exc()
                     logger.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
 
-                    
+
             # maj des champs standards
             for label in ('allergene',
                           'sel',
@@ -153,7 +165,7 @@ class IngredientView(View):
                           'proteines',
                           'description',
                           'bonasavoir',
-                          'acces') :
+                          'acces'):
                 setattr(ingredient, label, form.cleaned_data[label])
 
             # cas spécifique du code qui est en lettres majuscules
@@ -161,7 +173,7 @@ class IngredientView(View):
 
             ingredient.save()
             return HttpResponse('{ "message" : "OK" }')
-        
+
         except IntegrityError:
             just_the_string = traceback.format_exc()
             logger.debug(just_the_string)
@@ -186,24 +198,61 @@ class IngredientView(View):
                 return HttpResponseServerError('{{ "message" : "saisie erronée: {}" }}'.format(champs))
 
             ingredient = Ingredient()
-            # maj photo
+            ingredient.owner = request.user
+
+            # chargement photo si il y a lieu
+            imported_photo = False
             try:
-                new_photo_id = request.PUT.get('photo_id', None)
-                if new_photo_id and new_photo_id.isdigit():
-                    ingredient.photo = Photo.objects.get(pk=new_photo_id)
-            except:
-                just_the_string = traceback.format_exc()
-                logger.debug("ingredient_creation/photo/{}".format(just_the_string))
-                
+                myfile = request.FILES['photo']
+                name = myfile.name
+                logger.debug(u"PhotoFileName {}".format(name))
+                fs = FileSystemStorage()
+                filename = fs.save(name, myfile)
+
+                try:
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
+                    img = get_thumbnail(img)
+                    photo = Photo()
+                    img = get_thumbnail(img)
+
+                    f = io.BytesIO()
+                    img.save(f, "PNG")
+                    f.seek(0)
+                    photo.thumbnail = f.read1(-1)
+                    photo.owner = ingredient.owner
+                    photo.acces = "PRIV"
+                    photo.code = "I{}".format(math.trunc(time.time()))
+                    photo.description = "Importée depuis formulaire ingrédient"
+                    photo.categorie = Categorie.objects.filter(Q(groupe="ING") & Q(categorie="aucune")).first()
+                    photo.save()
+                    ingredient.photo = photo
+                    imported_photo = True
+                except IOError:
+                    pass
+
+            except MultiValueDictKeyError:
+                # pas de nouvelle photo
+                pass
+
+            #  photo exitante
+            if not imported_photo:
+                try:
+                    new_photo_id = request.PUT.get('photo_id', None)
+                    if new_photo_id and new_photo_id.isdigit():
+                        ingredient.photo = Photo.objects.get(pk=new_photo_id)
+                except:
+                    just_the_string = traceback.format_exc()
+                    logger.debug("ingredient_creation/photo/{}".format(just_the_string))
+
             # categorie
             new_categorie = request.POST.get('categorie', None)
             if new_categorie:
                 try:
-                    queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(owner = request.user.username))
+                    queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="ING") & Q(owner=request.user.username))
                     if queryset.count() == 1:
                         ingredient.categorie = queryset.first()
                     else:
-                        queryset = Categorie.objects.filter(Q(categorie = new_categorie) & Q(groupe = "ING") & Q(acces = 'PUB'))
+                        queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="ING") & Q(acces='PUB'))
                         if queryset.count() == 1:
                             ingredient.categorie = queryset.first()
 
@@ -217,30 +266,29 @@ class IngredientView(View):
             
             # maj des champs standards
             for label in (
-                          'allergene',
-                          'sel',
-                          'fibres_alimentaires',
-                          'pu',
-                          'pp',
-                          'kcalories',
-                          'kjoules',
-                          'matieres_grasses',
-                          'matieres_grasses_saturees',
-                          'glucides',
-                          'glucides_dont_sucres',
-                          'proteines',
-                          'description',
-                          'bonasavoir',
-                          'acces') :
+                    'allergene',
+                    'sel',
+                    'fibres_alimentaires',
+                    'pu',
+                    'pp',
+                    'kcalories',
+                    'kjoules',
+                    'matieres_grasses',
+                    'matieres_grasses_saturees',
+                    'glucides',
+                    'glucides_dont_sucres',
+                    'proteines',
+                    'description',
+                    'bonasavoir',
+                    'acces'):
                 setattr(ingredient, label, form.cleaned_data[label])
-                
+
             # cas spécifique du code qui est en lettres majuscules
             setattr(ingredient, 'code', form.cleaned_data['code'].upper())
-            
-            ingredient.owner = request.user
+
+
             ingredient.save()
             return HttpResponse('{ "message" : "OK" }')
-        
         except IntegrityError:
             just_the_string = traceback.format_exc()
             logger.debug(just_the_string)

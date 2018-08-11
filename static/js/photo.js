@@ -19,6 +19,7 @@ function ask_edit_photo(id) {
     $('#id_edit_categorie').data("current", $('#id_categorie_'.concat(id)).text());
 
     $('#id_edit_photo_label').text('');
+    $('#id_edit_photo_message').text('');
 
     loadCategoriesAtWork(false);
     $('#id_edit_photo_modal').modal('show')
@@ -27,6 +28,7 @@ function ask_edit_photo(id) {
 function ask_import_photo() {
     $('#id_import_photo_form').get(0).reset();
     $('#id_import_photo_img').attr('src', blank_photo);
+    $('#id_import_photo_message').text('');    
     var selected = $('#id_import_categorie');
     
     selected.empty();
@@ -74,9 +76,6 @@ function handleFileSelect(evt) {
         if (creation) {
             $('#id_import_photo_img').attr('src', blank_photo);
         }
-        //$(this).get(0).reset();
-        //$(this).wrap('<form>').closest('form').get(0).reset();
-        //$(this).unwrap();
     }
     else {
         var reader = new FileReader();
@@ -169,6 +168,14 @@ function loadCategoriesAtWork(create_form) {
           });    
 }
 
+$(document).on('change', ':file', function() {
+    var input = $(this),
+        numFiles = input.get(0).files ? input.get(0).files.length : 1,
+        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    input.trigger('fileselect', [numFiles, label]);
+    handleFileSelect(input);
+});
+
 $(document).ready(
     function () {
         $('#id_edit_photo').change(handleFileSelect);
@@ -176,6 +183,13 @@ $(document).ready(
         $('#id_import_groupe').on('change', loadCategories);
         $('#id_edit_groupe').on('change', loadCategories);
 
+        $(':file').on('fileselect', function(event, numFiles, label) {
+            var input = $(this).parents('.input-group').find(':text'),
+                log = numFiles > 1 ? numFiles + ' files selected' : label;
+            if ( input.length ) {
+                input.val(log);
+            }
+        });
         
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);
