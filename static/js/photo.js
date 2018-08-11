@@ -8,21 +8,24 @@ function ask_delete_photo(id) {
 };
 
 function ask_edit_photo(id) {
-    $('#id_edit_photo_code').val($('#id_photo_code_'.concat(id)).text());
-    $('#id_edit_photo_description').val($('#id_photo_description_'.concat(id)).text());
-    $('#id_edit_photo_acces').val($('#id_photo_acces_'.concat(id)).text());
-    $('#id_edit_photo_message').text("");
-    $('#id_edit_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-    $('#id_edit_photo_id').val(id);
+    $('#id_import_photo_code').val($('#id_photo_code_'.concat(id)).text());
+    $('#id_import_photo_description').val($('#id_photo_description_'.concat(id)).text());
+    $('#id_import_photo_acces').val($('#id_photo_acces_'.concat(id)).text());
+    $('#id_import_photo_message').text("");
+    $('#id_import_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
+    $('#id_import_photo_id').val(id);
 
-    $('#id_edit_groupe').val($('#id_groupe_'.concat(id)).text());
-    $('#id_edit_categorie').data("current", $('#id_categorie_'.concat(id)).text());
+    $('#id_import_groupe').val($('#id_groupe_'.concat(id)).text());
+    $('#id_import_categorie').data("current", $('#id_categorie_'.concat(id)).text());
 
-    $('#id_edit_photo_label').text('');
-    $('#id_edit_photo_message').text('');
+    $('#id_import_photo_label').text('');
+    $('#id_import_photo_message').text('');
 
-    loadCategoriesAtWork(false);
-    $('#id_edit_photo_modal').modal('show')
+    loadCategoriesAtWork();
+
+    $("#id_import_photo_form").submit(submit_modification_photo);
+    $("#id_import_titre_modal").text("Modifier une photo");
+    $("#id_import_photo_modal").modal("show")
 };
 
 function ask_import_photo() {
@@ -33,22 +36,20 @@ function ask_import_photo() {
     
     selected.empty();
     selected.append("<option value='NONE'>Choisir..</option>");
-    $('#modalAddPhoto').modal('show');
+
+    // soumission de l'import de la photo
+    $("#id_import_photo_form").submit(submit_creation_photo);
+    $("#id_import_titre_modal").text("Ajouter une photo");
+    $('#id_import_photo_modal').modal('show');
 };
 
 
-function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
+function handleFileSelect(inp) {
+    var files = inp.get(0).files; // FileList object    
+    var msg_id = '#id_import_photo_message';
+    var img_target_id = '#id_import_photo_img'
 
-    var msg_id = '#id_edit_photo_message';
-    var img_target_id = '#id_edit_photo_img'
-    var creation = false;
-    
-    if (evt.target.id.match(/import/)) {
-        msg_id = '#id_import_photo_message';
-        img_target_id = '#id_import_photo_img'
-        creation = true;
-    }
+    $('#id_import_photo_img').attr('src', blank_photo);
     
     if (files.length !=1) {
         $(msg_id).text("Il faut sélectionner un fichier");
@@ -58,24 +59,14 @@ function handleFileSelect(evt) {
 
     // files is a FileList of File objects. List some properties.
     var f = files[0];
-    // output.push(escape(f.name), ' ', f.type || 'n/a', ' - ',
-    //            f.size, ' bytes, last modified: ',
-    //            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-
     var error = "";
     if (f.size == 0 || f.size > 300000) {
-           error = f.name.concat(", fichier trop gros 300000 caractères au maximum");
+        error = f.name.concat(", fichier trop gros 300ko au maximum");
         $( this ).val('');
-        if (creation) {
-            $('#id_import_photo_img').attr('src', blank_photo);
-        }
     }
     else if ((f.type != "image/png" && f.type != "image/jpeg")) {
         error = f.name.concat(", n'est pas une image jpeg ou png");
         $( this ).val('');
-        if (creation) {
-            $('#id_import_photo_img').attr('src', blank_photo);
-        }
     }
     else {
         var reader = new FileReader();
@@ -100,23 +91,15 @@ function handleFileSelect(evt) {
 
 function loadCategories(event) {
     event.preventDefault();
-    var create_form = event.target.id.match(/import/) != null ;
-    loadCategoriesAtWork(create_form);
+    loadCategoriesAtWork();
 }
 
-function loadCategoriesAtWork(create_form) {
+function loadCategoriesAtWork() {
     
-    var id_msg = '#id_edit_photo_message';
-    var id_groupe = "#id_edit_groupe";
-    var id_img_target = '#id_edit_photo_img'
-    var id_categorie = '#id_edit_categorie';
-
-    if (create_form) { 
-        id_msg = '#id_import_photo_message';
-        id_img_target = '#id_import_photo_img';
-        id_groupe = "#id_import_groupe";
-        id_categorie = "#id_import_categorie";
-    }
+    var id_msg = '#id_import_photo_message';
+    var id_groupe = "#id_import_groupe";
+    var id_img_target = '#id_import_photo_img'
+    var id_categorie = '#id_import_categorie';
 
     $(id_msg).text(" ");
     
@@ -168,29 +151,94 @@ function loadCategoriesAtWork(create_form) {
           });    
 }
 
+function submit_creation_photo(event){
+    event.preventDefault();
+    $("#id_import_photo_message").text("");
+    var formdata = new FormData($(this)[0]);
+    $("#id_loader").css("display","block");
+    var csrftoken = getCookie('csrftoken');
+    var u = getPhotoCreateUrl();
+    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
+    $.ajax({
+        //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
+        processData: false,
+        contentType:false,
+        'type': 'put',
+        'url': u,
+        data: formdata,
+        
+        'success': function(response)
+        {
+	    window.location.reload();
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+	    $("#id_loader").css("display","none");
+            $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
+        }
+    });    
+}
+
+function submit_modification_photo(event){
+    event.preventDefault();
+    $("#id_edit_photo_message").text("");
+    var formdata = new FormData($(this)[0]);
+    $("#id_loader").css("display","block");
+    var csrftoken = getCookie('csrftoken');
+    var u = getPhotoCreateUrl();
+    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
+    $.ajax({
+        //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
+        processData: false,
+        contentType:false,
+        'type': 'post',
+        'url': u,
+        data: formdata,
+        
+        'success': function(response)
+        {
+	    window.location.reload();
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
+	    $("#id_loader").css("display","none");
+            $("#id_edit_photo_message").text(JSON.parse(jqXHR.responseText).message);
+        }
+    });        
+}
+
 $(document).on('change', ':file', function() {
-    var input = $(this),
-        numFiles = input.get(0).files ? input.get(0).files.length : 1,
-        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    var input = $(this);
+    var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+    var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
     input.trigger('fileselect', [numFiles, label]);
     handleFileSelect(input);
 });
 
 $(document).ready(
     function () {
-        $('#id_edit_photo').change(handleFileSelect);
-        $('#id_import_photo').change(handleFileSelect);
-        $('#id_import_groupe').on('change', loadCategories);
-        $('#id_edit_groupe').on('change', loadCategories);
-
         $(':file').on('fileselect', function(event, numFiles, label) {
-            var input = $(this).parents('.input-group').find(':text'),
-                log = numFiles > 1 ? numFiles + ' files selected' : label;
+            var input = $(this).parents('.input-group').find(':text');
             if ( input.length ) {
-                input.val(log);
+                var log = numFiles > 1 ? numFiles + ' files selected' : label;
+                input.each(function(index) {
+                    $(this).val(log);
+                });
             }
         });
         
+
+        $('#id_edit_photo').change(handleFileSelect);
+//        $('#id_import_photo').change(handleFileSelect);
+        $('#id_import_groupe').on('change', loadCategories);
+//        $('#id_edit_groupe').on('change', loadCategories);
+
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);
             var valueSelected = this.value;
@@ -220,74 +268,7 @@ $(document).ready(
             $('#selectForm').submit();
         });
 
-        
-
-        // soumission de l'import de la photo
-        $("#id_import_photo_form").submit(
-            function(event){
-                event.preventDefault();
-                $("#id_import_photo_message").text("");
-                var formdata = new FormData($(this)[0]);
-                $("#id_loader").css("display","block");
-                var csrftoken = getCookie('csrftoken');
-                var u = getPhotoCreateUrl();
-
-                $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-                //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
-                $.ajax({
-                    //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
-                    processData: false,
-                    contentType:false,
-                    'type': 'put',
-                    'url': u,
-                    data: formdata,
-                    
-                    'success': function(response)
-                    {
-	                window.location.reload();
-                    },
-                    'error': function(jqXHR, textStatus, errorThrown)
-                    {
-                        console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-	                $("#id_loader").css("display","none");
-                        $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
-                    }
-                });    
-            });
-                
-        // soumission de l'import de la photo
-        $("#id_edit_photo_form").submit(
-            function(event){
-                event.preventDefault();
-                $("#id_edit_photo_message").text("");
-                var formdata = new FormData($(this)[0]);
-                $("#id_loader").css("display","block");
-                var csrftoken = getCookie('csrftoken');
-                var u = getPhotoCreateUrl();
-
-                $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-                //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
-                $.ajax({
-                    //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
-                    processData: false,
-                    contentType:false,
-                    'type': 'post',
-                    'url': u,
-                    data: formdata,
-                    
-                    'success': function(response)
-                    {
-	                window.location.reload();
-                    },
-                    'error': function(jqXHR, textStatus, errorThrown)
-                    {
-                        console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
-	                $("#id_loader").css("display","none");
-                        $("#id_edit_photo_message").text(JSON.parse(jqXHR.responseText).message);
-                    }
-                });    
-
-            });
+       
         
         $("#id_delete_photo").click(
 	    function(){

@@ -339,11 +339,12 @@ function handleFileSelect(inp) {
 }
 
 $(document).on('change', ':file', function() {
-    var input = $(this),
-        numFiles = input.get(0).files ? input.get(0).files.length : 1,
-        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    var input = $(this);
+    var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+    var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
     input.trigger('fileselect', [numFiles, label]);
     handleFileSelect(input);
+    
     // remplissage Categorie Photo
     var categorie_photo = $("#id_detail_categorie_photo");
     categorie_photo.empty();
@@ -366,14 +367,13 @@ $(document).ready(
     function () {
 
         $(':file').on('fileselect', function(event, numFiles, label) {
-            var input = $(this).parents('.input-group').find(':text'),
-                log = numFiles > 1 ? numFiles + ' files selected' : label;
+            var input = $(this).parents('.input-group').find(':text');
             if ( input.length ) {
+                var log = numFiles > 1 ? numFiles + ' files selected' : label;
                 input.val(log);
             }
         });
         
-        $('#id_import_photo').change(handleFileSelect);
         $('#id_detail_categorie_photo').change(function(event) {
             $('#id_detail_id_photo').empty();
             $('#id_detail_id_photo').append('<option selected value="NONE">Choisir..</option>');
