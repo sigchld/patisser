@@ -412,6 +412,11 @@ opacity:1;
         cursor: inherit;
         display: block;
     }
+
+    .nutrition-input {
+        width:7em;
+        display:inline;
+    }
 /*
 .modal-dialog {
   position: relative;
@@ -453,3 +458,5 @@ opacity:1;
   }
 }
 */
+
+    

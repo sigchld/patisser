@@ -78,7 +78,9 @@ def calcul_ingredients_preparation(preparation):
             tmp['fibres_alimentaires'] = Decimal(0)
             tmp['proteines'] = Decimal(0)
             tmp['sel'] = Decimal(0)
-            tmp['nom'] = ingredient.description
+            tmp['description'] = ingredient.description
+            tmp['code'] = ingredient.code
+            tmp['id'] = ingredient.id
             tmp['cout'] = Decimal(0)
             ingredients[ingredient.id] = tmp
 
@@ -105,10 +107,10 @@ def calcul_ingredients_preparation(preparation):
 
 def calcul_ingredients_recette(recette):
     """
-    Valeur nutritionnelle  et prix d'une recette
+    Valeur nutritionnelle cout  d'une recette ingredients et economat
     """
     getcontext().prec = 4
-    ingredients = {}
+    economat = {}
     allergene = False
     energie = 0
     cout = Decimal(0)
@@ -126,16 +128,16 @@ def calcul_ingredients_recette(recette):
             energie_ingredient = (quantite/Decimal(100)) * (((element.quantite)/Decimal(100)) * ingredient.calorie)
             energie += energie_ingredient
 
-            LOGGER.debug(u"ingredient :{}/{}/{}/{}".format(ingredient.description,ingredient.pu,element.quantite,(quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))))
-            tmp = ingredients.get(ingredient.id)
+            LOGGER.debug(u"ingredient :{}/{}/{}/{}".format(ingredient.description, ingredient.pu, element.quantite, (quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))))
+            tmp = economat.get(ingredient.id)
             if tmp is None:
-              tmp = {}
-              tmp['quantite'] = 0
-              tmp['energie'] = 0
-              tmp['nom'] = ingredient.description
-              ingredients[ingredient.id] = tmp
+                tmp = {}
+                tmp['quantite'] = 0
+                tmp['energie'] = 0
+                tmp['nom'] = ingredient.description
+                economat[ingredient.id] = tmp
 
             tmp['quantite'] += element.quantite
             tmp['energie'] += energie_ingredient
 
-    return (energie, allergene, ingredients.values(), preparations, cout)
+    return (energie, allergene, economat.values(), preparations, cout)

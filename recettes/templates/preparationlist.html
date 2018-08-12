@@ -322,7 +322,7 @@
   <!-- Modal detail/modification d'un preparation -->
   <div id="id_detail_preparation_modal" class="modal fade">
     <span id="id_detail_preparation_no" style="display:none"></span>
-    <div class="modal-dialog ">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header" id="id_detail_preparation_modal_view_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -344,192 +344,224 @@
         <div class="modal-body col-lg-12">
           <div class="container-fluid">
             <form id="id_detail_preparation_form" action="">
-
               <div class="row">
-                <div class="greybox" >
-<div>
-                  <label for="code">Code</label>
-                  <input  name="code" type="text" id="id_detail_preparation_code">
-</div>
-<div>
-                  <label for="allergene">Allergene</label>
-                <input name="allergene" type="checkbox" id="id_detail_preparation_allergene">
-	        <label for="acces">Accès</label>
-	        <select name="acces" id="id_detail_preparation_acces">
-		  <option value="PUB">public</option>
-		  <option value="PRIV">privé</option>
-	        </select>
-	        </div>
-</div>
-              </div>
-
-            <div class="row">
-              <div class="greybox">
-                <div>
-                <span class="font-weight-bold">Date création</span>
-                <span id="id_detail_preparation_date_creation"></span>
-                </div>
-                <div>
-                <span class="font-weight-bold">Date dernière modification </span>
-                <span id="id_detail_preparation_date_modification"></span>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="greybox">
-                <span class="font-weight-bold">Catégorie  </span>
-                <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_detail_categorie" name="categorie" placeholder="categorie">
-	        <option value="NONE" selected>Choisir..</option>
-	      </select>
-              </div>
-            </div>
-            
-            <div class="row">
-              <div class="greybox">
-                <span class="font-weight-bold">Prix </span>
-                <input maxlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_preparation_prix_unitaire">
-                <span class="font-weight-bold">&euro;</span>
-                <!-- span> pour </span>
-                <input class="text-right" name="pp" maxlength="8" style="width:8em;" id="id_detail_preparation_prix_poids">
-                <span class="font-weight-bold">g</span -->
-              </div>
-            </div>
-            
-            <div class="row">
-              <div class="greybox" style="min-height: 75px;">                
-	          <label for="description">Description</label>
-	          <textarea disabled rows="2" class="form-control" id="id_detail_preparation_description" name="description" required="required" maxlength="200"></textarea>
-              </div>
-            </div>
-            <div class="row">
-              <div class="greybox" style="min-height: 75px;">                
-	        <label for="bonasavoir">Bon à savoir</label>
-	        <textarea disabled rows="2" class="form-control" id="id_detail_preparation_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-lg-8 col-xs-8 greybox">
-                <div class="no-margin row">
-                  <div class="col-border col-lg-12 col-xs-12" style="display:inline-block;"><p class="font-lighter">Valeurs nutritionnelles</p>
-                  </div>
-                </div>
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7"><span>energie</span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <div>
-                      <input disabled class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kjoules" id="id_detail_preparation_kjoules">
-                      <span style="display:inline">kj</span>
+                <div class="col-lg-8 col-md-8 col-xs-8 col-sm-8">
+                  <div class="row">
+                    <div class="col-lg-12 greybox" >
+                      <div>
+                        <label for="code">Code</label>
+                        <input  name="code" type="text" id="id_detail_preparation_code">
+                      </div>
+                      <div>
+                        <label for="allergene">Allergene</label>
+                        <input name="allergene" type="checkbox" id="id_detail_preparation_allergene">
+	                <label for="acces">Accès</label>
+	                <select name="acces" id="id_detail_preparation_acces">
+		          <option value="PUB">public</option>
+		          <option value="PRIV">privé</option>
+	                </select>
+	              </div>
                     </div>
-                    <div>
-                      <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kcalories" id="id_detail_preparation_kcalories">
-                      <span style="display:inline;">kcal</span>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="greybox col-lg-12">
+                      <div>
+                        <span class="font-weight-bold">Date création</span>
+                        <span id="id_detail_preparation_date_creation"></span>
+                      </div>
+                      <div>
+                        <span class="font-weight-bold">Date dernière modification </span>
+                        <span id="id_detail_preparation_date_modification"></span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox">
+                      <span class="font-weight-bold">Catégorie  </span>
+                      <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_detail_categorie" name="categorie" placeholder="categorie">
+	                <option value="NONE" selected>Choisir..</option>
+	              </select>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox">
+                      <span class="font-weight-bold">Prix </span>
+                      <input maxlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_preparation_prix_unitaire">
+                      <span class="font-weight-bold">&euro;</span>
+                      <!-- span> pour </span>
+                           <input class="text-right" name="pp" maxlength="8" style="width:8em;" id="id_detail_preparation_prix_poids">
+                           <span class="font-weight-bold">g</span -->
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox" style="min-height: 75px;">                
+	              <label for="description">Description</label>
+	              <textarea disabled rows="2" class="form-control" id="id_detail_preparation_description" name="description" required="required" maxlength="200"></textarea>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox" style="min-height: 75px;">                
+	              <label for="bonasavoir">Bon à savoir</label>
+	              <textarea disabled rows="2" class="form-control" id="id_detail_preparation_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
                     </div>
                   </div>
                 </div>
                 
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>maitères grasses<span>
+                <div class="col-lg-4 col-md-4 col-xs-4 col-sm-4">
+                  <div class="row">
+                    <div class="col-lg-4 col-xs-4">
+                      <span class="font-weight-bold text-center" style="display:block;">Photo</span>
+                      <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_preparation_img">
+                    </div>
                   </div>
-                  <div  class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_preparation_matieres_grasses_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses" id="id_detail_preparation_matieres_grasses">
-                    <span>g</span>
-                  </div>
+                  <div class="row">
+                    <div class="col-lg-4 col-xs-4">
+                      <span >Catégorie</span>
+                      <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
+                        <option value="NONE" selected>Choisir..</option>
+                      </select>
+                      <span >Nom</span>
+                      <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
+                        <option value="NONE" selected>Choisir..</option>
+                      </select>
+                    </div>
+                  </div>                          
                 </div>
-                
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>dont acides gras saturés<span>
-                  </div>
-                  <div class="col-border col-5 col-xs-5">
-                    <!-- span id="id_detail_preparation_matieres_grasses_saturees_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses_saturees" id="id_detail_preparation_matieres_grasses_saturees">
-                    <span>g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>Glucides<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_preparation_glucides_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides" id="id_detail_preparation_glucides">
-                    <span> g<span>
-                  </div>
-                </div>
-                
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>dont sucres<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_preparation_glucides_dont_sucres_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides_dont_sucres" id="id_detail_preparation_glucides_dont_sucres">
-                    <span>g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>fibres<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_preparation_fibre_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="fibres_alimentaires" id="id_detail_preparation_fibres"></span>
-                    <span> g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>proteines<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_preparation_proteines_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="proteines"  id="id_detail_preparation_proteines">
-                    <span> g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>sel<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_preparation_sel_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="sel" id="id_detail_preparation_sel">
-                    <span>g</span>
-                  </div>
-                </div>
-                
-                
               </div>
-              <div class="col-lg-4 col-xs-4">
-                <span class="font-weight-bold text-center">Photo</span>
-                <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_preparation_img">
+              <div class="row">
+                <ul id="diveInfo" class="nav nav-tabs nav-justified" role="tablist">
+                  <li class="active"><a href="#id_nutrition_tab" role="tab" data-toggle="tab">Nutrition</a></li>
+                  <li><a href="#id_ingredients_tab" role="tab" data-toggle="tab">Ingredients</a></li>
+                  <li><a href="#id_etapes_tab" role="tab" data-toggle="tab">Etapes</a></li>
+                  <li><a href="#id_bases_tab" role="tab" data-toggle="tab">Bases</a></li>
+                  <li><a href="#id_economat_tab" role="tab" data-toggle="tab">Economat</a></li>
+                </ul>
+              </div>
+
+              <div class="row">                
+                <div class="tab-content">                  
+                  <div class="tab-pane fade greybox" id="id_economat_tab">
+                    <div class="no-margin row">
+                    </div>
+                  </div>
+
+                  <div class="tab-pane  fade in active greybox" id="id_nutrition_tab">
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">
+                        <span>energie</span>
+                      </div>
+                      <div>
+                        <span id="id_detail_preparation_kjoules"></span>
+                        <span>kj</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">
+                        <span>&nbsp;</span>
+                      </div>
+                      <div>
+                        <span id="id_detail_preparation_kcalories"></span>
+                        <span>kcal</span>
+                      </div>
+                    </div>
+                    
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                      
+                        <span>maitères grasses<span>
+                      </div>
+                      <div>
+                        <input class="form-control input-sm nutrition-input" maxlength="5"  name="matieres_grasses" id="id_detail_preparation_matieres_grasses">
+                        <span>g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                      
+                        <span>dont acides gras saturés<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_preparation_matieres_grasses_saturees_inf"></span -->
+                        <input class="form-control input-sm nutrition-input" maxlength="5" name="matieres_grasses_saturees" id="id_detail_preparation_matieres_grasses_saturees">
+                        <span>g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                            
+                        <span>Glucides<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_preparation_glucides_inf"></span -->
+                        <input class="form-control input-sm nutrition-input" maxlength="5" name="glucides" id="id_detail_preparation_glucides">
+                        <span> g<span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>dont sucres<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_preparation_glucides_dont_sucres_inf"></span -->
+                        <input class="form-control input-sm nutrition-input" maxlength="5" name="glucides_dont_sucres" id="id_detail_preparation_glucides_dont_sucres">
+                        <span>g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>fibres<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_preparation_fibre_inf"></span -->
+                        <input class="form-control input-sm nutrition-input" maxlength="5" name="fibres_alimentaires" id="id_detail_preparation_fibres"></span>
+                      <span> g</span>
+                      </div>
+                    </div>
+                      
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>proteines<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_preparation_proteines_inf"></span -->
+                        <input class="form-control input-sm nutrition-input" maxlength="5" name="proteines"  id="id_detail_preparation_proteines">
+                        <span> g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>sel<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_preparation_sel_inf"></span -->
+                        <input class="form-control input-sm nutrition-input" maxlength="5" name="sel" id="id_detail_preparation_sel">
+                        <span>g</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane" id="id_ingredients_tab">
+                  </div>
+                  <div class="tab-pane" id="id_etapes_tab">
+                  </div>
+                  <div class="tab-pane" id="id_bases_tab">
+                  </div>
+                </div>
               </div>
               
-              <div class="row">
-              <div class="col-lg-4 col-xs-4">
-                <span >Catégorie</span>
-                <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
-	        <option value="NONE" selected>Choisir..</option>
-	        </select>
-                <span >Nom</span>
-                <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
-	          <option value="NONE" selected>Choisir..</option>
-	        </select>
-                
-              </div>
-              </div>                          
-            </div>
-            <input type="hidden" id="id_detail_preparation_id" name="id">
+              <input type="hidden" id="id_detail_preparation_id" name="id">
             </form>
           </div>
         </div>
+        
         <div class="modal-footer" id="id_detail_preparation_modal_view_footer">
           <a id="id_detail_preparation_previous" href="#"><span class="step-link glyphicon glyphicon-arrow-left"></span></a>
 	  <a id="id_detail_preparation_next" href="#"><span class="step-link glyphicon glyphicon-arrow-right"></span></a>

@@ -660,11 +660,11 @@ def search(request):
     if page_courante == ACCUEIL:
         return index(request, filter=filter)
     elif page_courante == PHOTOS:
-        return list_photos(request, filter=filter)
+        return list_photos(request, filtre=filter)
     elif page_courante == INGREDIENTS:
-        return list_ingredients(request, filter=filter)
+        return list_ingredients(request, filtre=filter)
 
-    return index(request, filter=filter)
+    return index(request, filtre=filter)
 
 def my_logout(request):
     """ deconnexion de l'utilisateur """

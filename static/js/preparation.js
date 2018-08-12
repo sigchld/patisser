@@ -34,10 +34,34 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
           });    
 }
 
+function displayKalories(preparation) {
+       $("#id_detail_preparation_kcalories").text(preparation.valeurs.kcalories);
+        $("#id_detail_preparation_kjoules").text(preparation.valeurs.kjoules);
+        
+        $("#id_detail_preparation_matieres_grasses").val(preparation.valeurs.matieres_grasses);
+        $("#id_detail_preparation_matieres_grasses_saturees").val(preparation.valeurs.matieres_grasses_saturees);
+        
+        $("#id_detail_preparation_glucides").val(preparation.valeurs.glucides);
+        $("#id_detail_preparation_glucides_dont_sucres").val(preparation.valeurs.glucides_dont_sucres);
+        
+        $("#id_detail_preparation_fibres").val(preparation.valeurs.fibres_alimentaires);
+        
+        $("#id_detail_preparation_proteines").val(preparation.valeurs.proteines);
+        $("#id_detail_preparation_sel").val(preparation.valeurs.sel);
+        
+        $("#id_detail_preparation_prix_unitaire").val(preparation.valeurs.cout);
+        $("#id_detail_preparation_prix_poids").val(preparation.valeurs.pp);    
+}
 
-function loadKalories(preparation_id) {
+function loadKalories(preparation) {
+    // déjà chargées ?
+    if (preparation.valeurs) {
+        displayKalories(preparation);
+        return;
+    }
+    
     var csrftoken = getCookie('csrftoken');
-    var u = "/mesrecettes/preparation/energie/".concat(preparation_id);
+    var u = "/mesrecettes/preparation/energie/".concat(preparation.id);
 
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
     $.ajax({
@@ -48,22 +72,8 @@ function loadKalories(preparation_id) {
             var reponse = JSON.parse(response);
             if (reponse.status == 0 ) {
                 var valeurs = reponse.valeurs;
-                $("#id_detail_preparation_kcalories").val(valeurs.kcalories);
-                $("#id_detail_preparation_kjoules").val(valeurs.kjoules);
-
-                $("#id_detail_preparation_matieres_grasses").val(valeurs.matieres_grasses);
-                $("#id_detail_preparation_matieres_grasses_saturees").val(valeurs.matieres_grasses_saturees);
-    
-                $("#id_detail_preparation_glucides").val(valeurs.glucides);
-                $("#id_detail_preparation_glucides_dont_sucres").val(valeurs.glucides_dont_sucres);
-           
-                $("#id_detail_preparation_fibres").val(valeurs.fibres_alimentaires);
-    
-                $("#id_detail_preparation_proteines").val(valeurs.proteines);
-                $("#id_detail_preparation_sel").val(valeurs.sel);
-                
-                $("#id_detail_preparation_prix_unitaire").val(valeurs.cout);
-                $("#id_detail_preparation_prix_poids").val(valeurs.pp);
+                preparation.valeurs = valeurs;
+                displayKalories(preparation);
             }
            },
            'error': function(jqXHR, textStatus, errorThrown)
@@ -121,6 +131,9 @@ function remplissage(preparation) {
     $("#id_detail_preparation_description").text(preparation.description);
     $("#id_detail_preparation_bonasavoir").text(preparation.bonasavoir);
     $("#id_detail_preparation_owner").text(preparation.owner)
+
+    $("#id_detail_preparation_date_creation").text(preparation.date_creation);
+    $("#id_detail_preparation_date_modification").text(preparation.date_modification)
 
     var dummy = $('#id_preparation_img_'.concat(preparation.id)).attr('src');
     if (dummy && dummy != "NONE") {
@@ -185,7 +198,8 @@ function detail_preparation(id) {
     $('#id_detail_preparation_modal_new_header').css("display", "none");
 
 
-    loadKalories(preparation.id);    
+    loadKalories(preparation);
+    $('.nav-tabs a[href="#id_nutrition_tab"]').tab('show')
     $('#id_detail_preparation_modal').modal('show');
 }
 
@@ -352,8 +366,36 @@ function handleFileSelect(evt) {
     return false;
 }
 
+function loadEconomat(e) {
+    //e.target // newly activated tab
+    //e.relatedTarget // previous active tab
+
+    var economat=$("#id_economat_tab");
+    economat.empty();
+    var d1 = $("<div class=\"row\"</div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-3 col-sm-2\"><span>CODE</span></div>");
+    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-3 col-sm-6\"><span>INGREDIENT</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>QUANTITE (g)</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>COUT (&euro;)</span></div>");
+    economat.append(d1);
+    var preparation = getPreparation(current_no_preparation);
+    preparation.valeurs.ingredients.forEach(function(element) {
+        d1 = $("<div class=\"row\"></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
+        d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.quantite + "</span></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.cout + "</span></div>");
+        economat.append(d1);
+    });
+}
+
+
+
 $(document).ready(
     function () {
+        $('a[href="#id_economat_tab"]').on('show.bs.tab', loadEconomat);
+
+
         $('#id_edit_photo').change(handleFileSelect);
         $('#id_import_photo').change(handleFileSelect);
         $('#id_detail_categorie_photo').change(function(event) {

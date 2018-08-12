@@ -85,20 +85,20 @@ class PreparationRest(View):
          matieres_grasses, matieres_grasses_saturees,
          glucides, glucides_dont_sucres,
          fibres_alimentaires, proteines,
-         sel, ingredients, cout) = calcul_ingredients_preparation(preparation)
+         sel, economat, cout) = calcul_ingredients_preparation(preparation)
 
-        json_string = json.dumps({ 'cout':cout,
-                                   'kcalories' : kcalories,
-                                   'kjoules':kjoules,
-                                   'allergene':allergene,
-                                   'matieres_grasses':matieres_grasses,
-                                   'matieres_grasses_saturees':matieres_grasses_saturees,
-                                   'glucides':glucides,
-                                   'glucides_dont_sucres':glucides_dont_sucres,
-                                   'fibres_alimentaires':fibres_alimentaires,
-                                   'proteines':proteines,
-                                   'sel':sel,
-                                   'ingredients': ingredients},
+        json_string = json.dumps({'cout':cout,
+                                  'kcalories':kcalories,
+                                  'kjoules':kjoules,
+                                  'allergene':allergene,
+                                  'matieres_grasses':matieres_grasses,
+                                  'matieres_grasses_saturees':matieres_grasses_saturees,
+                                  'glucides':glucides,
+                                  'glucides_dont_sucres':glucides_dont_sucres,
+                                  'fibres_alimentaires':fibres_alimentaires,
+                                  'proteines':proteines,
+                                  'sel':sel,
+                                  'ingredients': economat},
                                  cls=DjangoJSONEncoder)
         return HttpResponse("{{ \"status\":0, \"message\": \"ok\", \"valeurs\":{} }}".format(json_string))
 
