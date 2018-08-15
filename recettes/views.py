@@ -376,8 +376,6 @@ def list_preparations(request, owner='me', acces=None, filter=None):
         categorie = request.session.get('preparations_categorie', None)
 
     # Conversion None -> ALL
-    #if groupe is None:
-    #    groupe = "ALL"
     if categorie is None:
         categorie = "ALL"
 
@@ -470,19 +468,24 @@ def list_preparations(request, owner='me', acces=None, filter=None):
         remplissage = range(remplissage)
 
     #
-    # constitution de la liste des noms
-    categories = []
-    categories.append(('NONE', 'Choisir..'))
-    #categories.append(('ALL', 'TOUTES'))
-    #categories.append(('ING', 'INGRÉDIENTS'))
-    categories.append(('REC', 'RECETTES'))
-    #categories.append(('PREP','PRÉPARATIONS'))
-    #categories.append(('MAT', 'USTENSILES'))
-    categorie_ing = Categorie.objects.filter(groupe="PREP").order_by(Lower('description'))
+    # constitution de la liste des catégories des préparations
+    categories_preparations = []
+    categories_preparations.append(('NONE', 'Choisir..'))
+    categories_preparations.append(('PREP', 'PRÉPARATIONS'))
+    categorie_prep = Categorie.objects.filter(groupe="PREP").order_by(Lower('description'))
+    for cat in categorie_prep:
+        categories_preparations.append((cat.id, cat.description))
+    #
+    # constitution de lq liste des catégories des ingrédients
+    categories_ingredients = []
+    categories_ingredients.append(('NONE', 'Choisir..'))
+    categorie_ing = Categorie.objects.filter(groupe="ING").order_by(Lower('description'))
     for cat in categorie_ing:
-        categories.append((cat.id, cat.description))
+        categories_ingredients.append((cat.id, cat.description))
 
-    return HttpResponse(template.render({'filter' : filter, 'preparations' : preparations, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "", "categories_photos" : categories}, request))
+    return HttpResponse(template.render({'filter' : filter, 'preparations' : preparations,
+                                         'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "",
+                                         "categories_photos" : categories_preparations, 'categories_ingredients' : categories_ingredients}, request))
 
 
 #

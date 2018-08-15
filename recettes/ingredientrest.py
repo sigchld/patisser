@@ -35,14 +35,14 @@ from .forms import IngredientForm
 
 
 # Get an instance of a logger
-logger = logging.getLogger('fees')
+LOGGER = logging.getLogger('fees')
 
 class IngredientRest(View):
     def __init__(self):
-        self.http_method_names = ['delete', 'post', 'put']
+        self.http_method_names = ['delete', 'post', 'put', 'get']
 
     def http_method_not_allowed(self, request, *args, **kwargs):
-        logger.warning(
+        LOGGER.warning(
             'Method Not Allowed (%s): %s', request.method, request.path,
             extra={'status_code': 405, 'request': request}
         )
@@ -66,7 +66,7 @@ class IngredientRest(View):
                 ingredient = Ingredient.objects.get(pk=ingredient_id)
                 #except Ingredient.DoesNotExist:
             except:
-                logger.error("Loading ingredient inconnue/{}".format(ingredient_id))
+                LOGGER.error("Loading ingredient inconnue/{}".format(ingredient_id))
                 return HttpResponseServerError('{ "message" : "ingredient inconnu" }')
 
             if ingredient.owner.username != request.user.username:
@@ -77,7 +77,7 @@ class IngredientRest(View):
             try:
                 myfile = request.FILES['photo']
                 name = myfile.name
-                logger.debug(u"PhotoFileName {}".format(name))
+                LOGGER.debug(u"PhotoFileName {}".format(name))
                 fs = FileSystemStorage()
                 filename = fs.save(name, myfile)
 
@@ -133,7 +133,7 @@ class IngredientRest(View):
                             return HttpResponseServerError('{ "message" : "saisie incomplète,  catégorie inconnues" }')
                 except:
                     just_the_string = traceback.format_exc()
-                    logger.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
+                    LOGGER.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
 
 
             # maj des champs standards
@@ -162,11 +162,11 @@ class IngredientRest(View):
 
         except IntegrityError:
             just_the_string = traceback.format_exc()
-            logger.debug(just_the_string)
+            LOGGER.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "modification impossible" }')
         except Exception as error:
             just_the_string = traceback.format_exc()
-            logger.debug(just_the_string)
+            LOGGER.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
 
@@ -191,7 +191,7 @@ class IngredientRest(View):
             try:
                 myfile = request.FILES['photo']
                 name = myfile.name
-                logger.debug(u"PhotoFileName {}".format(name))
+                LOGGER.debug(u"PhotoFileName {}".format(name))
                 fs = FileSystemStorage()
                 filename = fs.save(name, myfile)
 
@@ -228,7 +228,7 @@ class IngredientRest(View):
                         ingredient.photo = Photo.objects.get(pk=new_photo_id)
                 except:
                     just_the_string = traceback.format_exc()
-                    logger.debug("ingredient_creation/photo/{}".format(just_the_string))
+                    LOGGER.debug("ingredient_creation/photo/{}".format(just_the_string))
 
             # categorie
             new_categorie = request.POST.get('categorie', None)
@@ -244,7 +244,7 @@ class IngredientRest(View):
 
                 except:
                     just_the_string = traceback.format_exc()
-                    logger.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
+                    LOGGER.debug("ingredient_modification/categorie_obj/{}".format(just_the_string))
                     ingredient.categorie = None
 
             if not ingredient.categorie:
@@ -277,79 +277,53 @@ class IngredientRest(View):
             return HttpResponse('{ "message" : "OK" }')
         except IntegrityError:
             just_the_string = traceback.format_exc()
-            logger.debug(just_the_string)
+            LOGGER.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "modification impossible" }')
         except Exception as error:
             just_the_string = traceback.format_exc()
-            logger.debug(just_the_string)
+            LOGGER.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
         return HttpResponse('{ "message" : "OK" }')
 
     # Recherche un ingredient
-    def get(self, request, photo_id=None):
+    def get(self, request, ingredient_id=None, categorie_id=None):
         # par defaut c'estt la photo blanche!
-        if not photo_id:
-            return  blank_photo()
+        if not ingredient_id or (ingredient_id == "all" and categorie_id is None):
+            return HttpResponse("{ \"status\":-1 }")
 
-        # il faut charger la photo...
-        photo = None
+        if ingredient_id == "all":
+            return get_ingredient_list(request, categorie_id)
+        
+        # il faut charger l'ingredient...
+        ingredient = None
         try:
-            photo = Photo.objects.get(pk=photo_id)
-            #except Photo.DoesNotExist:
+            ingredient = Ingredient.objects.get(pk=ingredient_id)
+        except Ingredient.DoesNotExist:
+            LOGGER.error("Loading ingredients inconnue/{}".format(ingredient_id))
+            return HttpResponse("{ \"status\":-1 }")
+
+        if ingredient is None:
+            return HttpResponse("{ \"status\":-1 }")
+
+        try:
+            if ingredient.acces != "PUB":
+                if not request.user.is_authenticated and  ingredient.owner.username != request.user.username:
+                    LOGGER.error("Loading acces interdit/ingredients/{}/{}/{}/{}/{}/".format(ingredient_id, request.user.is_authenticated, request.user.username, ingredient.acces, ingredient.owner))
+                    return HttpResponse("{ \"status\":-1 }")
         except:
-            logger.error("Loading photos inconnue/{}".format(photo_id))
+            LOGGER.error("Ingredient/ingredients/{}".format(ingredient_id))
+            return HttpResponse("{ \"status\":-1 }")
 
-        try:
-            if photo is not None:
-                if photo.acces != "PUB":
-                    if not request.user.is_authenticated and  photo.owner.username != request.user.username:
-                        logger.error("Loading acces interdit1 /photos/{}/{}/{}/{}/{}/".format(photo_id, request.user.is_authenticated, request.user.username, photo.acces, photo.owner))
-                        return blank_photo()
+        return HttpResponse("{{ \"status\": 0, \"message\": \"OK\", \"ingredient\": {} }}".format(ingredient.to_json()))
 
-                if photo.thumbnail is not None:
-                    logger.debug("Loading thumbnail /photos/{}".format(photo_id))
-
-                    response = HttpResponse(content_type="image/png")
-                    response.write(photo.thumbnail)
-                    return response
-
-                photo_id = photo.photo
-
-            # ************************** ATTENTION
-            # POUR MAINTENIR LA COMPATIBILITE avec les anciennes URL
-            # ON maintient le chargent direct
-
-            logger.debug("Loading img {}/photos/{}".format(settings.BASE_DIR, photo_id))
-            img = Image.open("{}/photos/{}".format(settings.BASE_DIR,photo_id))
-            img = get_thumbnail(img)
-
-            if photo:
-                try:
-                    logger.debug("Loading writing img /photos/{}".format(photo_id))
-                    f = io.BytesIO()
-                    img.save(f, "PNG")
-                    f.seek(0)
-	            photo.thumbnail = f.read1(-1)
-                    f.close()
-                    photo.save()
-                except:
-                    pass
-
-	    response = HttpResponse(content_type="image/png")
-	    img.save(response, "PNG")
-	    return response
-
-        except IOError:
-            logger.error("Loading IOError /photos/{}".format(photo_id))
-            return blank_photo()
 
     #
     # Suppresion d'un ingrédient
     #
     def delete(self, request, ingredient_id=None):
         if not request.user.is_authenticated:
-                return HttpResponseServerError('{ "message" : "Il faut être cuthentifié pour supprimer un imgredient" }')
+            return HttpResponseServerError('{ "message" : "Il faut être cuthentifié pour supprimer un imgredient" }')
 
         try:
             ingredient = Ingredient.objects.get(pk=ingredient_id)
@@ -363,7 +337,7 @@ class IngredientRest(View):
         #time.sleep(3)
         nbref = len(ingredient.element_set.all())
 
-        logger.debug("Cette ingrédient est utilisé  {} fois".format(nbref))
+        LOGGER.debug("Cette ingrédient est utilisé  {} fois".format(nbref))
         if nbref != 0:
             return HttpResponseForbidden("{{ \"message\" : \"Suppression impossible, l'ingrédient est referencé {} fois\" }}".format(nbref))
         try:
@@ -371,61 +345,34 @@ class IngredientRest(View):
             return HttpResponse('{ "message" : "Suppression rélalisée" }')
         except Exception as error:
             just_the_string = traceback.format_exc()
-            logger.debug(just_the_string)
+            LOGGER.debug(just_the_string)
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
 
+def get_ingredient_list(request, categorie_id):
+    try:
+        categorie_obj = Categorie.objects.get(pk=categorie_id)
+    except:
+        return HttpResponse("{ \"status\": -1}")
 
-
-def blank_photo():
-    blank = Photo.objects.get(code='blank')
-    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, blank.photo))
-    size = (128, 128)
-    img.thumbnail(size)
-    response = HttpResponse(content_type="image/png")
-    img.save(response, "PNG")
-    return response
-
-def distance2(a, b):
-    return (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]) + (a[2] - b[2]) * (a[2] - b[2])
-
-def get_thumbnail0(img):
-    bg = Image.new(img.mode, img.size, img.getpixel((0,0)))
-    diff = ImageChops.difference(img, bg)
-    diff = ImageChops.add(diff, diff, 2.0, -100)
-    bbox = diff.getbbox()
-    if bbox:
-        img=img.crop(bbox)
+    if request.user.is_authenticated:
+        ingredients = Ingredient.objects.filter((~Q(owner=request.user.username) & Q(acces='PUB'))| Q(owner=request.user.username)).order_by('code')
     else:
-        return get_thumbnail(img)
-    size = (128, 128)
-    img.thumbnail(size)
-    return img
+        ingredients = Ingredient.objects.filter(Q(acces='PUB'))
 
-def get_thumbnail(img):
-    color = (255,255,255)
-    thresh2=0
-    image = img.convert("RGBA")
-    red, green, blue, alpha = image.split()
-    image.putalpha(ImageMath.eval("""convert(((((t - d(c, (r, g, b))) >> 31) + 1) ^ 1) * a, 'L')""",
-        t=thresh2, d=distance2, c=color, r=red, g=green, b=blue, a=alpha))
-    size = (128, 128)
-    image.thumbnail(size)
+    if categorie_obj is not None:
+        LOGGER.debug("list_ingredient_result/categorie_obj/filtre/{}/{}".format(categorie_obj.groupe, categorie_obj.categorie))
+        ingredients = ingredients.filter(categorie=categorie_obj)
 
-    return image
-
-def get_thumbnail1(img):
-    img = img.convert("RGBA")
-    datas = img.getdata()
-
-    newData = []
-    for item in datas:
-        if item[0] == 255 and item[1] == 255 and item[2] == 255:
-            newData.append((255, 255, 255, 0))
+    nb_elements = 0
+    res = "{ \"status\":0, \"message\": \"ok\",  \"ingredients\": ["
+    first = True
+    for ingredient in ingredients:
+        if first:
+            first = False
         else:
-            newData.append(item)
-
-    img.putdata(newData)
-    size = (128, 128)
-    img.thumbnail(size)
-    return img
+            res = res + ","
+        nb_elements += 1
+        res = res + ingredient.to_json()
+    res = res + "], \"nb_ingredients\":" + str(nb_elements) + "}"
+    return HttpResponse(res);

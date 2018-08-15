@@ -34,34 +34,34 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
           });    
 }
 
-function displayKalories(preparation) {
-       $("#id_detail_preparation_kcalories").text(preparation.valeurs.kcalories);
-        $("#id_detail_preparation_kjoules").text(preparation.valeurs.kjoules);
+function displayNutrition(preparation) {
+       $("#id_detail_preparation_kcalories").text(preparation.nutrition.kcalories);
+        $("#id_detail_preparation_kjoules").text(preparation.nutrition.kjoules);
         
-        $("#id_detail_preparation_matieres_grasses").val(preparation.valeurs.matieres_grasses);
-        $("#id_detail_preparation_matieres_grasses_saturees").val(preparation.valeurs.matieres_grasses_saturees);
+        $("#id_detail_preparation_matieres_grasses").text(preparation.nutrition.matieres_grasses);
+        $("#id_detail_preparation_matieres_grasses_saturees").text(preparation.nutrition.matieres_grasses_saturees);
         
-        $("#id_detail_preparation_glucides").val(preparation.valeurs.glucides);
-        $("#id_detail_preparation_glucides_dont_sucres").val(preparation.valeurs.glucides_dont_sucres);
+        $("#id_detail_preparation_glucides").text(preparation.nutrition.glucides);
+        $("#id_detail_preparation_glucides_dont_sucres").text(preparation.nutrition.glucides_dont_sucres);
         
-        $("#id_detail_preparation_fibres").val(preparation.valeurs.fibres_alimentaires);
+        $("#id_detail_preparation_fibres").text(preparation.nutrition.fibres_alimentaires);
         
-        $("#id_detail_preparation_proteines").val(preparation.valeurs.proteines);
-        $("#id_detail_preparation_sel").val(preparation.valeurs.sel);
+        $("#id_detail_preparation_proteines").text(preparation.nutrition.proteines);
+        $("#id_detail_preparation_sel").text(preparation.nutrition.sel);
         
-        $("#id_detail_preparation_prix_unitaire").val(preparation.valeurs.cout);
-        $("#id_detail_preparation_prix_poids").val(preparation.valeurs.pp);    
+        $("#id_detail_preparation_prix_ingredients").text(preparation.nutrition.cout);
+        $("#id_detail_preparation_prix_poids").text(preparation.nutrition.pp);    
 }
 
-function loadKalories(preparation) {
+function loadNutrition(preparation) {
     // déjà chargées ?
-    if (preparation.valeurs) {
-        displayKalories(preparation);
+    if (preparation.nutrition) {
+        displayNutrition(preparation);
         return;
     }
     
     var csrftoken = getCookie('csrftoken');
-    var u = "/mesrecettes/preparation/energie/".concat(preparation.id);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/nutrition");
 
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
     $.ajax({
@@ -72,8 +72,8 @@ function loadKalories(preparation) {
             var reponse = JSON.parse(response);
             if (reponse.status == 0 ) {
                 var valeurs = reponse.valeurs;
-                preparation.valeurs = valeurs;
-                displayKalories(preparation);
+                preparation.nutrition = valeurs;
+                displayNutrition(preparation);
             }
            },
            'error': function(jqXHR, textStatus, errorThrown)
@@ -183,7 +183,9 @@ function detail_preparation(id) {
     $('#id_detail_preparation_form input').prop("disabled", true);
     $('#id_detail_preparation_form textarea').prop("disabled", true);
     $('#id_detail_preparation_form select').prop("disabled", true);
-
+    //TODO: un peut brutal!
+    $('#id_detail_preparation_form .btn').addClass("disabled");
+    
     var categorie = $("#id_detail_categorie");
     categorie.empty();
     categorie.append('<option selected value="' + preparation.categorie_categorie + '">' + preparation.categorie_description + '</option>');
@@ -198,7 +200,7 @@ function detail_preparation(id) {
     $('#id_detail_preparation_modal_new_header').css("display", "none");
 
 
-    loadKalories(preparation);
+    loadNutrition(preparation);
     $('.nav-tabs a[href="#id_nutrition_tab"]').tab('show')
     $('#id_detail_preparation_modal').modal('show');
 }
@@ -273,7 +275,6 @@ function ask_delete_preparation(id) {
     $('#id_detail_preparation_form input').prop("disabled", true);
     $('#id_detail_preparation_form textarea').prop("disabled", true);
     $('#id_detail_preparation_form select').prop("disabled", true);
-
     
     $('#id_detail_preparation_modal').modal('show');
     
@@ -307,6 +308,7 @@ function ask_edit_preparation(id) {
     $('#id_detail_preparation_form input').prop("disabled", false);
     $('#id_detail_preparation_form textarea').prop("disabled", false);
     $('#id_detail_preparation_form select').prop("disabled", false);
+    $('#id_detail_preparation_form .btn').prop("disabled", false);
     $('#id_detail_preparation_modal').modal('show');
 
 };
@@ -366,34 +368,146 @@ function handleFileSelect(evt) {
     return false;
 }
 
-function loadEconomat(e) {
-    //e.target // newly activated tab
-    //e.relatedTarget // previous active tab
-
+function displayEconomat(e) {
     var economat=$("#id_economat_tab");
     economat.empty();
-    var d1 = $("<div class=\"row\"</div>");
-    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-3 col-sm-2\"><span>CODE</span></div>");
-    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-3 col-sm-6\"><span>INGREDIENT</span></div>");
-    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>QUANTITE (g)</span></div>");
-    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>COUT (&euro;)</span></div>");
+    var d1 = $("<div class=\"no-margin row font-weight-bold text-center text-uppercase\"</div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-3 col-sm-2\"><span>code</span></div>");
+    d1.append("<div class=\"colprep col-lg-6 col-xs-6 col-md-3 col-sm-6\"><span>ingredient</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>quantité (g)</span></div>");
+    d1.append("<div class=\"colprep col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>coût (&euro;)</span></div>");
     economat.append(d1);
     var preparation = getPreparation(current_no_preparation);
-    preparation.valeurs.ingredients.forEach(function(element) {
-        d1 = $("<div class=\"row\"></div>");
+    preparation.nutrition.ingredients.forEach(function(element) {
+        d1 = $("<div class=\"no-margin row\"></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
+        d1.append("<div class=\"colprep col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.quantite + "</span></div>");
+        d1.append("<div class=\"colprep col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.cout + "</span></div>");
+        economat.append(d1);
+    });
+}
+
+function displayIngredients() {
+    var preparation = getPreparation(current_no_preparation);
+    // déjà chargées ?
+    if (!preparation.ingredients) {
+        loadIngredients(preparation);
+        return;
+    }
+    
+    var ingredients=$("#id_ingredients_tab");
+    ingredients.empty();
+    var d1 = $("<div class=\"no-margin row font-weight-bold text-center text-uppercase\"</div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-3 col-sm-2\"><span>code</span></div>");
+    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-3 col-sm-6\"><span>ingredient</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>quantité (g)</span></div>");
+
+    ingredients.append(d1);
+    preparation.ingredients.forEach(function(element) {
+        d1 = $("<div class=\"no-margin row\" ></div>");
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
         d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.quantite + "</span></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.cout + "</span></div>");
-        economat.append(d1);
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\"" + element.quantite + "\"></div>");
+        ingredients.append(d1);
+    });
+
+    d1 = $("<div class=\"no-margin row\" id=\"id_ajout_ingredients\"></div>");
+    var d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    var s1 = $("<select style=\"width:140px;\" id=\"id_ajout_ingredient_categorie\"></select>");
+    for (i=0; i < categories_ingredients.length; i++) {
+        s1.append('<option value="' + categories_ingredients[i].value + '">' + categories_ingredients[i].description + '</option>');
+    }
+
+    d2.append(s1);
+    d1.append(d2);
+    
+    d2 = $("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"></div>");
+    s1 = $("<select style=\"width:350px;\" id=\"id_ajout_ingredient_id\"><option selected value=\"NONE\">Choisir..</option></select>");
+    d2.append(s1);
+    d1.append(d2);
+
+    d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    s1 = $("<input type=\"text\" class=\"form-control input-sm\" value=\"0\" >");
+    d2.append(s1);
+    d1.append(d2);
+
+    d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    s1 = $("<input class=\"form-control \" value=\"add\" type=\"button\" >");
+    d2.append(s1);
+    d1.append(d2);
+
+    ingredients.append(d1);
+
+    $('#id_ajout_ingredient_categorie').on('change', function (e) {
+        var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;
+        var csrftoken = getCookie('csrftoken');
+        var u = "/mesrecettes/ingredient/all/categorie/".concat(valueSelected);
+        // message.text(" ");    
+        $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+        $.ajax({
+            'type' : 'get',
+            'url' : u,
+            'data' : "",
+            'success' : function(response)
+            {
+                var select = $("#id_ajout_ingredient_id");
+                select.empty();
+                var res = JSON.parse(response);
+                if (res.status == 0) {
+                    select.append('<option value="NONE" selected>Choisir..</option>');
+                    for (var idx=0; idx < res.ingredients.length; idx++) { 
+                        var ingredient = res.ingredients[idx];
+                        select.append('<option value=' + ingredient.id + '>' + ingredient.description + '</option>');
+                    }
+                    select.change();
+                }
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+        });    
+        
+        //
     });
 }
 
 
 
+function loadIngredients(preparation) {
+    
+    var csrftoken = getCookie('csrftoken');
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/all");
+
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'get',
+        'url' : u,
+        'success' : function(json_response)
+        {
+            var reponse = JSON.parse(json_response);
+            if (reponse.status == 0 ) {
+                preparation.ingredients = reponse.elements;
+                displayIngredients();
+            }
+            else {
+                preparation.ingredients = [];
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+        }
+          });    
+}
+
+
 $(document).ready(
     function () {
-        $('a[href="#id_economat_tab"]').on('show.bs.tab', loadEconomat);
+        $('a[href="#id_economat_tab"]').on('show.bs.tab', displayEconomat);
+        $('a[href="#id_ingredients_tab"]').on('show.bs.tab', displayIngredients);
 
 
         $('#id_edit_photo').change(handleFileSelect);

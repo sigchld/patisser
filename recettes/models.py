@@ -4,10 +4,13 @@ Toutes les classes des différents objets qui seront persistés en BD
 """
 
 from __future__ import unicode_literals
+
+import json
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
+from django.core.serializers.json import DjangoJSONEncoder
 
 ACCES = (
     ('PUB', 'public'),
@@ -121,6 +124,24 @@ class Ingredient(models.Model):
 
     categorie = models.ForeignKey('Categorie', on_delete=models.SET_NULL, null=True, blank=True)
 
+    def to_json(self):
+        valeurs = {}
+        valeurs['id'] = self.id
+        valeurs['description'] = self.description
+        valeurs['code'] = self.code
+        valeurs['sel'] = self.sel
+        valeurs['proteines'] = self.proteines
+        valeurs['fibres_alimentaires'] = self.fibres_alimentaires
+        valeurs['glucides'] = self.glucides
+        valeurs['glucides_dont_sucres'] = self.glucides_dont_sucres
+        valeurs['matieres_grasses'] = self.matieres_grasses
+        valeurs['matieres_grasses_saturees'] = self.matieres_grasses_saturees
+        valeurs['kcalories'] = self.kcalories
+        valeurs['kjoules'] = self.kjoules
+        
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+    
+    
     class Meta:
         unique_together = (("owner", "code"),)
 
@@ -141,8 +162,18 @@ class Element(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
+    def to_json(self):
+        valeurs = {}
+        valeurs['element_id'] = self.id;
+        valeurs['preparation_id'] = self.preparation.id
+        valeurs['ingredient_id'] = self.ingredient.id
+        valeurs['description'] = self.ingredient.description
+        valeurs['code'] = self.ingredient.code
+        valeurs['quantite'] = self.quantite
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+    
     def __unicode__(self):
-        return "%s %s" % (self.ingredient.code,self.quantite)
+        return "%s %s" % (self.ingredient.code, self.quantite)
 
 class EtapePreparation(models.Model):
     """

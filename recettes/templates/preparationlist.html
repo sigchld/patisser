@@ -388,8 +388,8 @@
                   
                   <div class="row">
                     <div class="col-lg-12 greybox">
-                      <span class="font-weight-bold">Prix </span>
-                      <input maxlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_preparation_prix_unitaire">
+                      <span class="font-weight-bold">Coût ingredients </span>
+                      <span xlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_preparation_prix_ingredients"></span>
                       <span class="font-weight-bold">&euro;</span>
                       <!-- span> pour </span>
                            <input class="text-right" name="pp" maxlength="8" style="width:8em;" id="id_detail_preparation_prix_poids">
@@ -414,21 +414,30 @@
                 
                 <div class="col-lg-4 col-md-4 col-xs-4 col-sm-4">
                   <div class="row">
-                    <div class="col-lg-4 col-xs-4">
+                    <div class="col-lg-12 col-xs-12">
                       <span class="font-weight-bold text-center" style="display:block;">Photo</span>
                       <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_preparation_img">
                     </div>
                   </div>
                   <div class="row">
-                    <div class="col-lg-4 col-xs-4">
-                      <span >Catégorie</span>
+                    <div class="col-lg-12 col-xs-12">
+                      <span style="display:block;">Catégorie</span>
                       <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
                         <option value="NONE" selected>Choisir..</option>
                       </select>
-                      <span >Nom</span>
+                      <span style="display:block;">Nom</span>
                       <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
                         <option value="NONE" selected>Choisir..</option>
                       </select>
+                      <span style="display:block;">Nouvelle</span>
+                      <div class="input-group">
+                        <label class="input-group-btn">
+                          <span class="btn btn-primary glyphicon glyphicon-folder-open disabled">
+                            <input type="file" style="display: none;" name="photo" id="id_import_photo" >
+                          </span>
+                        </label>
+                        <input type="text" class="form-control"readonly>
+                      </div>                            
                     </div>
                   </div>                          
                 </div>
@@ -444,13 +453,13 @@
               </div>
 
               <div class="row">                
-                <div class="tab-content">                  
-                  <div class="tab-pane fade greybox" id="id_economat_tab">
+                <div class="tab-content greybox2">                  
+                  <div class="tab-pane fade" id="id_economat_tab">
                     <div class="no-margin row">
                     </div>
                   </div>
 
-                  <div class="tab-pane  fade in active greybox" id="id_nutrition_tab">
+                  <div class="tab-pane  fade in active" id="id_nutrition_tab">
                     <div class="no-margin row">
                       <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">
                         <span>energie</span>
@@ -477,7 +486,7 @@
                         <span>maitères grasses<span>
                       </div>
                       <div>
-                        <input class="form-control input-sm nutrition-input" maxlength="5"  name="matieres_grasses" id="id_detail_preparation_matieres_grasses">
+                        <span id="id_detail_preparation_matieres_grasses"></span>
                         <span>g</span>
                       </div>
                     </div>
@@ -488,7 +497,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_matieres_grasses_saturees_inf"></span -->
-                        <input class="form-control input-sm nutrition-input" maxlength="5" name="matieres_grasses_saturees" id="id_detail_preparation_matieres_grasses_saturees">
+                        <span  id="id_detail_preparation_matieres_grasses_saturees"></span>
                         <span>g</span>
                       </div>
                     </div>
@@ -499,7 +508,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_glucides_inf"></span -->
-                        <input class="form-control input-sm nutrition-input" maxlength="5" name="glucides" id="id_detail_preparation_glucides">
+                        <span id="id_detail_preparation_glucides"></span>
                         <span> g<span>
                       </div>
                     </div>
@@ -510,7 +519,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_glucides_dont_sucres_inf"></span -->
-                        <input class="form-control input-sm nutrition-input" maxlength="5" name="glucides_dont_sucres" id="id_detail_preparation_glucides_dont_sucres">
+                        <span  id="id_detail_preparation_glucides_dont_sucres"></span>
                         <span>g</span>
                       </div>
                     </div>
@@ -521,7 +530,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_fibre_inf"></span -->
-                        <input class="form-control input-sm nutrition-input" maxlength="5" name="fibres_alimentaires" id="id_detail_preparation_fibres"></span>
+                        <span id="id_detail_preparation_fibres"></span>
                       <span> g</span>
                       </div>
                     </div>
@@ -532,7 +541,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_proteines_inf"></span -->
-                        <input class="form-control input-sm nutrition-input" maxlength="5" name="proteines"  id="id_detail_preparation_proteines">
+                        <span  id="id_detail_preparation_proteines"></span>
                         <span> g</span>
                       </div>
                     </div>
@@ -543,12 +552,14 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_sel_inf"></span -->
-                        <input class="form-control input-sm nutrition-input" maxlength="5" name="sel" id="id_detail_preparation_sel">
+                        <span  id="id_detail_preparation_sel"></span>
                         <span>g</span>
                       </div>
                     </div>
                   </div>
                   <div class="tab-pane" id="id_ingredients_tab">
+                    <div class="no-margin row">
+                    </div>
                   </div>
                   <div class="tab-pane" id="id_etapes_tab">
                   </div>
@@ -601,6 +612,15 @@
   "description" : "{{categorie.1}}",
   };
   {% endfor %}
+
+  var categories_ingredients = [];
+  {% for categorie in  categories_ingredients %}
+  categories_ingredients[ {{ forloop.counter0 }} ] = {
+  "value" : "{{categorie.0}}",
+  "description" : "{{categorie.1}}",
+  };
+  {% endfor %}
+  
   
   var preparations = {};
   {% for preparation in preparations %}

@@ -45,16 +45,18 @@ urlpatterns = [
 
     url(r'^listingredients/owner/(?P<owner>[a-z]+)$', views.list_ingredients, name='list_ingredients_owner'),
     url(r'^listingredients/acces/(?P<acces>[a-z]+)$', views.list_ingredients, name='list_ingredients_acces'),
-    url(r'^ingredient/(?P<ingredient_id>[0-9a-zA-Z._ -]+)$', ingredientrest.IngredientRest.as_view(), name='ingredient'),
+    url(r'^ingredient/(?P<ingredient_id>[0-9]+)$', ingredientrest.IngredientRest.as_view(), name='ingredient'),
+    url(r'^ingredient/(?P<ingredient_id>all)/categorie/(?P<categorie_id>[0-9]+)$', ingredientrest.IngredientRest.as_view(), name='ingredient_cat'),
     url(r'^ingredient/$', ingredientrest.IngredientRest.as_view(), name='ingredient_empty'),
 
     url(r'^listp$', views.list_preparations, name='list_preparations'),
     url(r'^listp$', views.list_ingredients, name='preparation_create'),
     url(r'^listpreparations/owner/(?P<owner>[a-z]+)$', views.list_preparations, name='list_preparations_owner'),
     url(r'^listpreparations/acces/(?P<acces>[a-z]+)$', views.list_preparations, name='list_preparations_acces'),
-    url(r'^preparation/(?P<ingredient_id>[0-9a-zA-Z._ -]+)$', ingredientrest.IngredientRest.as_view(), name='preparation'),
+    url(r'^preparation/(?P<ingredient_id>[0-9]+)$', ingredientrest.IngredientRest.as_view(), name='preparation'),
     url(r'^preparation/$', ingredientrest.IngredientRest.as_view(), name='preparation_empty'),
-    url(r'^preparation/energie/(?P<preparation_id>[0-9a-zA-Z._ -]+)$', preparationrest.PreparationRest.as_view(), name='preparation_empty'),
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/nutrition/$', preparationrest.PreparationEnergieEconomat.as_view(), name='preparation_empty'),
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/(?P<element_id>[0-9a-zA-Z._ -]+)?$', preparationrest.PreparationElement.as_view(), name='preparation_empty'),
 
     url(r'^detailp/(?P<preparation_id>[0-9]+)$', views.detail_preparation, name='detail_preparation'),
 
