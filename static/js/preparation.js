@@ -402,19 +402,23 @@ function displayIngredients() {
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-3 col-sm-2\"><span>code</span></div>");
     d1.append("<div class=\"col-lg-6 col-xs-6 col-md-3 col-sm-6\"><span>ingredient</span></div>");
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>quantité (g)</span></div>");
-
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
     ingredients.append(d1);
+    
     preparation.ingredients.forEach(function(element) {
         d1 = $("<div class=\"no-margin row\" ></div>");
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
         d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\"" + element.quantite + "\"></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
+                  + element.quantite + "\"></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+
         ingredients.append(d1);
     });
 
-    d1 = $("<div class=\"no-margin row\" id=\"id_ajout_ingredients\"></div>");
+    d1 = $("<div class=\"no-margin row\" id=\"id_add_ingredients_div\"></div>");
     var d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
-    var s1 = $("<select style=\"width:140px;\" id=\"id_ajout_ingredient_categorie\"></select>");
+    var s1 = $("<select style=\"width:140px;\" id=\"id_add_ingredient_categorie\"></select>");
     for (i=0; i < categories_ingredients.length; i++) {
         s1.append('<option value="' + categories_ingredients[i].value + '">' + categories_ingredients[i].description + '</option>');
     }
@@ -423,23 +427,58 @@ function displayIngredients() {
     d1.append(d2);
     
     d2 = $("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"></div>");
-    s1 = $("<select style=\"width:350px;\" id=\"id_ajout_ingredient_id\"><option selected value=\"NONE\">Choisir..</option></select>");
+    s1 = $("<select style=\"width:350px;\" id=\"id_add_ingredient_id\"><option selected value=\"NONE\">Choisir..</option></select>");
     d2.append(s1);
     d1.append(d2);
 
     d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
-    s1 = $("<input type=\"text\" class=\"form-control input-sm\" value=\"0\" >");
+    s1 = $("<input id=\"id_add_ingredient_quantite\" type=\"text\" class=\"form-control input-sm\" value=\"0\" >");
     d2.append(s1);
     d1.append(d2);
 
     d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
-    s1 = $("<input class=\"form-control \" value=\"add\" type=\"button\" >");
+    s1 = $("<a href=\"#\" class=\"text-success\" id=\"id_add_ingredient_button\"><span class=\"glyphicon glyphicon-plus-sign\"></span> ajouter</a>");
     d2.append(s1);
     d1.append(d2);
 
     ingredients.append(d1);
 
-    $('#id_ajout_ingredient_categorie').on('change', function (e) {
+    $("#id_add_ingredient_button").click( function(){
+        var categorie = $("#id_add_ingredient_categorie").val();
+        var quantite = $("#id_add_ingredient_quantite").val();
+
+        var ingredient_id = $("#id_add_ingredient_id").val();
+        var text = $("#id_add_ingredient_id option[value='" + ingredient_id + "'").text();
+        
+        if (categorie != "NONE" && ingredient_id != "NONE") {
+            var ingredients=$("#id_add_ingredients_div");
+            var d1 = $("<div class=\"no-margin row\" ></div>");
+            d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + "??" + "</span></div>");
+            d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + text + "</span></div>");
+            d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
+                      + quantite + "\"></div>");
+            d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+
+            $(d1).insertBefore("#id_add_ingredients_div");
+            
+            //TODO:optimiser
+            $('.add_ingredient_remove').on('click', function (e) {
+                $(this).parent().parent().remove();
+            });
+
+            // reset des select
+            $("#id_add_ingredient_categorie option[value='NONE']").prop("selected", true);
+            var select = $("#id_add_ingredient_id").empty();
+            select.append("<option selected value=\"NONE\">Choisir..</option></select>");
+        }
+
+    });
+    
+    $('.add_ingredient_remove').on('click', function (e) {
+        $(this).parent().parent().remove();
+    });
+    
+    $('#id_add_ingredient_categorie').on('change', function (e) {
         var optionSelected = $("option:selected", this);
         var valueSelected = this.value;
         var csrftoken = getCookie('csrftoken');
@@ -452,7 +491,7 @@ function displayIngredients() {
             'data' : "",
             'success' : function(response)
             {
-                var select = $("#id_ajout_ingredient_id");
+                var select = $("#id_add_ingredient_id");
                 select.empty();
                 var res = JSON.parse(response);
                 if (res.status == 0) {
