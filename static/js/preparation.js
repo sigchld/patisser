@@ -388,6 +388,92 @@ function displayEconomat(e) {
     });
 }
 
+function addIngredientSave(message, ingredient, quantite) {
+    var csrftoken = getCookie('csrftoken');
+    var preparation = getPreparation(current_no_preparation);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/");
+
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'put',
+        'dataType': 'json',
+        'contentType': "application/json;charset=utf-8",
+        'url' : u,
+        'data' : JSON.stringify({ ingredient_id : ingredient.id, quantite : quantite }),
+        'success' : function(response)
+        {
+            var reponse = JSON.parse(response);
+            alert(reponse.status);
+            if (reponse.status == 0) {
+                var ing = reponse.ingredient;
+                var ingredients=$("#id_add_ingredients_div");
+                var d1 = $("<div class=\"no-margin row\" ></div>");
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + ingredient.code + "</span></div>");
+                d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + ingredient.description + "</span></div>");
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
+                          + quantite + "\"></div>");
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+                
+                $(d1).insertBefore("#id_add_ingredients_div");
+        
+                //TODO:optimiser
+                $('.add_ingredient_remove').on('click', function (e) {
+                    $(this).parent().parent().remove();
+                });
+                    
+                // reset des select
+                $("#id_add_ingredient_categorie option[value='NONE']").prop("selected", true);
+                var select = $("#id_add_ingredient_id").empty();
+                select.append("<option selected value=\"NONE\">Choisir..</option></select>");
+                
+                // reset valeur
+                $("#id_add_ingredient_quantite").val(0);
+                }
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+        });    
+}
+
+function addIngredient() {
+    var categorie = $("#id_add_ingredient_categorie").val();
+    var quantite = $("#id_add_ingredient_quantite").val();
+    
+    var ingredient_id = $("#id_add_ingredient_id").val();
+    var text = $("#id_add_ingredient_id option[value='" + ingredient_id + "'").text();
+    var message = $("#id_edit_preparation_message");
+    
+    if (categorie != "NONE" && ingredient_id != "NONE") {
+
+        var csrftoken = getCookie('csrftoken');
+        var u = "/mesrecettes/ingredient/".concat(ingredient_id);
+        message.text(" ");    
+        $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+        $.ajax({
+            'type' : 'get',
+            'url' : u,
+            'data' : "",
+            'success' : function(response)
+            {
+                var reponse = JSON.parse(response);
+                if (reponse.status == 0) {
+                    addIngredientSave(message, reponse.ingredient, quantite);
+                }
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+        });    
+    }
+}
+
+//
+// Affichage des ingrédients
+// Ajout Suppression 
 function displayIngredients() {
     var preparation = getPreparation(current_no_preparation);
     // déjà chargées ?
@@ -443,36 +529,7 @@ function displayIngredients() {
 
     ingredients.append(d1);
 
-    $("#id_add_ingredient_button").click( function(){
-        var categorie = $("#id_add_ingredient_categorie").val();
-        var quantite = $("#id_add_ingredient_quantite").val();
-
-        var ingredient_id = $("#id_add_ingredient_id").val();
-        var text = $("#id_add_ingredient_id option[value='" + ingredient_id + "'").text();
-        
-        if (categorie != "NONE" && ingredient_id != "NONE") {
-            var ingredients=$("#id_add_ingredients_div");
-            var d1 = $("<div class=\"no-margin row\" ></div>");
-            d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + "??" + "</span></div>");
-            d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + text + "</span></div>");
-            d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
-                      + quantite + "\"></div>");
-            d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
-
-            $(d1).insertBefore("#id_add_ingredients_div");
-            
-            //TODO:optimiser
-            $('.add_ingredient_remove').on('click', function (e) {
-                $(this).parent().parent().remove();
-            });
-
-            // reset des select
-            $("#id_add_ingredient_categorie option[value='NONE']").prop("selected", true);
-            var select = $("#id_add_ingredient_id").empty();
-            select.append("<option selected value=\"NONE\">Choisir..</option></select>");
-        }
-
-    });
+    $("#id_add_ingredient_button").click(addIngredient);
     
     $('.add_ingredient_remove').on('click', function (e) {
         $(this).parent().parent().remove();

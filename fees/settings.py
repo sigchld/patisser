@@ -53,7 +53,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'fees.urls'
-
+APPEND_SLASH = True
 
 # https://www.webforefront.com/django/customizedjangotemplates.html
 #            'string_if_invalid': InvalidTemplateVariable("%s"),

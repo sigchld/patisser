@@ -104,10 +104,13 @@ class PreparationEnergieEconomat(View):
 
 class PreparationElement(View):
     """
-    REst module pour les elements dúne préparation
+    REst module pour les elements d'une préparation
     """
     def __init__(self):
-        self.http_method_names = ['get']
+        """
+        """
+        View.__init__(self)
+        self.http_method_names = ['get', 'put']
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         logger.warning(
@@ -137,6 +140,35 @@ class PreparationElement(View):
         res = res + "], \"nb_elements\":" + str(nb_elements) + "}"
         return res
 
+    def put(self, request, preparation_id, element_id=None):
+        """
+        /preparation/no/elenent/no|none|all
+        """
+        if not preparation_id or not preparation_id.isdigit() or element_id is not None:
+            return HttpResponse("{ \"status\":-1 }")
+
+        preparation_id = int(preparation_id)
+        try:
+            preparation = Preparation.objects.get(pk=preparation_id)
+            body = json.loads(request.body)
+            logger.error("//////////////////////////////////// Loading preparation ingredient body {}".format(body))
+            ingredient = Ingredient.objects.get(pk=body['ingredient_id'])
+        except Preparation.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-2, \"message\": \"préparation inconnue\" }")
+        except Ingredient.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-3, \"message\": \"ingredient inconnu\" }")
+
+        element = Element()
+        element.ingredient = ingredient
+        element.quantite = body['quantite']
+        element.preparation = preparation
+        element.save()
+        preparation.elements.add(element)
+        preparation.save()
+        return HttpResponse("{\"status\":0, \"message\": \"ok\"}")
+    
     #
     def get(self, request, preparation_id, element_id=None):
         """
