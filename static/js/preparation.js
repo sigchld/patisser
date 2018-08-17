@@ -388,6 +388,36 @@ function displayEconomat(e) {
     });
 }
 
+function removeElement(href, message) {
+    var element_id = $(href).data('elem');
+    var csrftoken = getCookie('csrftoken');
+    var preparation = getPreparation(current_no_preparation);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/").concat(element_id);
+    var message = $("#id_edit_preparation_message");
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'delete',
+        'dataType': 'json',
+        'contentType': "application/json;charset=utf-8",
+        'url' : u,
+        'data' : JSON.stringify({ ingredient_id : element_id}),
+        'success' : function(response)
+        {
+            if (response.status == 0) {
+                $(href).parent().parent().remove();
+                preparation.nutrition = undef;
+                preparation.ingredients = undef;
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+        }
+    });    
+}
+
+
 function addIngredientSave(message, ingredient, quantite) {
     var csrftoken = getCookie('csrftoken');
     var preparation = getPreparation(current_no_preparation);
@@ -403,23 +433,21 @@ function addIngredientSave(message, ingredient, quantite) {
         'data' : JSON.stringify({ ingredient_id : ingredient.id, quantite : quantite }),
         'success' : function(response)
         {
-            var reponse = JSON.parse(response);
-            alert(reponse.status);
-            if (reponse.status == 0) {
-                var ing = reponse.ingredient;
+            if (response.status == 0) {
+                var element_id = response.element_id;
                 var ingredients=$("#id_add_ingredients_div");
                 var d1 = $("<div class=\"no-margin row\" ></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + ingredient.code + "</span></div>");
                 d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + ingredient.description + "</span></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
                           + quantite + "\"></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
                 
                 $(d1).insertBefore("#id_add_ingredients_div");
         
                 //TODO:optimiser
                 $('.add_ingredient_remove').on('click', function (e) {
-                    $(this).parent().parent().remove();
+                    removeElement(this, message); 
                 });
                     
                 // reset des select
@@ -429,13 +457,17 @@ function addIngredientSave(message, ingredient, quantite) {
                 
                 // reset valeur
                 $("#id_add_ingredient_quantite").val(0);
-                }
-            },
-            'error': function(jqXHR, textStatus, errorThrown)
-            {
-                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                
+                preparation.nutrition = undef;
+                preparation.ingredients = undef;
+
             }
-        });    
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+        }
+    });    
 }
 
 function addIngredient() {
@@ -455,12 +487,13 @@ function addIngredient() {
         $.ajax({
             'type' : 'get',
             'url' : u,
+            'dataType': 'json',
             'data' : "",
             'success' : function(response)
             {
-                var reponse = JSON.parse(response);
-                if (reponse.status == 0) {
-                    addIngredientSave(message, reponse.ingredient, quantite);
+                //var reponse = JSON.parse(response);
+                if (response.status == 0) {
+                    addIngredientSave(message, response.ingredient, quantite);
                 }
             },
             'error': function(jqXHR, textStatus, errorThrown)
@@ -481,7 +514,7 @@ function displayIngredients() {
         loadIngredients(preparation);
         return;
     }
-    
+    var message = $("#id_edit_preparation_message");
     var ingredients=$("#id_ingredients_tab");
     ingredients.empty();
     var d1 = $("<div class=\"no-margin row font-weight-bold text-center text-uppercase\"</div>");
@@ -497,8 +530,12 @@ function displayIngredients() {
         d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
                   + element.quantite + "\"></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+        // d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
 
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element.element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+        
+
+        
         ingredients.append(d1);
     });
 
@@ -532,7 +569,9 @@ function displayIngredients() {
     $("#id_add_ingredient_button").click(addIngredient);
     
     $('.add_ingredient_remove').on('click', function (e) {
-        $(this).parent().parent().remove();
+        //$(this).parent().parent().remove();
+        //alert($(this).data("elem"));
+        removeElement(this); 
     });
     
     $('#id_add_ingredient_categorie').on('change', function (e) {
@@ -540,7 +579,7 @@ function displayIngredients() {
         var valueSelected = this.value;
         var csrftoken = getCookie('csrftoken');
         var u = "/mesrecettes/ingredient/all/categorie/".concat(valueSelected);
-        // message.text(" ");    
+        message.text(" ");    
         $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
         $.ajax({
             'type' : 'get',

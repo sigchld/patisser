@@ -110,7 +110,7 @@ class PreparationElement(View):
         """
         """
         View.__init__(self)
-        self.http_method_names = ['get', 'put']
+        self.http_method_names = ['get', 'put', 'delete']
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         logger.warning(
@@ -139,7 +139,7 @@ class PreparationElement(View):
             res = res + PreparationElement.element_to_json(element)
         res = res + "], \"nb_elements\":" + str(nb_elements) + "}"
         return res
-
+    
     def put(self, request, preparation_id, element_id=None):
         """
         /preparation/no/elenent/no|none|all
@@ -167,8 +167,36 @@ class PreparationElement(View):
         element.save()
         preparation.elements.add(element)
         preparation.save()
+        return HttpResponse("{{\"status\":0, \"message\": \"ok\", \"element_id\": {}}}".format(element.id))
+
+
+    def delete(self, request, preparation_id=None, element_id=None):
+        """
+        /preparation/preparation_id/elenent/element_id
+        """
+        logger.error("Delete element/{}/{}".format(preparation_id, element_id))
+        if (preparation_id is None) or (not preparation_id.isdigit()) or (element_id is None) or (not element_id.isdigit()):
+            return HttpResponse("{ \"status\":-1, \"message\":\"erreur données\"}")
+
+        preparation_id = int(preparation_id)
+        ingredient_id = int(preparation_id)
+        try:
+            preparation = Preparation.objects.get(pk=preparation_id)
+            element = Element.objects.get(pk=element_id)
+        except Preparation.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-2, \"message\": \"préparation inconnue\" }")
+        except Element.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-3, \"message\": \"ingredient inconnu\" }")
+
+
+        #preparation.elements.delete(element)
+        element.delete()
+        #preparation.save()
         return HttpResponse("{\"status\":0, \"message\": \"ok\"}")
     
+
     #
     def get(self, request, preparation_id, element_id=None):
         """
