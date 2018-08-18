@@ -182,7 +182,7 @@ class EtapePreparation(models.Model):
     preparation = models.ForeignKey('Preparation', related_name='etapes')
     nom = models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
-
+    ordre = models.IntegerField(default=0)
     owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
     acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
 

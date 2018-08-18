@@ -223,7 +223,7 @@
         <td><span >{{preparation.get_acces_display}}</span></td>
         <td style="display:none"><span id="id_preparation_acces_{{preparation.id}}">{{preparation.acces}}</span></td>
         <td>
-	  <a href="javascript:detail_preparation({{forloop.counter0}});" title="détail de l'ingrédient" >
+	  <a href="javascript:ask_detail_preparation({{forloop.counter0}});" title="détail de l'ingrédient" >
             {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
             {% if preparation.photo and preparation.photo.id and preparation.photo.id != '%s' %}
             <img id="id_preparation_img_{{preparation.id}}" src="{% url 'photo' preparation.photo.id %}" >
@@ -253,7 +253,7 @@
           <div class="container-fluid" >
             <div class="row sticky-top" style="text-align:center;"><span id="id_preparation_code_{{preparation.id}}" >{{preparation.code}}</span></div>
             <div class="row" style="text-align:center;height:128px;">
-	      <a href="javascript:detail_preparation({{forloop.counter0}});" title="détail de l'ingrédient" >
+	      <a href="javascript:ask_detail_preparation({{forloop.counter0}});" title="détail de l'ingrédient" >
 
                 {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
             {% if preparation.photo and preparation.photo.id and preparation.photo.id != '%s' %}
@@ -444,11 +444,11 @@
               </div>
               <div class="row">
                 <ul id="diveInfo" class="nav nav-tabs nav-justified" role="tablist">
-                  <li class="active"><a href="#id_nutrition_tab" role="tab" data-toggle="tab">Nutrition</a></li>
+                  <li class="xactive"><a href="#id_nutrition_tab" role="tab" data-toggle="tab">Nutrition</a></li>
                   <li><a href="#id_ingredients_tab" role="tab" data-toggle="tab">Ingredients</a></li>
                   <li><a href="#id_etapes_tab" role="tab" data-toggle="tab">Etapes</a></li>
                   <li><a href="#id_bases_tab" role="tab" data-toggle="tab">Bases</a></li>
-                  <li><a href="#id_economat_tab" role="tab" data-toggle="tab">Economat</a></li>
+                  <li><a href="#id_economat_tab" role="tab" data-toggle="tab">Coût</a></li>
                 </ul>
               </div>
 
@@ -459,7 +459,7 @@
                     </div>
                   </div>
 
-                  <div class="tab-pane  fade in active" id="id_nutrition_tab">
+                  <div class="tab-pane  fade in xactive" id="id_nutrition_tab">
                     <div class="no-margin row">
                       <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">
                         <span>energie</span>
@@ -573,36 +573,31 @@
           </div>
         </div>
         
-        <div class="modal-footer" id="id_detail_preparation_modal_view_footer">
-          <span id="id_edit_preparation_message"><span>
-          <a id="id_detail_preparation_previous" href="#"><span class="step-link glyphicon glyphicon-arrow-left"></span></a>
-	  <a id="id_detail_preparation_next" href="#"><span class="step-link glyphicon glyphicon-arrow-right"></span></a>
-        </div>
-        <div class="modal-footer" id="id_detail_preparation_modal_delete_footer" style="display:none">
-          <div>
+        <div class="modal-footer">
+          <div id="id_preparation_modal_nav_footer">
+            <a id="id_detail_preparation_previous" href="#"><span class="step-link glyphicon glyphicon-arrow-left"></span></a>
+	    <a id="id_detail_preparation_next" href="#"><span class="step-link glyphicon glyphicon-arrow-right"></span></a>
+          </div>
+
+          <div id="id_preparation_modal_delete_footer">
             <span style="display:none;" id="id_delete_preparation_id"></span>
             <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_preparation_abandon" >Abandon</button>
             <button type="button" id="id_delete_preparation" class="btn btn-warning">Suppression</button>
           </div>
-          <div class="alert-error text-center" >
-            <span id="id_delete_preparation_message">&nbsp;</span>
-          </div>
-        </div>
 
-        <div class="modal-footer" id="id_detail_preparation_modal_edit_footer" style="display:none">
-          <div>
+          <div id="id_preparation_modal_edit_footer">
             <span style="display:none;" id="id_edit_preparation_id"></span>
             <button type="button" id="id_edit_preparation" class="btn btn-primary">Enregistrer</button>
           </div>
-          <div class="alert-error text-center" >
-            <span id="id_edit_preparation_message">&nbsp;</span>
+
+          <div class="alert-danger text-center">
+            <p id="id_edit_preparation_message"></p>
           </div>
         </div>
-
       </div>
     </div>
   </div>
-  
+
 <script type="text/javascript" src="{% static "js/preparation.js" %}"></script>
 <script  type="text/javascript">
 

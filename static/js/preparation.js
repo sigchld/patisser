@@ -34,32 +34,35 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
           });    
 }
 
-function displayNutrition(preparation) {
-       $("#id_detail_preparation_kcalories").text(preparation.nutrition.kcalories);
-        $("#id_detail_preparation_kjoules").text(preparation.nutrition.kjoules);
-        
-        $("#id_detail_preparation_matieres_grasses").text(preparation.nutrition.matieres_grasses);
-        $("#id_detail_preparation_matieres_grasses_saturees").text(preparation.nutrition.matieres_grasses_saturees);
-        
-        $("#id_detail_preparation_glucides").text(preparation.nutrition.glucides);
-        $("#id_detail_preparation_glucides_dont_sucres").text(preparation.nutrition.glucides_dont_sucres);
-        
-        $("#id_detail_preparation_fibres").text(preparation.nutrition.fibres_alimentaires);
-        
-        $("#id_detail_preparation_proteines").text(preparation.nutrition.proteines);
-        $("#id_detail_preparation_sel").text(preparation.nutrition.sel);
-        
-        $("#id_detail_preparation_prix_ingredients").text(preparation.nutrition.cout);
-        $("#id_detail_preparation_prix_poids").text(preparation.nutrition.pp);    
-}
-
-function loadNutrition(preparation) {
+function displayNutrition() {
     // déjà chargées ?
-    if (preparation.nutrition) {
-        displayNutrition(preparation);
+    var preparation = getPreparation(current_no_preparation);
+    
+    if (!preparation.nutrition) {
+        loadNutrition(preparation, displayNutrition);
         return;
     }
     
+    $("#id_detail_preparation_kcalories").text(preparation.nutrition.kcalories);
+    $("#id_detail_preparation_kjoules").text(preparation.nutrition.kjoules);
+    
+    $("#id_detail_preparation_matieres_grasses").text(preparation.nutrition.matieres_grasses);
+    $("#id_detail_preparation_matieres_grasses_saturees").text(preparation.nutrition.matieres_grasses_saturees);
+        
+    $("#id_detail_preparation_glucides").text(preparation.nutrition.glucides);
+    $("#id_detail_preparation_glucides_dont_sucres").text(preparation.nutrition.glucides_dont_sucres);
+        
+    $("#id_detail_preparation_fibres").text(preparation.nutrition.fibres_alimentaires);
+    
+    $("#id_detail_preparation_proteines").text(preparation.nutrition.proteines);
+    $("#id_detail_preparation_sel").text(preparation.nutrition.sel);
+        
+    $("#id_detail_preparation_prix_ingredients").text(preparation.nutrition.cout);
+    $("#id_detail_preparation_prix_poids").text(preparation.nutrition.pp);    
+}
+
+function loadNutrition(preparation, affichage) {
+    var message = $("#id_edit_preparation_message");    
     var csrftoken = getCookie('csrftoken');
     var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/nutrition");
 
@@ -73,7 +76,7 @@ function loadNutrition(preparation) {
             if (reponse.status == 0 ) {
                 var valeurs = reponse.valeurs;
                 preparation.nutrition = valeurs;
-                displayNutrition(preparation);
+                affichage(preparation);
             }
            },
            'error': function(jqXHR, textStatus, errorThrown)
@@ -177,10 +180,10 @@ function remplissage_vide() {
     $("#id_detail_preparation_form")[0].reset();    
 }
 
-function detail_preparation(id) {
+function ask_detail_preparation(id) {
     var preparation = getPreparation(id);
     remplissage(preparation);
-    $('#id_detail_preparation_form input').prop("disabled", true);
+    // pour le DEV    $('#id_detail_preparation_form input').prop("disabled", true);
     $('#id_detail_preparation_form textarea').prop("disabled", true);
     $('#id_detail_preparation_form select').prop("disabled", true);
     //TODO: un peut brutal!
@@ -190,19 +193,23 @@ function detail_preparation(id) {
     categorie.empty();
     categorie.append('<option selected value="' + preparation.categorie_categorie + '">' + preparation.categorie_description + '</option>');
     categorie.change();
-    
-    $("#id_detail_preparation_modal_view_footer").css("display", "block");
-    $("#id_detail_preparation_modal_view_header").css("display", "block");
-    $('#id_detail_preparation_modal_delete_footer').css("display", "none");
-    $('#id_detail_preparation_modal_delete_header').css("display", "none");
-    $('#id_detail_preparation_modal_edit_footer').css("display", "none");
-    $('#id_detail_preparation_modal_edit_header').css("display", "none");
-    $('#id_detail_preparation_modal_new_header').css("display", "none");
 
+    $("#id_preparation_modal_nav_footer").show();
+    $('#id_preparation_modal_delete_footer').hide();
+    $('#id_preparation_modal_edit_footer').hide();
 
-    loadNutrition(preparation);
-    $('.nav-tabs a[href="#id_nutrition_tab"]').tab('show')
+    $('#id_detail_preparation_modal_delete_header').hide();
+    $('#id_detail_preparation_modal_new_header').hide();
+    $('#id_detail_preparation_modal_edit_header').hide();
+    $("#id_detail_preparation_modal_view_header").show();
+    $('#id_detail_preparation_modal_new_header').hide();
+
+    $('#id_detail_preparation_form input').prop("disabled", true);
+    $('#id_detail_preparation_form textarea').prop("disabled", true);
+    $('#id_detail_preparation_form select').prop("disabled", true);
+
     $('#id_detail_preparation_modal').modal('show');
+    $('.nav-tabs a[href="#id_nutrition_tab"]').tab('show')
 }
 
 function ask_new_preparation() {
@@ -262,14 +269,14 @@ function ask_delete_preparation(id) {
     var preparation = getPreparation(id);
     remplissage(preparation);
 
-    $("#id_detail_preparation_modal_view_footer").css("display", "none");
-    $("#id_detail_preparation_modal_view_header").css("display", "none");
-    $('#id_detail_preparation_modal_delete_footer').css("display", "block");
+    $("#id_preparation_modal_nav_footer").css("display", "none");
+    $('#id_preparation_modal_delete_footer').css("display", "block");
+    $('#id_preparation_modal_edit_footer').css("display", "none");
+
     $('#id_detail_preparation_modal_delete_header').css("display", "block");
-    $('#id_detail_preparation_modal_edit_footer').css("display", "none");
-    $('#id_detail_preparation_modal_edit_header').css("display", "none");
     $('#id_detail_preparation_modal_new_header').css("display", "none");
-    $('#id_detail_preparation_modal_new_footer').css("display", "none");
+    $('#id_detail_preparation_modal_edit_header').css("display", "none");
+    $("#id_detail_preparation_modal_view_header").css("display", "none");
     $('#id_detail_preparation_modal_new_header').css("display", "none");
 
     $('#id_detail_preparation_form input').prop("disabled", true);
@@ -368,16 +375,24 @@ function handleFileSelect(evt) {
     return false;
 }
 
-function displayEconomat(e) {
+function displayEconomat() {
+
+    var preparation = getPreparation(current_no_preparation);
+    // déjà chargé ?
+    if (!preparation.nutrition) {
+        loadNutrition(preparation, displayEconomat);
+        return;
+    }
+
     var economat=$("#id_economat_tab");
     economat.empty();
     var d1 = $("<div class=\"no-margin row font-weight-bold text-center text-uppercase\"</div>");
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-3 col-sm-2\"><span>code</span></div>");
     d1.append("<div class=\"colprep col-lg-6 col-xs-6 col-md-3 col-sm-6\"><span>ingredient</span></div>");
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>quantité (g)</span></div>");
-    d1.append("<div class=\"colprep col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>coût (&euro;)</span></div>");
+    d1.append("<div class=\"colprep col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>prix (&euro;)</span></div>");
     economat.append(d1);
-    var preparation = getPreparation(current_no_preparation);
+
     preparation.nutrition.ingredients.forEach(function(element) {
         d1 = $("<div class=\"no-margin row\"></div>");
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
@@ -392,7 +407,7 @@ function removeElement(href, message) {
     var element_id = $(href).data('elem');
     var csrftoken = getCookie('csrftoken');
     var preparation = getPreparation(current_no_preparation);
-    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/").concat(element_id);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/").concat(element_id).concat("/");
     var message = $("#id_edit_preparation_message");
     message.text(" ");    
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
@@ -406,8 +421,11 @@ function removeElement(href, message) {
         {
             if (response.status == 0) {
                 $(href).parent().parent().remove();
-                preparation.nutrition = undef;
-                preparation.ingredients = undef;
+                preparation.nutrition = undefined;
+                preparation.ingredients = preparation.ingredients.filter(function(element) {
+                    return element.element_id != element_id;
+                });
+                displayNutrition();
             }
         },
         'error': function(jqXHR, textStatus, errorThrown)
@@ -415,6 +433,39 @@ function removeElement(href, message) {
             message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
         }
     });    
+}
+
+
+function addEventListenerIngredients() {
+    var message = $("#id_edit_preparation_message");
+    
+    $('.add_ingredient_remove').on('click', function (e) {
+        removeElement(this, message); 
+    });
+
+    $('.auto-save').blur(function(e){
+        var myinput = $(this);
+        var timer = $(this).data("timer");
+        if (timer) {
+            clearTimeout(timer);
+            $(this).removeData("timer");
+            updateQTIngredient( $(myinput).data("elem"), $(myinput).val());
+        }
+    });
+
+    $('.auto-save').on('input', function(e) {
+        var myinput = $(this);
+        var oldtimer = $(this).data("timer");
+        if (oldtimer) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout(function(){
+            $(myinput).removeData("timer");
+            updateQTIngredient( $(myinput).data("elem"), $(myinput).val());
+        }, 1000); 
+        $(this).data("timer", timer);
+    });
+
 }
 
 
@@ -433,22 +484,21 @@ function addIngredientSave(message, ingredient, quantite) {
         'data' : JSON.stringify({ ingredient_id : ingredient.id, quantite : quantite }),
         'success' : function(response)
         {
-            if (response.status == 0) {
+            if (response.status != 0) {
+                $(message).text(response.message);
+            }
+            else {
                 var element_id = response.element_id;
                 var ingredients=$("#id_add_ingredients_div");
                 var d1 = $("<div class=\"no-margin row\" ></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + ingredient.code + "</span></div>");
                 d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + ingredient.description + "</span></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm \" value=\""
                           + quantite + "\"></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
                 
                 $(d1).insertBefore("#id_add_ingredients_div");
         
-                //TODO:optimiser
-                $('.add_ingredient_remove').on('click', function (e) {
-                    removeElement(this, message); 
-                });
                     
                 // reset des select
                 $("#id_add_ingredient_categorie option[value='NONE']").prop("selected", true);
@@ -457,15 +507,25 @@ function addIngredientSave(message, ingredient, quantite) {
                 
                 // reset valeur
                 $("#id_add_ingredient_quantite").val(0);
-                
-                preparation.nutrition = undef;
-                preparation.ingredients = undef;
 
+                // forcer le recalcul energie et nutrition
+                preparation.nutrition = undefined;
+                displayNutrition();
+
+                // ajouter le nouvel ingredient à la structure
+                preparation.ingredients.push({'code':ingredient.code,
+                                              'description':ingredient.description,
+                                              'ingredient_id':ingredient.id,
+                                              'preparation_id':preparation.id,
+                                              'element_id':element_id,
+                                              'quantite':quantite});
+
+                addEventListenerIngredients();
             }
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
-            message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            $(message).text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
         }
     });    
 }
@@ -478,7 +538,7 @@ function addIngredient() {
     var text = $("#id_add_ingredient_id option[value='" + ingredient_id + "'").text();
     var message = $("#id_edit_preparation_message");
     
-    if (categorie != "NONE" && ingredient_id != "NONE") {
+    if (categorie != "NONE" && ingredient_id != "NONE" && /^[0-9]+([.][0-9]+)?$/.test(quantite)) {
 
         var csrftoken = getCookie('csrftoken');
         var u = "/mesrecettes/ingredient/".concat(ingredient_id);
@@ -502,16 +562,65 @@ function addIngredient() {
             }
         });    
     }
+    else {
+        $(message).text("saisie erronée");
+    }
+}
+
+
+//
+// MAJ Qt ingredient
+function updateQTIngredient(elem_id, quantite) {
+    var message = $("#id_edit_preparation_message");
+
+    if (! /^[0-9]+([.][0-9]+)?$/.test(quantite)) {
+        console.log("erreur");
+        $(message).text("saisie erronée").fadeOut(2000, function() { $(message).text("").show(); });
+        return;
+    }
+    
+    var csrftoken = getCookie('csrftoken');
+    var preparation = getPreparation(current_no_preparation);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/").concat(elem_id).concat("/");
+    
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'post',
+        'dataType': 'json',
+        'contentType': "application/json;charset=utf-8",
+        'url' : u,
+        'data' : JSON.stringify({ quantite : quantite }),
+        'success' : function(response)
+        {
+            if (response.status != 0) {
+                $(message).text(response.message);
+            }
+            else {
+                preparation.ingredients.forEach(function(element) {
+                    if (element.element_id == elem_id) {
+                        element.quantite = quantite;
+                    }
+                });
+                
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            $(message).text("Erreur Interne, modification perdue");
+        }
+    });
+    
 }
 
 //
 // Affichage des ingrédients
-// Ajout Suppression 
+//
 function displayIngredients() {
     var preparation = getPreparation(current_no_preparation);
     // déjà chargées ?
     if (!preparation.ingredients) {
-        loadIngredients(preparation);
+        loadIngredients(preparation, displayIngredients);
         return;
     }
     var message = $("#id_edit_preparation_message");
@@ -528,14 +637,11 @@ function displayIngredients() {
         d1 = $("<div class=\"no-margin row\" ></div>");
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
         d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input disabled class=\"form-control input-sm \" value=\""
-                  + element.quantite + "\"></div>");
-        // d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save\" value=\""
+                  + element.quantite + "\" data-elem=\"" + element.element_id +"\"></div>");
 
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element.element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
-        
-
-        
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element.element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+               
         ingredients.append(d1);
     });
 
@@ -568,11 +674,7 @@ function displayIngredients() {
 
     $("#id_add_ingredient_button").click(addIngredient);
     
-    $('.add_ingredient_remove').on('click', function (e) {
-        //$(this).parent().parent().remove();
-        //alert($(this).data("elem"));
-        removeElement(this); 
-    });
+    addEventListenerIngredients();
     
     $('#id_add_ingredient_categorie').on('change', function (e) {
         var optionSelected = $("option:selected", this);
@@ -610,11 +712,10 @@ function displayIngredients() {
 }
 
 
-
-function loadIngredients(preparation) {
+function loadIngredients(preparation, affichage) {
     
     var csrftoken = getCookie('csrftoken');
-    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/all");
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/all/");
 
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
     $.ajax({
@@ -625,7 +726,7 @@ function loadIngredients(preparation) {
             var reponse = JSON.parse(json_response);
             if (reponse.status == 0 ) {
                 preparation.ingredients = reponse.elements;
-                displayIngredients();
+                affichage();
             }
             else {
                 preparation.ingredients = [];
@@ -641,8 +742,10 @@ function loadIngredients(preparation) {
 
 $(document).ready(
     function () {
+        $('[data-toggle="tooltip"]').tooltip(); 
         $('a[href="#id_economat_tab"]').on('show.bs.tab', displayEconomat);
         $('a[href="#id_ingredients_tab"]').on('show.bs.tab', displayIngredients);
+        $('a[href="#id_nutrition_tab"]').on('show.bs.tab', displayNutrition);
 
 
         $('#id_edit_photo').change(handleFileSelect);
