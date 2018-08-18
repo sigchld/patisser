@@ -313,25 +313,25 @@ class PreparationEtape(View):
 
 
     @staticmethod
-    def element_to_json(element):
-        return element.to_json()
+    def etape_to_json(etape):
+        return etape.to_json()
 
     @staticmethod
-    def elements_to_json_response(elements):
-        nb_elements = 0
+    def etape_to_json_response(etapes):
+        nb_etapes = 0
         # {{ \"status\":0, \"message\": \"ok\", \"nb_elements\" : 1, \"elements\":[{}] }}".format(json_string))
-        res = "{ \"status\":0, \"message\": \"ok\",  \"elements\": ["
+        res = "{ \"status\":0, \"message\": \"ok\",  \"etapes\": ["
         first = True
-        for element in elements:
+        for etape in etapes:
             if first:
                 first = False
             else:
                 res = res + ","
-            nb_elements += 1
-            res = res + PreparationElement.element_to_json(element)
-        res = res + "], \"nb_elements\":" + str(nb_elements) + "}"
+            nb_etapes += 1
+            res = res + PreparationEtape.etape_to_json(etape)
+        res = res + "], \"nb_etapes\":" + str(nb_etapes) + "}"
         return res
-    
+
     def put(self, request, preparation_id, etape_id=None):
         """
         /preparation/no/etape/
@@ -370,10 +370,10 @@ class PreparationEtape(View):
             return HttpResponse("{ \"status\":-1, \"message\":\"erreur données\"}")
 
         preparation_id = int(preparation_id)
-        ingredient_id = int(preparation_id)
+        etape_id = int(etape_id)
         try:
             preparation = Preparation.objects.get(pk=preparation_id)
-            element = EtapePreparation.objects.get(pk=etape_id)
+            etape = EtapePreparation.objects.get(pk=etape_id)
         except Preparation.DoesNotExist:
             logger.error("Loading preparation inconnue/{}".format(preparation_id))
             return HttpResponse("{ \"status\":-2, \"message\": \"préparation inconnue\" }")
@@ -391,19 +391,20 @@ class PreparationEtape(View):
     #
     def get(self, request, preparation_id, etape_id=None):
         """
-        /preparation/preparation_id/etape/etape_id|none|all
+        /preparation/preparation_id/etape/etape_id/
         """
         if not preparation_id or not preparation_id.isdigit():
             return HttpResponse("{ \"status\":-1 }")
 
         preparation_id = int(preparation_id)
-        if element_id is not None and element_id.isdigit():
+        if etape_id is not None and etape_id.isdigit():
             try:
-                element = Element.objects.get(pk=element_id)
-                if element.preparation.id != preparation_id:
+                etape_id = int(etape_id)
+                etape = EtapePreparation.objects.get(pk=etape_id)
+                if etape.preparation.id != preparation_id:
                     return HttpResponse("{{ \"status\": {} }}".format(-1))
-                response = PreparationElement.elements_to_json_response([element])
-            except Element.DoesNotExist:
+                response = PreparationElement.elements_to_json_response([etape])
+            except EtapePreparation.DoesNotExist:
                 return HttpResponse("{ \"status\":-2 }")
             
             return HttpResponse(response)
@@ -430,8 +431,6 @@ class PreparationEtape(View):
             return HttpResponse("{ \"status\":-, \"message\": \"erreur interne\" }")
 
         #for element in preparation.elements:
-        response = PreparationElement.elements_to_json_response(preparation.elements.all())
+        response = PreparationEtape.etape_to_json_response(preparation.etapes.all())
         #json_string = json.dumps(preparation.elements, cls=DjangoJSONEncoder)
         return HttpResponse(response)
-    
-

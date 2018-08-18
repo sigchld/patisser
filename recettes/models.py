@@ -171,7 +171,7 @@ class Element(models.Model):
         valeurs['code'] = self.ingredient.code
         valeurs['quantite'] = self.quantite
         return json.dumps(valeurs, cls=DjangoJSONEncoder)
-    
+
     def __unicode__(self):
         return "%s %s" % (self.ingredient.code, self.quantite)
 
@@ -189,6 +189,15 @@ class EtapePreparation(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
+    def to_json(self):
+        valeurs = {}
+        valeurs['etape_id'] = self.id;
+        valeurs['preparation_id'] = self.preparation.id
+        valeurs['description'] = self.description
+        valeurs['nom'] = self.nom
+        valeurs['ordre'] = self.ordre
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+    
     def __unicode__(self):
         return self.nom
 

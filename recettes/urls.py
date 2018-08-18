@@ -59,6 +59,11 @@ urlpatterns = [
     url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/$', preparationrest.PreparationElement.as_view(), name='preparation_element'),
     url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/(?P<element_id>[0-9a-zA-Z._ -]+)/$', preparationrest.PreparationElement.as_view(), name='preparation_element'),    
 
+
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/etape/$', preparationrest.PreparationEtape.as_view(), name='preparation_element'),
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/etape/(?P<etape_id>[0-9a-zA-Z._ -]+)/$', preparationrest.PreparationEtape.as_view(), name='preparation_element'),    
+
+    
     url(r'^detailp/(?P<preparation_id>[0-9]+)$', views.detail_preparation, name='detail_preparation'),
 
     url('^categories$', views.get_categorie, name='get_category'),

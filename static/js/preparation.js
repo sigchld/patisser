@@ -493,7 +493,7 @@ function addIngredientSave(message, ingredient, quantite) {
                 var d1 = $("<div class=\"no-margin row\" ></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + ingredient.code + "</span></div>");
                 d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + ingredient.description + "</span></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm \" value=\""
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save\" value=\""
                           + quantite + "\"></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
                 
@@ -602,6 +602,10 @@ function updateQTIngredient(elem_id, quantite) {
                         element.quantite = quantite;
                     }
                 });
+
+                // forcer le recalcul energie et nutrition
+                preparation.nutrition = undefined;
+                displayNutrition();
                 
             }
         },
