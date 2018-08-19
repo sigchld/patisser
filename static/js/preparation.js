@@ -9,7 +9,7 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
     $.ajax({
         'type' : 'get',
         'url' : u,
-           'success' : function(response)
+        'success' : function(response)
            {
                select.empty();
                select.append('<option value="NONE" selected>Choisir..</option>');
@@ -27,11 +27,17 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
 
                //select.change();
            },
-           'error': function(jqXHR, textStatus, errorThrown)
-           {
-               message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
-           }
-          });    
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+            
+        }
+    });    
 }
 
 function displayNutrition() {
@@ -70,7 +76,7 @@ function loadNutrition(preparation, affichage) {
     $.ajax({
         'type' : 'get',
         'url' : u,
-           'success' : function(response)
+        'success' : function(response)
         {
             var reponse = JSON.parse(response);
             if (reponse.status == 0 ) {
@@ -78,12 +84,17 @@ function loadNutrition(preparation, affichage) {
                 preparation.nutrition = valeurs;
                 affichage(preparation);
             }
-           },
-           'error': function(jqXHR, textStatus, errorThrown)
-           {
-               message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
-           }
-          });    
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });    
     
 }
 
@@ -97,27 +108,32 @@ function loadCategoriesAtWork(groupe, message, select, current) {
         'type' : 'post',
         'url' : u,
         'data' : "groupe=".concat(groupe),
-           'success' : function(response)
-           {
-               select.empty();
-               var res = JSON.parse(response).message;
-               select.append('<option value="NONE" selected>Choisir..</option>');
-               for (var idx=0; idx < res.length; idx++) { 
-                   var element = res[idx];
-                   if (element.categorie == current) {
-                       select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
-                       select.val(current);
-                   } else {
-                       select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
-                   }
-               }
-               select.change();
-           },
-           'error': function(jqXHR, textStatus, errorThrown)
-           {
-               message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
-           }
-          });    
+        'success' : function(response)
+        {
+            select.empty();
+            var res = JSON.parse(response).message;
+            select.append('<option value="NONE" selected>Choisir..</option>');
+            for (var idx=0; idx < res.length; idx++) { 
+                var element = res[idx];
+                if (element.categorie == current) {
+                    select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
+                    select.val(current);
+                } else {
+                    select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+                }
+            }
+            select.change();
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });    
 }
 
 
@@ -430,7 +446,12 @@ function removeElement(href, message) {
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
-            message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
         }
     });    
 }
@@ -443,7 +464,7 @@ function addEventListenerIngredients() {
         removeElement(this, message); 
     });
 
-    $('.auto-save').blur(function(e){
+    $('.auto-save-ingredient').blur(function(e){
         var myinput = $(this);
         var timer = $(this).data("timer");
         if (timer) {
@@ -453,7 +474,7 @@ function addEventListenerIngredients() {
         }
     });
 
-    $('.auto-save').on('input', function(e) {
+    $('.auto-save-ingredient').on('input', function(e) {
         var myinput = $(this);
         var oldtimer = $(this).data("timer");
         if (oldtimer) {
@@ -493,7 +514,7 @@ function addIngredientSave(message, ingredient, quantite) {
                 var d1 = $("<div class=\"no-margin row\" ></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + ingredient.code + "</span></div>");
                 d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + ingredient.description + "</span></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save\" value=\""
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-ingredient\" value=\""
                           + quantite + "\"></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
                 
@@ -525,7 +546,12 @@ function addIngredientSave(message, ingredient, quantite) {
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
-            $(message).text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
         }
     });    
 }
@@ -558,7 +584,12 @@ function addIngredient() {
             },
             'error': function(jqXHR, textStatus, errorThrown)
             {
-                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                try {
+                    message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                }
+                catch(error) {
+                    message.text("erreur interne");
+                }
             }
         });    
     }
@@ -611,7 +642,12 @@ function updateQTIngredient(elem_id, quantite) {
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
-            $(message).text("Erreur Interne, modification perdue");
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
         }
     });
     
@@ -641,7 +677,7 @@ function displayIngredients() {
         d1 = $("<div class=\"no-margin row\" ></div>");
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
         d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save\" value=\""
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-ingredient\" value=\""
                   + element.quantite + "\" data-elem=\"" + element.element_id +"\"></div>");
 
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element.element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
@@ -707,7 +743,12 @@ function displayIngredients() {
             },
             'error': function(jqXHR, textStatus, errorThrown)
             {
-                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                try {
+                    message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                }
+                catch(error) {
+                    message.text("erreur interne");
+                }
             }
         });    
         
@@ -738,17 +779,303 @@ function loadIngredients(preparation, affichage) {
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
-            message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
         }
-          });    
+    });    
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//                    Gestion TAB Etapes
+///////////////////////////////////////////////////////////////////////////////
+
+//
+// MAJ Etape
+function updateEtape(etape_id, name, val) {
+    var message = $("#id_edit_preparation_message");
+
+    if (name == "ordre" && ! /^[0-9]+$/.test(val)) {
+        console.log("erreur");
+        $(message).text("saisie erronée").fadeOut(2000, function() { $(message).text("").show(); });
+        return;
+    }
+    
+    var csrftoken = getCookie('csrftoken');
+    var preparation = getPreparation(current_no_preparation);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/etape/").concat(etape_id).concat("/");
+    
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'post',
+        'dataType': 'json',
+        'contentType': "application/json;charset=utf-8",
+        'url' : u,
+        'data' : "{\"" + name + "\":" + JSON.stringify(val) + "}", 
+        'success' : function(response)
+        {
+            if (response.status != 0) {
+                $(message).text(response.message);
+            }
+            else {
+                preparation.etapes.forEach(function(etape) {
+                    if (etape.etape_id == etape_id) {
+                        etape.nom = nom;
+                    }
+                });
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });
+    
+}
+
+function removeEtape(href, message) {
+    var etape_id = $(href).data('etape');
+    var csrftoken = getCookie('csrftoken');
+    var preparation = getPreparation(current_no_preparation);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/etape/").concat(etape_id).concat("/");
+    var message = $("#id_edit_preparation_message");
+    message.text(" ");
+    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'delete',
+        'dataType': 'json',
+        'contentType': "application/json;charset=utf-8",
+        'url' : u,
+        'data' : JSON.stringify({ etape_id : etape_id}),
+        'success' : function(response)
+        {
+            if (response.status == 0) {
+                $(href).parent().parent().remove();
+                preparation.etapes = preparation.etapes.filter(function(etape) {
+                    return etape.etape_id != etape_id;
+                });
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });    
+}
+
+function buildEtapeDiv(nom, description, ordre, etape_id) {
+    d1 = $("<div class=\"no-margin row\" ></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input type=\"text\" class=\"form-control\ auto-save-etape\" data-name=\"nom\" data-etape=\"" + etape_id +"\"value=\"" + nom + "\"></span></div>");
+    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><textarea class=\"form-control auto-save-etape\" rows=\"2\" data-name=\"description\" data-etape=\"" + etape_id +"\">" + description + "</textarea></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input type=\"text\" class=\"form-control auto-save-etape\" data-name=\"ordre\" data-etape=\"" + etape_id +"\"value=\"" + ordre + "\"></span></div>");
+    
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add_etape_remove\" data-etape=\"" + etape_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+    return d1;           
+}
+
+function displayEtapes() {
+    var preparation = getPreparation(current_no_preparation);
+    // déjà chargées ?
+    if (!preparation.etapes) {
+        loadEtapes(preparation, displayEtapes);
+        return;
+    }
+    var message = $("#id_edit_preparation_message");
+    var etapes=$("#id_etapes_tab");
+    etapes.empty();
+    var d1 = $("<div class=\"no-margin row font-weight-bold text-center text-uppercase\"</div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>nom</span></div>");
+    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>description</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>ordre</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    etapes.append(d1);
+    
+    preparation.etapes.forEach(function(element) {
+        d1 = buildEtapeDiv(element.nom, element.description, element.ordre, element.etape_id);
+        etapes.append(d1);
+    });
+
+    d1 = $("<div class=\"no-margin row\" style=\"margin-top:10px; margin-botom:5px;\" id=\"id_add_etapes_div\"></div>");
+    var d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input id=\"id_add_etape_nom\"  class=\"form-control\" type=\"text\"></div>");
+    d1.append(d2);
+    
+    d2 = $("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"></div>");
+    s1 = $("<textarea id=\"id_add_etape_description\"  class=\"form-control\" rows=\"3\"></textarea>");
+    d2.append(s1);
+    d1.append(d2);
+
+    d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    s1 = $("<input id=\"id_add_etape_ordre\" type=\"text\" class=\"form-control input-sm\" value=\"0\" >");
+    d2.append(s1);
+    d1.append(d2);
+
+    d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    s1 = $("<a href=\"#\" class=\"text-success\" id=\"id_add_etape_button\"><span class=\"glyphicon glyphicon-plus-sign\"></span> ajouter</a>");
+    d2.append(s1);
+    d1.append(d2);
+
+    etapes.append(d1);
+
+    $("#id_add_etape_button").click(addEtape);
+    
+    addEventListenerEtapes();
+
+}
+
+function addEventListenerEtapes() {
+    var message = $("#id_edit_preparation_message");
+    
+    $('.add_etape_remove').on('click', function (e) {
+        removeEtape(this, message); 
+    });
+    
+    $('.auto-save-etape').blur(function(e){
+        var myinput = $(this);
+        var timer = $(this).data("timer");
+        if (timer) {
+            clearTimeout(timer);
+            $(this).removeData("timer");
+            updateEtape( $(myinput).data("etape"), $(myinput).data("name"), $(myinput).val());
+        }
+    });
+
+    $('.auto-save-etape').on('input', function(e) {
+        var myinput = $(this);
+        var oldtimer = $(this).data("timer");
+        if (oldtimer) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout(function(){
+            $(myinput).removeData("timer");
+            updateEtape( $(myinput).data("etape"), $(myinput).data("name"), $(myinput).val());
+        }, 1000); 
+        $(this).data("timer", timer);
+    });
+
+}
+
+
+function addEtape() {
+    var nom = $("#id_add_etape_nom").val();
+    var description = $("#id_add_etape_description").val();
+    var ordre = $("#id_add_etape_ordre").val();
+    var preparation = getPreparation(current_no_preparation);    
+    var message = $("#id_edit_preparation_message");
+    
+    if (/^[0-9]+$/.test(ordre)) {
+        var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/etape/");
+        var csrftoken = getCookie('csrftoken');
+        message.text("");
+        
+        $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+        $.ajax({
+            'type' : 'put',
+            'dataType': 'json',
+            'contentType': "application/json;charset=utf-8",
+            'url' : u,
+            'data' : JSON.stringify({ nom: nom, ordre: ordre, description: description }),
+            'success' : function(response)
+            {
+                if (response.status != 0) {
+                    $(message).text(response.message);
+                }
+                else {
+                    var etape_id = response.etape_id;
+                    d1 = buildEtapeDiv(nom, description, ordre, etape_id);
+                    $(d1).insertBefore("#id_add_etapes_div");
+                                        
+                    // reset valeurs
+                    $("#id_add_etape_ordre").val(0);
+                    $("#id_add_etape_nom").val("");
+                    $("#id_add_etape_description").val("");
+                    
+                    
+                    // ajouter le nouvel ingredient à la structure
+                    preparation.etapes.push({'ordre':ordre,
+                                              'description':description,
+                                              'preparation_id':preparation.id,
+                                              'etape_id':etape_id,
+                                              'nom':nom});
+                    
+                    addEventListenerEtapes();
+                }
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+                try {
+                    message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                }
+                catch(error) {
+                    message.text("erreur interne");
+                }
+            }
+        });
+    }
+    else {
+        $(message).text("saisie erronée");
+    }
+}
+
+function loadEtapes(preparation, affichage) {
+    
+    var csrftoken = getCookie('csrftoken');
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/etape/all/");
+
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'get',
+        'url' : u,
+        'success' : function(json_response)
+        {
+            var reponse = JSON.parse(json_response);
+            if (reponse.status == 0 ) {
+                preparation.etapes = reponse.etapes;
+                affichage();
+            }
+            else {
+                preparation.etapes = [];
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });    
+}
+
+//
+// Au Chargement.......
+//
 $(document).ready(
     function () {
-        $('[data-toggle="tooltip"]').tooltip(); 
+        // activation tooltip bootstrap
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // activation affichage des tabs
         $('a[href="#id_economat_tab"]').on('show.bs.tab', displayEconomat);
         $('a[href="#id_ingredients_tab"]').on('show.bs.tab', displayIngredients);
+        $('a[href="#id_etapes_tab"]').on('show.bs.tab', displayEtapes);
         $('a[href="#id_nutrition_tab"]').on('show.bs.tab', displayNutrition);
 
 
@@ -867,9 +1194,14 @@ $(document).ready(
                     },
                     'error': function(jqXHR, textStatus, errorThrown)
                     {
-                        console.log('Error on modifying preparation:', jqXHR, textStatus, errorThrown);
-	                $("#id_loader").css("display","none");
-                        $("#id_edit_preparation_message").text(JSON.parse(jqXHR.responseText).message);
+                        try {
+                            console.log('Error on modifying preparation:', jqXHR, textStatus, errorThrown);
+	                    $("#id_loader").css("display","none");
+                            $("#id_edit_preparation_message").text(JSON.parse(jqXHR.responseText).message);
+                        }
+                        catch(error) {
+                            $("#id_edit_preparation_message").text("erreur interne");
+                        }
                     }
                 });    
             });
@@ -894,11 +1226,17 @@ $(document).ready(
                     },
                     'error': function(jqXHR, textStatus, errorThrown)
                     {
-                        console.log('Error on deleting preparation:', jqXHR, textStatus, errorThrown);
-	                $("#id_loader").css("display","none");
-	                $("#id_delete_preparation").removeAttr("disabled");
-	                $("#id_delete_preparation_abandon").removeAttr("disabled");
-                        $("#id_delete_preparation_message").text(JSON.parse(jqXHR.responseText).message);
+                        try {
+                            console.log('Error on deleting preparation:', jqXHR, textStatus, errorThrown);
+	                    $("#id_loader").css("display","none");
+	                    $("#id_delete_preparation").removeAttr("disabled");
+	                    $("#id_delete_preparation_abandon").removeAttr("disabled");
+                            $("#id_delete_preparation_message").text(JSON.parse(jqXHR.responseText).message);
+                        }
+                        catch(error) {
+                            $("#id_delete_preparation_message").text("erreur interne");
+                        }
+                        
                     }
                 });    
             });

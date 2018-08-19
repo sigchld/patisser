@@ -175,6 +175,33 @@ class Element(models.Model):
     def __unicode__(self):
         return "%s %s" % (self.ingredient.code, self.quantite)
 
+class BasePreparation(models.Model):
+    """
+    Autres préparations nécessaires á la réalisation d'une préparation
+    Par exemple la crème pâtissière utilisée pour une creme diplomate
+    """
+    quantite = models.IntegerField(default=100)
+    base = models.ForeignKey('Preparation', on_delete=models.SET_NULL, null=True)
+    preparation = models.ForeignKey('Preparation', related_name='bases')
+
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PUB")
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return "{}".format(self.preparation.code)
+
+
+    def to_json(self):
+        valeurs = {}
+        valeurs['base_id'] = self.id;
+        valeurs['preparation_id'] = self.preparation.id
+        valeurs['base_preparation_id'] = self.base.id
+        valeurs['quantite'] = self.quantite
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+    
 class EtapePreparation(models.Model):
     """
     Étapes de réalisation d'une préparation

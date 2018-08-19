@@ -31,7 +31,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.views import View
 from django.views.decorators.http import require_http_methods
 #from django.core.exceptions import DoesNotExist
-from recettes.models import Photo, Ingredient, Categorie, Preparation, Element, EtapePreparation
+from recettes.models import Photo, Ingredient, Categorie, Preparation, Element, EtapePreparation, BasePreparation
 from fees import settings
 from . energie import calcul_ingredients_preparation
 
@@ -219,7 +219,7 @@ class PreparationElement(View):
         return HttpResponse("{{\"status\":0, \"message\": \"ok\", \"element_id\": {}}}".format(element.id))
 
 
-    
+
     def delete(self, request, preparation_id=None, element_id=None):
         """
         /preparation/preparation_id/elenent/element_id
@@ -245,7 +245,7 @@ class PreparationElement(View):
         element.delete()
         #preparation.save()
         return HttpResponse("{\"status\":0, \"message\": \"ok\"}")
-    
+
 
     #
     def get(self, request, preparation_id, element_id=None):
@@ -264,9 +264,9 @@ class PreparationElement(View):
                 response = PreparationElement.elements_to_json_response([element])
             except Element.DoesNotExist:
                 return HttpResponse("{ \"status\":-2 }")
-            
+
             return HttpResponse(response)
-        
+
         # il faut charger la prération pour retrouver les ingredients
         preparation = None
         try:
@@ -294,6 +294,8 @@ class PreparationElement(View):
         return HttpResponse(response)
 
 
+
+
 class PreparationEtape(View):
     """
     REst module pour les elements d'une préparation
@@ -302,7 +304,7 @@ class PreparationEtape(View):
         """
         """
         View.__init__(self)
-        self.http_method_names = ['get', 'put', 'delete']
+        self.http_method_names = ['get', 'put', 'delete', 'post']
 
     def http_method_not_allowed(self, request, *args, **kwargs):
         logger.warning(
@@ -356,9 +358,56 @@ class PreparationEtape(View):
         etape.ordre = body['ordre']
         etape.preparation = preparation
         etape.save()
-        preparation.etape.add(etape)
+        preparation.etapes.add(etape)
         preparation.save()
         return HttpResponse("{{\"status\":0, \"message\": \"ok\", \"etape_id\": {}}}".format(etape.id))
+
+    def post(self, request, preparation_id, etape_id):
+        """
+        /preparation/no/elenent/no|none|all
+        """
+        if not preparation_id or not preparation_id.isdigit() or not etape_id or not etape_id.isdigit():
+            return HttpResponse("{ \"status\":-1 }")
+
+        preparation_id = int(preparation_id)
+        etape_id = int(etape_id)
+
+        try:
+            body = json.loads(request.body)
+
+            preparation = Preparation.objects.get(pk=preparation_id)
+            etape = EtapePreparation.objects.get(pk=etape_id)
+
+            if etape.preparation <> preparation:
+                logger.error("Loading element appartient pas preparation/{}/{}".format(preparation_id, etape_id))
+                return HttpResponse("{ \"status\":-2, \"message\": \"préparation et/ou element erronés\" }")
+
+        except Preparation.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-3, \"message\": \"préparation inconnue\" }")
+        except EtapePreparation.DoesNotExist:
+            logger.error("Loading ingredient inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-4, \"message\": \"element inconnu\" }")
+        except KeyError:
+            logger.error("Loading json erroné/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-5, \"message\": \"erreur json\" }")
+
+        ordre = body.get('ordre', None)
+        if ordre:
+            if re.match("^[0-9]+$", ordre):
+                etape.ordre = ordre
+
+        nom = body.get('nom', None)
+        if nom:
+            etape.nom = nom
+
+        description = body.get('description', None)
+        if description:
+            etape.description = description
+
+        etape.save()
+        return HttpResponse("{{\"status\":0, \"message\": \"ok\", \"etape_id\": {}}}".format(etape.id))
+
 
 
     def delete(self, request, preparation_id=None, etape_id=None):
@@ -433,4 +482,202 @@ class PreparationEtape(View):
         #for element in preparation.elements:
         response = PreparationEtape.etape_to_json_response(preparation.etapes.all())
         #json_string = json.dumps(preparation.elements, cls=DjangoJSONEncoder)
+        return HttpResponse(response)
+
+
+class PreparationBase(View):
+    """
+    REst module pour les préparations de base  d'une préparation
+    """
+    def __init__(self):
+        """
+        """
+        View.__init__(self)
+        self.http_method_names = ['get', 'put', 'post', 'delete']
+
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        logger.warning(
+            'Method Not Allowed (%s): %s', request.method, request.path,
+            extra={'status_code': 405, 'request': request}
+        )
+        return http.HttpResponseNotAllowed(self._allowed_methods(), '{ "message" : "Méthode non supportée" }')
+
+
+    @staticmethod
+    def base_to_json(base):
+        return base.to_json()
+
+    @staticmethod
+    def elements_to_json_response(bases):
+        nb_elements = 0
+        # {{ \"status\":0, \"message\": \"ok\", \"nb_elements\" : 1, \"elements\":[{}] }}".format(json_string))
+        res = "{ \"status\":0, \"message\": \"ok\",  \"bases\": ["
+        first = True
+        for base in bases:
+            if first:
+                first = False
+            else:
+                res = res + ","
+            nb_elements += 1
+            res = res + PreparationBase.base_to_json(base)
+        res = res + "], \"nb_bases\":" + str(nb_elements) + "}"
+        return res
+
+    @staticmethod
+    def is_cycle(preparation, base_preparation):
+        return False
+
+    def put(self, request, preparation_id, base_id=None):
+        """
+        /preparation/no/base/no|none|all
+        """
+        if not preparation_id or not preparation_id.isdigit() or base_id is not None:
+            return HttpResponse("{ \"status\":-1 }")
+
+        preparation_id = int(preparation_id)
+        try:
+            preparation = Preparation.objects.get(pk=preparation_id)
+            body = json.loads(request.body)
+            logger.error("//////////////////////////////////// Loading preparation ingredient body {}".format(body))
+            base_preparation = Preparation.objects.get(pk=body['base_id'])
+            quantite = body['quantite']
+            quantite = quantite.strip()
+
+            if PreparationBase.is_cycle(preparation, base_preparation):
+                return HttpResponse("{ \"status\":-4, \"message\": \"cycle de preparations\" }")
+
+            if not re.match("^[0-9]+([.][0-9]+)?$", quantite):
+                return HttpResponse("{ \"status\":-4, \"message\": \"saisie erronée\" }")
+
+            quantite = int(quantite)
+        except Preparation.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-2, \"message\": \"préparation inconnue\" }")
+        except KeyError:
+            logger.error("Loading json erroné/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-3, \"message\": \"ingredient inconnu\" }")
+
+        base = BasePreparation()
+        base.base = base_preparation
+        base.quantite = quantite
+        base.preparation = preparation
+        base.save()
+        preparation.bases.add(base)
+        preparation.save()
+        return HttpResponse("{{\"status\":0, \"message\": \"ok\", \"base_id\": {}}}".format(base.id))
+
+
+    def post(self, request, preparation_id, base_id):
+        """
+        /preparation/no/base/no|none|all
+        """
+        if not preparation_id or not preparation_id.isdigit() or not base_id or not base_id.isdigit():
+            return HttpResponse("{ \"status\":-1 }")
+
+        preparation_id = int(preparation_id)
+        base_id = int(base_id)
+        
+        try:
+            body = json.loads(request.body)
+            quantite = body['quantite']
+            quantite = quantite.strip()
+            if not re.match("^[0-9]+$", quantite):
+                return HttpResponse("{ \"status\":-1, \"message\": \"quantité erronée\" }")
+
+            quantite = int(quantite)
+            if quantite > 100:
+                return HttpResponse("{ \"status\":-1, \"message\": \"quantité erronée\" }")
+            preparation = Preparation.objects.get(pk=preparation_id)
+            base = BasePreparetion.objects.get(pk=base_id)
+
+            if base.preparation <> preparation:
+                logger.error("Loading base appartient pas preparation/{}/{}".format(preparation_id, base_id))
+                return HttpResponse("{ \"status\":-2, \"message\": \"préparation et/ou base erronés\" }")
+                
+        except Preparation.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-3, \"message\": \"préparation inconnue\" }")
+        except BasePreparation.DoesNotExist:
+            logger.error("Loading base inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-4, \"message\": \"base inconnu\" }")
+        except KeyError:
+            logger.error("Loading json erroné/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-5, \"message\": \"erreur json\" }")
+
+        base.quantite = quantite
+        base.save()
+
+        return HttpResponse("{{\"status\":0, \"message\": \"ok\", \"base_id\": {}}}".format(base.id))
+
+
+
+    def delete(self, request, preparation_id=None, base_id=None):
+        """
+        /preparation/preparation_id/base/base_id/
+        """
+        logger.error("Delete base/{}/{}".format(preparation_id, base_id))
+        if (preparation_id is None) or (not preparation_id.isdigit()) or (base_id is None) or (not base_id.isdigit()):
+            return HttpResponse("{ \"status\":-1, \"message\":\"erreur données\"}")
+
+        preparation_id = int(preparation_id)
+        base_id = int(base_id)
+        try:
+            preparation = Preparation.objects.get(pk=preparation_id)
+            base = BasePreparation.objects.get(pk=base_id)
+        except Preparation.DoesNotExist:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-2, \"message\": \"préparation inconnue\" }")
+        except BasePreparation.DoesNotExist:
+            logger.error("Loading base preparation inconnue/{}".format(base_id))
+            return HttpResponse("{ \"status\":-3, \"message\": \"base inconnu\" }")
+
+
+        #preparation.bases.delete(base)
+        base.delete()
+        #preparation.save()
+        return HttpResponse("{\"status\":0, \"message\": \"ok\"}")
+
+
+    #
+    def get(self, request, preparation_id, base_id=None):
+        """
+        /preparation/no/base/no|none|all
+        """
+        if not preparation_id or not preparation_id.isdigit():
+            return HttpResponse("{ \"status\":-1 }")
+
+        preparation_id = int(preparation_id)
+        if base_id is not None and base_id.isdigit():
+            try:
+                base = BasePreparation.objects.get(pk=base_id)
+                if base.preparation.id != preparation_id:
+                    return HttpResponse("{{ \"status\": {} }}".format(-1))
+                response = PreparationBase.bases_to_json_response([base])
+            except Base.DoesNotExist:
+                return HttpResponse("{ \"status\":-2 }")
+
+            return HttpResponse(response)
+
+        # il faut charger la prération pour retrouver les bases
+        preparation = None
+        try:
+            preparation = Preparation.objects.get(pk=preparation_id)
+        except:
+            logger.error("Loading preparation inconnue/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-2, \"message\": \"préparation inconnue\" }")
+
+        try:
+            if preparation is not None:
+                if preparation.acces != "PUB":
+                    if not request.user.is_authenticated and  preparation.owner.username != request.user.username:
+                        logger.error("Loading acces interdit1 /preparations/{}/{}/{}/{}/{}/".format(preparation_id, request.user.is_authenticated, request.user.username, preparation.acces, preparation.owner))
+                        return HttpResponseForbidden("{ \"status\":-3, \"message\": \"acces interdit\" }")
+            else:
+                return HttpResponse("{ \"status\":-2, \"message\": \"préparation inconnue\" }")
+
+        except:
+            logger.error("Loading IOError /preparations/{}".format(preparation_id))
+            return HttpResponse("{ \"status\":-, \"message\": \"erreur interne\" }")
+
+        response = PreparationBase.bases_to_json_response(preparation.bases.all())
         return HttpResponse(response)
