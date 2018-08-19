@@ -200,6 +200,8 @@ class BasePreparation(models.Model):
         valeurs['preparation_id'] = self.preparation.id
         valeurs['base_preparation_id'] = self.base.id
         valeurs['quantite'] = self.quantite
+        valeurs['description'] = self.base.description
+        valeurs['code'] = self.base.code
         return json.dumps(valeurs, cls=DjangoJSONEncoder)
     
 class EtapePreparation(models.Model):
@@ -254,6 +256,13 @@ class Preparation(models.Model):
 
     def __unicode__(self):
         return self.description
+
+    def to_json(self):
+        valeurs = {}
+        valeurs['preparation_id'] = self.id
+        valeurs['description'] = self.description
+        valeurs['bonasavoir'] = self.bonasavoir
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
 
 class PreparationRecette(models.Model):
     """

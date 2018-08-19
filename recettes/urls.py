@@ -56,14 +56,17 @@ urlpatterns = [
     url(r'^preparation/(?P<ingredient_id>[0-9]+)$', ingredientrest.IngredientRest.as_view(), name='preparation'),
     url(r'^preparation/$', ingredientrest.IngredientRest.as_view(), name='preparation_empty'),
     url(r'^preparation/(?P<preparation_id>[0-9]+)/nutrition/$', preparationrest.PreparationEnergieEconomat.as_view(), name='preparation_nutriton'),
-    url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/$', preparationrest.PreparationElement.as_view(), name='preparation_element'),
-    url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/(?P<element_id>[0-9a-zA-Z._ -]+)/$', preparationrest.PreparationElement.as_view(), name='preparation_element'),    
 
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/$', preparationrest.PreparationElement.as_view(), name='preparation_element'),
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/(?P<element_id>[0-9a-zA-Z._ -]+)/$', preparationrest.PreparationElement.as_view(), name='preparation_element'),
+
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/base/$', preparationrest.PreparationBase.as_view(), name='preparation_element'),
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/base/(?P<base_id>[0-9a-zA-Z._ -]+)/$', preparationrest.PreparationBase.as_view(), name='preparation_element'),
 
     url(r'^preparation/(?P<preparation_id>[0-9]+)/etape/$', preparationrest.PreparationEtape.as_view(), name='preparation_element'),
-    url(r'^preparation/(?P<preparation_id>[0-9]+)/etape/(?P<etape_id>[0-9a-zA-Z._ -]+)/$', preparationrest.PreparationEtape.as_view(), name='preparation_element'),    
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/etape/(?P<etape_id>[0-9a-zA-Z._ -]+)/$', preparationrest.PreparationEtape.as_view(), name='preparation_element'),
+    url(r'^preparation/(?P<preparation_id>all)/categorie/(?P<categorie_id>[0-9a-zA-Z]+)$', preparationrest.PreparationRest.as_view(), name='ingredient_cat'),
 
-    
     url(r'^detailp/(?P<preparation_id>[0-9]+)$', views.detail_preparation, name='detail_preparation'),
 
     url('^categories$', views.get_categorie, name='get_category'),

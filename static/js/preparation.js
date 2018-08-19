@@ -419,6 +419,12 @@ function displayEconomat() {
     });
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//                    Gestion TAB Ingredients
+///////////////////////////////////////////////////////////////////////////////
+
+
 function removeElement(href, message) {
     var element_id = $(href).data('elem');
     var csrftoken = getCookie('csrftoken');
@@ -519,8 +525,7 @@ function addIngredientSave(message, ingredient, quantite) {
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
                 
                 $(d1).insertBefore("#id_add_ingredients_div");
-        
-                    
+                            
                 // reset des select
                 $("#id_add_ingredient_categorie option[value='NONE']").prop("selected", true);
                 var select = $("#id_add_ingredient_id").empty();
@@ -717,8 +722,8 @@ function displayIngredients() {
     addEventListenerIngredients();
     
     $('#id_add_ingredient_categorie').on('change', function (e) {
-        var optionSelected = $("option:selected", this);
-        var valueSelected = this.value;
+        //var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;        
         var csrftoken = getCookie('csrftoken');
         var u = "/mesrecettes/ingredient/all/categorie/".concat(valueSelected);
         message.text(" ");    
@@ -788,6 +793,353 @@ function loadIngredients(preparation, affichage) {
         }
     });    
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                    Gestion TAB Bases
+///////////////////////////////////////////////////////////////////////////////
+
+
+function removeBase(href, message) {
+    var base_id = $(href).data('base');
+    var csrftoken = getCookie('csrftoken');
+    var preparation = getPreparation(current_no_preparation);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/base/").concat(base_id).concat("/");
+    var message = $("#id_edit_preparation_message");
+    
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'delete',
+        'dataType': 'json',
+        'contentType': "application/json;charset=utf-8",
+        'url' : u,
+        'data' : JSON.stringify({ base_id : base_id}),
+        'success' : function(response)
+        {
+            if (response.status == 0) {
+                $(href).parent().parent().remove();
+                preparation.nutrition = undefined;
+                preparation.bases = preparation.bases.filter(function(base) {
+                    return base.bases_id != base_id;
+                });
+            }
+            else {
+                message.text(response.message);
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });    
+}
+
+
+function addEventListenerBases() {
+    var message = $("#id_edit_preparation_message");
+    
+    $('.add_ingredient_remove').on('click', function (e) {
+        removeBase(this, message); 
+    });
+
+    $('.auto-save-base').blur(function(e){
+        var myinput = $(this);
+        var timer = $(this).data("timer");
+        if (timer) {
+            clearTimeout(timer);
+            $(this).removeData("timer");
+            updateQTBase( $(myinput).data("base"), $(myinput).val());
+        }
+    });
+
+    $('.auto-save-base').on('input', function(e) {
+        var myinput = $(this);
+        var oldtimer = $(this).data("timer");
+        if (oldtimer) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout(function(){
+            $(myinput).removeData("timer");
+            updateQTBase( $(myinput).data("base"), $(myinput).val());
+        }, 1000); 
+        $(this).data("timer", timer);
+    });
+
+}
+
+function buildBaseDiv(code, description, quantite, base_id) {
+    var d1 = $("<div class=\"no-margin row\" ></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + code + "</span></div>");
+    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + description + "</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-base\" value=\""
+              + quantite + "\" data-base=\"" + base_id +"\"></div>");
+    
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add_ingredient_remove\" data-base=\"" + base_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+    return d1;
+}
+
+function addBase() {
+    var categorie = $("#id_add_base_categorie").val();
+    var quantite = $("#id_add_base_quantite").val();    
+    var preparation_id = $("#id_add_base_id").val();
+    var message = $("#id_edit_preparation_message");
+    var preparation = getPreparation(current_no_preparation);
+    
+    if (categorie && preparation_id && quantite && categorie != "NONE" && preparation_id != "NONE" && /^[0-9]+$/.test(quantite)) {
+
+        var csrftoken = getCookie('csrftoken');
+        var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/base/");
+        message.text(" ");    
+        $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+        $.ajax({
+            'type' : 'put',
+            'url' : u,
+            'dataType': 'json',
+            'data' : JSON.stringify({ preparation_id:  preparation_id, quantite: quantite }),
+            'success' : function(response)
+            {
+                if (response.status == 0) {
+                    var base_id = response.base_id;
+                    d1 = buildBaseDiv(response.code, response.description, response.quantite, response.base_id);
+                    $(d1).insertBefore("#id_add_bases_div");
+                                        
+                    // reset valeurs
+                    $("#id_add_base_quantite").val("100");
+
+                    // reset des select
+                    $("#id_add_base_categorie option[value='NONE']").prop("selected", true);
+                    var select = $("#id_add_base_id").empty();
+                    select.append("<option selected value=\"NONE\">Choisir..</option></select>");
+                    
+                    
+                    // ajouter le nouvel ingredient à la structure
+                    preparation.bases.push({'quantite': quantite,
+                                            'description': response.description,
+                                            'preparation_id': preparation.id,
+                                            'base_id': base_id,
+                                            'code': response.code});
+
+                    addEventListenerBases();
+                }
+                else {
+                    message.text(response.message);
+                }
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+                try {
+                    message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                }
+                catch(error) {
+                    message.text("erreur interne");
+                }
+            }
+        });    
+    }
+    else {
+        $(message).text("saisie erronée");
+    }
+}
+
+
+//
+// MAJ Qt ingredient
+function updateQTBase(elem_id, quantite) {
+    var message = $("#id_edit_preparation_message");
+
+    if (! /^[0-9]+([.][0-9]+)?$/.test(quantite)) {
+        console.log("erreur");
+        $(message).text("saisie erronée").fadeOut(2000, function() { $(message).text("").show(); });
+        return;
+    }
+    
+    var csrftoken = getCookie('csrftoken');
+    var preparation = getPreparation(current_no_preparation);
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/ingredient/").concat(elem_id).concat("/");
+    
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'post',
+        'dataType': 'json',
+        'contentType': "application/json;charset=utf-8",
+        'url' : u,
+        'data' : JSON.stringify({ quantite : quantite }),
+        'success' : function(response)
+        {
+            if (response.status != 0) {
+                $(message).text(response.message);
+            }
+            else {
+                preparation.ingredients.forEach(function(element) {
+                    if (element.element_id == elem_id) {
+                        element.quantite = quantite;
+                    }
+                });
+
+                // forcer le recalcul energie et nutrition
+                preparation.nutrition = undefined;
+                displayNutrition();
+                
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });
+    
+}
+
+//
+// Affichage des bases
+//
+function displayBases() {
+    var preparation = getPreparation(current_no_preparation);
+    // déjà chargées ?
+    if (!preparation.bases) {
+        loadBases(preparation, displayBases);
+        return;
+    }
+    
+    var message = $("#id_edit_preparation_message");
+    var bases=$("#id_bases_tab");
+    bases.empty();
+    
+    var d1 = $("<div class=\"no-margin row font-weight-bold text-center text-uppercase\"</div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-3 col-sm-2\"><span>code</span></div>");
+    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-3 col-sm-6\"><span>préparation</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>quantité (%)</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    bases.append(d1);
+    
+    preparation.bases.forEach(function(base) {
+        d1 = buildBaseDiv(base.code, base.description, base.quantite, base.base_id);               
+        bases.append(d1);
+    });
+
+    d1 = $("<div class=\"no-margin row\" id=\"id_add_bases_div\"></div>");
+    var d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    var s1 = $("<select style=\"width:140px;\" id=\"id_add_base_categorie\"></select>");
+
+    d2.append(s1);
+    d1.append(d2);
+    
+    d2 = $("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"></div>");
+    s1 = $("<select style=\"width:350px;\" id=\"id_add_base_id\"><option selected value=\"NONE\">Choisir..</option></select>");
+    d2.append(s1);
+    d1.append(d2);
+
+    d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    s1 = $("<input id=\"id_add_base_quantite\" type=\"text\" class=\"form-control input-sm\" value=\"100\" >");
+    d2.append(s1);
+    d1.append(d2);
+
+    d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
+    s1 = $("<a href=\"#\" class=\"text-success\" id=\"id_add_base_button\"><span class=\"glyphicon glyphicon-plus-sign\"></span> ajouter</a>");
+    d2.append(s1);
+    d1.append(d2);
+
+    bases.append(d1);
+
+    loadCategoriesAtWork("PREP",
+                         $("#id_edit_preparation_message"),
+                         $("#id_add_base_categorie"),
+                         ''
+                        );
+
+    $("#id_add_base_button").click(addBase);
+    
+    addEventListenerBases();
+    
+    $('#id_add_base_categorie').on('change', function (e) {
+        //var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;
+        var csrftoken = getCookie('csrftoken');
+        var u = "/mesrecettes/preparation/all/categorie/".concat(valueSelected);
+
+        if (valueSelected == "NONE") {
+            console.log("add_ingredient_categorie NONE!");
+            return ;
+        }
+
+        message.text(" ");    
+        $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+        $.ajax({
+            'type' : 'get',
+            'url' : u,
+            'data' : "",
+            'success' : function(response)
+            {
+                var select = $("#id_add_base_id");
+                $(select).empty();
+                var res = JSON.parse(response);
+                if (res.status == 0) {
+                    $(select).append('<option value="NONE" selected>Choisir..</option>');
+                    for (var idx=0; idx < res.preparations.length; idx++) { 
+                        var preparation = res.preparations[idx];
+                        $(select).append('<option value=' + preparation.preparation_id + '>' + preparation.description + '</option>');
+                    }
+                    $(select).change();
+                }
+            },
+            'error': function(jqXHR, textStatus, errorThrown)
+            {
+                try {
+                    message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+                }
+                catch(error) {
+                    message.text("erreur interne");
+                }
+            }
+        });    
+    });
+}
+
+
+function loadBases(preparation, affichage) {
+    
+    var csrftoken = getCookie('csrftoken');
+    var u = "/mesrecettes/preparation/".concat(preparation.id).concat("/base/all/");
+
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'get',
+        'url' : u,
+        'dataType': 'json',
+        'success' : function(response)
+        {
+            if (response.status == 0 ) {
+                preparation.bases = response.bases;
+                affichage();
+            }
+            else {
+                preparation.bases = [];
+            }
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });    
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1073,11 +1425,11 @@ $(document).ready(
         $('[data-toggle="tooltip"]').tooltip();
 
         // activation affichage des tabs
-        $('a[href="#id_economat_tab"]').on('show.bs.tab', displayEconomat);
+        $('a[href="#id_nutrition_tab"]').on('show.bs.tab', displayNutrition);
         $('a[href="#id_ingredients_tab"]').on('show.bs.tab', displayIngredients);
         $('a[href="#id_etapes_tab"]').on('show.bs.tab', displayEtapes);
-        $('a[href="#id_nutrition_tab"]').on('show.bs.tab', displayNutrition);
-
+        $('a[href="#id_bases_tab"]').on('show.bs.tab', displayBases);
+        $('a[href="#id_economat_tab"]').on('show.bs.tab', displayEconomat);
 
         $('#id_edit_photo').change(handleFileSelect);
         $('#id_import_photo').change(handleFileSelect);
@@ -1133,7 +1485,7 @@ $(document).ready(
                 
         
         $('#id_owner_sel').on('change', function (e) {
-            var optionSelected = $("option:selected", this);
+            //var optionSelected = $("option:selected", this);
             var valueSelected = this.value;
             var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
             
@@ -1148,7 +1500,7 @@ $(document).ready(
         });
 
         $('#id_acces_sel').on('change', function (e) {
-            var optionSelected = $("option:selected", this);
+            //var optionSelected = $("option:selected", this);
             var valueSelected = this.value;
             var myForm = $("<form id=\"selectForm\" />").attr("method", "GET").attr("action", valueSelected);
 
