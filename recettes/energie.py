@@ -5,6 +5,7 @@ et des calories contenu dans une
 préparation une recette
 """
 import json
+import logging
 
 from decimal import Decimal, getcontext
 
@@ -12,14 +13,90 @@ from models import Ingredient
 from models import Preparation
 from models import Element
 
+# Get an instance of a logger
+LOGGER = logging.getLogger('fees')
+
+
+def getDict(elements):
+    res = {}
+    for elem in elements:
+        res[elem['id']] = elem
+    return res
+
+def addIng(ing1, ing2) :
+
+    res = {}
+    for key in ing1.keys():
+        res[key] = add(ing1[key], ing2[key])
+        LOGGER.debug("....................................................ing1 {} + ing2 {} = {}".format(ing1, ing2, res))
+    return res
+
+def addDict(dict1, dict2):
+    res = []
+    for key in dict1.keys():
+        ing1 = dict1.get(key, None)
+        ing2 = dict2.get(key, None)
+        if ing2 is None:
+            res.append(ing1)
+        else:
+            res.append(addIng(ing1, ing2))
+            del dict2[key]
+
+    for key in dict2.keys():
+        ing1 = dict1.get(key, None)
+        ing2 = dict2.get(key, None)
+        if ing1 is None:
+            res.append(ing2)
+        else:
+            res.append(addIng(ing1, ing2))
+
+    LOGGER.debug("....................................................d1 {} + d2 {} = {}".format(dict1, dict2, res))
+    return res
+
+def add(vals1, vals2):
+    if type(vals1) == tuple:
+        result = []
+        for var in range(len(vals1)):
+            val1 = vals1[var]
+            val2 = vals2[var]
+            result.append(add(val1, val2))
+        return result
+    elif type(vals1) in (int, Decimal, float):
+        return vals1+vals2
+    elif type(vals1) == bool:
+        return vals1 or vals2
+    elif type(vals1) == list:
+        dict1 = getDict(vals1)
+        dict2 = getDict(vals2)
+        return addDict(dict1, dict2)
+    elif type(vals1) == str and type(vals2) == str:
+        return vals1
+    elif type(vals1) == unicode and type(vals2) == unicode:
+        return vals1
+    else:
+        LOGGER.debug("/////////////////////////////////++++++++++++++++++type {}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(type(vals1)))
 
 #
-# calcul cout ingredient allergene pour une preparation
+# calcul cout ingredient allergene pour une preparation et ses bases
 #
 def calcul_ingredients_preparation(preparation):
     """
-    Valeur nutritionnelle et prix d'une préparation
-    energie, allergene, ingredients, preparations, cout_total = calcul_ingredients_preparation(preparation)
+    Valeur nutritionnelle et prix d'une préparation et ses bases
+    """
+
+    #LOGGER.debug("/////////////////////////////////++++++++++++++++++{}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(preparation.id))
+    res = calcul_ingredients(preparation)
+
+    for base_preparation in preparation.bases.all():
+        res = add(res, calcul_ingredients_preparation(base_preparation.base))
+    #LOGGER.debug(".......{} ".format(res))
+    return res
+
+
+
+def calcul_ingredients(preparation):
+    """
+    Valeur nutritionnelle et prix d'une préparation et ses bases
     """
     getcontext().prec = 4
     ingredients = {}
@@ -40,7 +117,6 @@ def calcul_ingredients_preparation(preparation):
         ingredient = element.ingredient
         allergene = allergene or ingredient.allergene
 
-
         # pour chaque ingrédient
         cout = ((element.quantite * ingredient.pu)/Decimal(ingredient.pp))
         kjoules = (((element.quantite)/Decimal(100)) * ingredient.kjoules)
@@ -52,7 +128,7 @@ def calcul_ingredients_preparation(preparation):
         fibres_alimentaires = (((element.quantite)/Decimal(100)) * ingredient.fibres_alimentaires)
         proteines = (((element.quantite)/Decimal(100)) * ingredient.proteines)
         sel = (((element.quantite)/Decimal(100)) * ingredient.sel)
-        
+
         # totaux pour la préparation
         cout_total += cout
         kjoules_total += kjoules
@@ -64,7 +140,7 @@ def calcul_ingredients_preparation(preparation):
         fibres_alimentaires_total += fibres_alimentaires
         proteines_total += proteines
         sel_total += sel
-        
+
         tmp = ingredients.get(ingredient.id)
         if tmp is None:
             tmp = {}
