@@ -324,21 +324,21 @@
     <span id="id_detail_preparation_no" style="display:none"></span>
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header" id="id_detail_preparation_modal_view_header">
+        <div class="modal-header" id="id_preparation_modal_view_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	  <h4 class="modal-title text-center">Détail preparation</h4>
+	  <h4 class="modal-title text-center">Détail préparation</h4>
         </div>
-        <div class="modal-header" id="id_detail_preparation_modal_delete_header">
+        <div class="modal-header" id="id_preparation_modal_delete_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title text-center">Suppression preparation</h4>
+          <h4 class="modal-title text-center">Suppression préparation</h4>
         </div>
-        <div class="modal-header" id="id_detail_preparation_modal_edit_header">
+        <div class="modal-header" id="id_preparation_modal_edit_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title text-center">Modification preparation</h4>
+          <h4 class="modal-title text-center">Modification préparation</h4>
         </div>
-        <div class="modal-header" id="id_detail_preparation_modal_new_header">
+        <div class="modal-header" id="id_preparation_modal_new_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title text-center">Création preparation</h4>
+          <h4 class="modal-title text-center">Création préparation</h4>
         </div>
 
         <div class="modal-body col-lg-12">
@@ -429,19 +429,22 @@
                       <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
                         <option value="NONE" selected>Choisir..</option>
                       </select>
-                      <span style="display:block;">Nouvelle</span>
-                      <div class="input-group">
+                      <span class="add-remove" style="display:block;">Nouvelle</span>
+                      <div class="input-group add-remove">
                         <label class="input-group-btn">
-                          <span class="btn btn-primary glyphicon glyphicon-folder-open disabled">
+                          <span id=\"id-span-button-file"\ class="btn btn-primary glyphicon glyphicon-folder-open">
                             <input type="file" style="display: none;" name="photo" id="id_import_photo" >
                           </span>
                         </label>
-                        <input type="text" class="form-control"readonly>
+                        <input type="text" class="form-control" readonly>
                       </div>                            
                     </div>
                   </div>                          
                 </div>
               </div>
+              <input type="hidden" id="id_detail_preparation_id" name="id">
+            </form>
+            <div id="id_prep_tabs">
               <div class="row">
                 <ul id="diveInfo" class="nav nav-tabs nav-justified" role="tablist">
                   <li class="xactive"><a href="#id_nutrition_tab" role="tab" data-toggle="tab">Nutrition</a></li>
@@ -567,9 +570,7 @@
                   </div>
                 </div>
               </div>
-              
-              <input type="hidden" id="id_detail_preparation_id" name="id">
-            </form>
+            </div>
           </div>
         </div>
         

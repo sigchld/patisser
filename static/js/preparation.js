@@ -1,4 +1,8 @@
 var current_no_ingredient;
+var VIEW_PREP='detail'
+var EDIT_PREP='edit'
+var NEW_PREP='new'
+var current_moode = VIEW_PREP;
 
 function loadPhotosDescriptionAtWork(categorie, message, select, current) {
     
@@ -196,7 +200,23 @@ function remplissage_vide() {
     $("#id_detail_preparation_form")[0].reset();    
 }
 
+function enable_disable_edit_mode() {
+    if (current_mode == VIEW_PREP) {
+        $('#id_prep_tabs input').prop("disabled", true);
+        $('#id_prep_tabs textarea').prop("disabled", true);
+        $('#id_prep_tabs select').prop("disabled", true);
+        $('.add-remove').hide();
+    }
+    else if (current_mode == EDIT_PREP) {
+        $('#id_prep_tabs input').prop("disabled", false);
+        $('#id_prep_tabs textarea').prop("disabled", false);
+        $('#id_prep_tabs select').prop("disabled", false);
+        $('.add-remove').show();
+    }
+}
+
 function ask_detail_preparation(id) {
+    current_mode = VIEW_PREP;
     var preparation = getPreparation(id);
     remplissage(preparation);
     // pour le DEV    $('#id_detail_preparation_form input').prop("disabled", true);
@@ -211,19 +231,26 @@ function ask_detail_preparation(id) {
     categorie.change();
 
     $("#id_preparation_modal_nav_footer").show();
+    $("#id_preparation_modal_view_header").show();
+    
     $('#id_preparation_modal_delete_footer').hide();
     $('#id_preparation_modal_edit_footer').hide();
 
-    $('#id_detail_preparation_modal_delete_header').hide();
-    $('#id_detail_preparation_modal_new_header').hide();
-    $('#id_detail_preparation_modal_edit_header').hide();
-    $("#id_detail_preparation_modal_view_header").show();
-    $('#id_detail_preparation_modal_new_header').hide();
+    $('#id_preparation_modal_new_header').hide();
+    $('#id_preparation_modal_delete_header').hide();
+    $('#id_preparation_modal_edit_header').hide();
+    
+
+
+
+
 
     $('#id_detail_preparation_form input').prop("disabled", true);
     $('#id_detail_preparation_form textarea').prop("disabled", true);
     $('#id_detail_preparation_form select').prop("disabled", true);
 
+    enable_disable_edit_mode();
+    
     $('#id_detail_preparation_modal').modal('show');
     $('.nav-tabs a[href="#id_nutrition_tab"]').tab('show')
 }
@@ -236,13 +263,13 @@ function ask_new_preparation() {
     $('#id_delete_preparation_id').text(-1);
     $("#id_detail_preparation_id").val(-1)
     
-    $("#id_detail_preparation_modal_view_footer").css("display", "none");
-    $("#id_detail_preparation_modal_view_header").css("display", "none");
-    $('#id_detail_preparation_modal_delete_footer').css("display", "none");
-    $('#id_detail_preparation_modal_delete_header').css("display", "none");
-    $('#id_detail_preparation_modal_edit_header').css("display", "none");
-    $('#id_detail_preparation_modal_edit_footer').css("display", "block");
-    $('#id_detail_preparation_modal_new_header').css("display", "block");
+    $("#id_preparation_modal_view_footer").css("display", "none");
+    $("#id_preparation_modal_view_header").css("display", "none");
+    $('#id_preparation_modal_delete_footer').css("display", "none");
+    $('#id_preparation_modal_delete_header').css("display", "none");
+    $('#id_preparation_modal_edit_header').css("display", "none");
+    $('#id_preparation_modal_edit_footer').css("display", "block");
+    $('#id_preparation_modal_new_header').css("display", "block");
 
     loadCategoriesAtWork("PREP",
                          $("#id_edit_preparation_message"),
@@ -289,17 +316,17 @@ function ask_delete_preparation(id) {
     $('#id_preparation_modal_delete_footer').css("display", "block");
     $('#id_preparation_modal_edit_footer').css("display", "none");
 
-    $('#id_detail_preparation_modal_delete_header').css("display", "block");
-    $('#id_detail_preparation_modal_new_header').css("display", "none");
-    $('#id_detail_preparation_modal_edit_header').css("display", "none");
-    $("#id_detail_preparation_modal_view_header").css("display", "none");
-    $('#id_detail_preparation_modal_new_header').css("display", "none");
+    $('#id_preparation_modal_delete_header').css("display", "block");
+    $('#id_preparation_modal_new_header').css("display", "none");
+    $('#id_preparation_modal_edit_header').css("display", "none");
+    $("#id_preparation_modal_view_header").css("display", "none");
+    $('#id_preparation_modal_new_header').css("display", "none");
 
-    $('#id_detail_preparation_form input').prop("disabled", true);
-    $('#id_detail_preparation_form textarea').prop("disabled", true);
-    $('#id_detail_preparation_form select').prop("disabled", true);
+    $('#id_preparation_form input').prop("disabled", true);
+    $('#id_preparation_form textarea').prop("disabled", true);
+    $('#id_preparation_form select').prop("disabled", true);
     
-    $('#id_detail_preparation_modal').modal('show');
+    $('#id_preparation_modal').modal('show');
     
 };
 
@@ -308,32 +335,36 @@ function ask_delete_preparation(id) {
 // Modification d'un preparation
 //
 function ask_edit_preparation(id) {
-    // FAT /////////////////////////:
-    return;
     var preparation = getPreparation(id);
+    current_mode = EDIT_PREP;    
     remplissage(preparation);
 
-    $("#id_detail_preparation_modal_view_footer").css("display", "none");
-    $("#id_detail_preparation_modal_view_header").css("display", "none");
-    $('#id_detail_preparation_modal_delete_footer').css("display", "none");
-    $('#id_detail_preparation_modal_delete_header').css("display", "none");
-    $('#id_detail_preparation_modal_edit_footer').css("display", "block");
-    $('#id_detail_preparation_modal_edit_header').css("display", "block");
-
-    $('#id_detail_preparation_modal_new_header').css("display", "none");
+    $("#id_preparation_modal_view_footer").hide();
+    $("#id_preparation_modal_view_header").hide();
+    $('#id_preparation_modal_delete_footer').hide();
+    $('#id_preparation_modal_delete_header').hide();
+    $('#id_preparation_modal_edit_footer').show();
+    $('#id_preparation_modal_edit_header').show();
+    $("#id_preparation_modal_nav_footer").hide();
+    $('#id_preparation_modal_new_header').hide();
 
     loadCategoriesAtWork("PREP",
                          $("#id_edit_preparation_message"),
                          $("#id_detail_categorie"),
                          preparation.categorie_categorie
                         );
+
+    enable_disable_edit_mode();
     
     $('#id_detail_preparation_form input').prop("disabled", false);
     $('#id_detail_preparation_form textarea').prop("disabled", false);
     $('#id_detail_preparation_form select').prop("disabled", false);
-    $('#id_detail_preparation_form .btn').prop("disabled", false);
-    $('#id_detail_preparation_modal').modal('show');
 
+    $('#id_detail_preparation_form .btn').removeClass("disabled");
+    
+    $('#id_detail_preparation_modal').modal('show');
+    $('#id-span-button-file').removeClass('disabled')
+    $('.nav-tabs a[href="#id_nutrition_tab"]').tab('show')
 };
 
 
@@ -466,7 +497,7 @@ function removeElement(href, message) {
 function addEventListenerIngredients() {
     var message = $("#id_edit_preparation_message");
     
-    $('.add_ingredient_remove').on('click', function (e) {
+    $('.add_ingredient-remove').on('click', function (e) {
         removeElement(this, message); 
     });
 
@@ -522,7 +553,7 @@ function addIngredientSave(message, ingredient, quantite) {
                 d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + ingredient.description + "</span></div>");
                 d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-ingredient\" value=\""
                           + quantite + "\"></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
+                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add-ingredient-remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
                 
                 $(d1).insertBefore("#id_add_ingredients_div");
                             
@@ -663,6 +694,7 @@ function updateQTIngredient(elem_id, quantite) {
 //
 function displayIngredients() {
     var preparation = getPreparation(current_no_preparation);
+    
     // déjà chargées ?
     if (!preparation.ingredients) {
         loadIngredients(preparation, displayIngredients);
@@ -685,12 +717,12 @@ function displayIngredients() {
         d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-ingredient\" value=\""
                   + element.quantite + "\" data-elem=\"" + element.element_id +"\"></div>");
 
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add_ingredient_remove\" data-elem=\"" + element.element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-ingredient-remove add-remove\" data-elem=\"" + element.element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
                
         ingredients.append(d1);
     });
 
-    d1 = $("<div class=\"no-margin row\" id=\"id_add_ingredients_div\"></div>");
+    d1 = $("<div class=\"no-margin row add-remove\" id=\"id_add_ingredients_div\"></div>");
     var d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
     var s1 = $("<select style=\"width:140px;\" id=\"id_add_ingredient_categorie\"></select>");
     for (i=0; i < categories_ingredients.length; i++) {
@@ -711,7 +743,7 @@ function displayIngredients() {
     d1.append(d2);
 
     d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
-    s1 = $("<a href=\"#\" class=\"text-success\" id=\"id_add_ingredient_button\"><span class=\"glyphicon glyphicon-plus-sign\"></span> ajouter</a>");
+    s1 = $("<a href=\"#\" class=\"text-success add-remove\" id=\"id_add_ingredient_button\"><span class=\"glyphicon glyphicon-plus-sign\"></span> ajouter</a>");
     d2.append(s1);
     d1.append(d2);
 
@@ -756,9 +788,10 @@ function displayIngredients() {
                 }
             }
         });    
-        
-        //
     });
+    
+    // activation des inputs
+    enable_disable_edit_mode();
 }
 
 
@@ -844,7 +877,7 @@ function removeBase(href, message) {
 function addEventListenerBases() {
     var message = $("#id_edit_preparation_message");
     
-    $('.add_ingredient_remove').on('click', function (e) {
+    $('.add-ingredient-remove').on('click', function (e) {
         removeBase(this, message); 
     });
 
@@ -880,7 +913,7 @@ function buildBaseDiv(code, description, quantite, base_id) {
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-base\" value=\""
               + quantite + "\" data-base=\"" + base_id +"\"></div>");
     
-    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add_ingredient_remove\" data-base=\"" + base_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-ingredient-remove  add-remove\" data-base=\"" + base_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
     return d1;
 }
 
@@ -1029,7 +1062,7 @@ function displayBases() {
         bases.append(d1);
     });
 
-    d1 = $("<div class=\"no-margin row\" id=\"id_add_bases_div\"></div>");
+    d1 = $("<div class=\"no-margin row add-remove\" id=\"id_add_bases_div\"></div>");
     var d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
     var s1 = $("<select style=\"width:140px;\" id=\"id_add_base_categorie\"></select>");
 
@@ -1105,6 +1138,9 @@ function displayBases() {
             }
         });    
     });
+        
+    // activation des inputs
+    enable_disable_edit_mode();
 }
 
 
@@ -1237,7 +1273,7 @@ function buildEtapeDiv(nom, description, ordre, etape_id) {
     d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><textarea class=\"form-control auto-save-etape\" rows=\"2\" data-name=\"description\" data-etape=\"" + etape_id +"\">" + description + "</textarea></div>");
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input type=\"text\" class=\"form-control auto-save-etape\" data-name=\"ordre\" data-etape=\"" + etape_id +"\"value=\"" + ordre + "\"></span></div>");
     
-    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add_etape_remove\" data-etape=\"" + etape_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-etape-remove add-remove\" data-etape=\"" + etape_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
     return d1;           
 }
 
@@ -1263,7 +1299,7 @@ function displayEtapes() {
         etapes.append(d1);
     });
 
-    d1 = $("<div class=\"no-margin row\" style=\"margin-top:10px; margin-botom:5px;\" id=\"id_add_etapes_div\"></div>");
+    d1 = $("<div class=\"no-margin row add-remove\" style=\"margin-top:10px; margin-botom:5px;\" id=\"id_add_etapes_div\"></div>");
     var d2 = $("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input id=\"id_add_etape_nom\"  class=\"form-control\" type=\"text\"></div>");
     d1.append(d2);
     
@@ -1287,13 +1323,16 @@ function displayEtapes() {
     $("#id_add_etape_button").click(addEtape);
     
     addEventListenerEtapes();
+    
+    // activation des inputs
+    enable_disable_edit_mode();
 
 }
 
 function addEventListenerEtapes() {
     var message = $("#id_edit_preparation_message");
     
-    $('.add_etape_remove').on('click', function (e) {
+    $('.add-etape-remove').on('click', function (e) {
         removeEtape(this, message); 
     });
     
