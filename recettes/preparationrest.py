@@ -33,7 +33,9 @@ from django.views.decorators.http import require_http_methods
 #from django.core.exceptions import DoesNotExist
 from recettes.models import Photo, Ingredient, Categorie, Preparation, Element, EtapePreparation, BasePreparation
 from fees import settings
-from . energie import calcul_ingredients_preparation
+from .energie import calcul_ingredients_preparation
+from .forms import PreparationForm
+from .photorest import get_thumbnail
 
 # Get an instance of a logger
 LOGGER = logging.getLogger('fees')
@@ -89,9 +91,234 @@ class PreparationRest(View):
 
         return HttpResponse("{{ \"status\": 0, \"message\": \"OK\", \"preparation\": {} }}".format(preparation.to_json()))
 
+    # Mofification d'une préparation
+    def post(self, request, preparation_id=None):
+        """
+        Modification d'une préparation
+        """
+        if not request.user.is_authenticated:
+            return HttpResponseServerError('{ "status " : -1, "message" : "Il faut être authentifié pour modifier une préparation" }')
 
+        if not preparation_id:
+            return HttpResponseServerError('{ "status" : -1, "message" : "Il faut indiquer une numéro de préparation" }')
+                    
+        try:
+            form = PreparationForm(request.POST)
+            if not form.is_valid():
+                champs = ""
+                for error in form.errors:
+                    champs = champs + error + ", "
+                return HttpResponseServerError('{{ "status" : -1, "message" : "saisie erronée: {}" }}'.format(champs))
+            
+            preparation2_id = request.POST.get('id', None)
+            preparation = None
+            try:
+                preparation = Preparation.objects.get(pk=preparation_id)
+                #except Preparation.DoesNotExist:
+            except:
+                LOGGER.error("Loading preparation inconnue/{}".format(preparation_id))
+                return HttpResponseServerError('{ "message" : "preparation inconnu" }')
+
+            if preparation.owner.username != request.user.username:
+                return HttpResponseServerError('{ "message" : "La préparation ne vous appartient pas" }')
+
+            # chargement photo si il y a lieu
+            imported_photo = False
+            try:
+                myfile = request.FILES['photo']
+                name = myfile.name
+                LOGGER.debug(u"PhotoFileName {}".format(name))
+                fs = FileSystemStorage()
+                filename = fs.save(name, myfile)
+
+                try:
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
+                    img = get_thumbnail(img)
+                    photo = Photo()
+                    img = get_thumbnail(img)
+                    # sauvegarde photo
+                    fic = io.BytesIO()
+                    img.save(fic, "PNG")
+                    fic.seek(0)
+                    photo.thumbnail = fic.read1(-1)
+                    photo.owner = preparation.owner
+                    photo.acces = "PRIV"
+                    photo.code = "I{}".format(math.trunc(time.time()))
+                    photo.description = "Importée depuis formulaire ingrédient"
+                    if preparation.photo and  preparation.photo.categorie:
+                        photo.categorie = preparation.photo.categorie
+                    else:
+                        photo.categorie = Categorie.objects.filter(Q(groupe="PREP") & Q(categorie="aucune")).first()
+                    photo.save()
+                    preparation.photo = photo
+                    imported_photo = True
+                except IOError:
+                    pass
+
+            except MultiValueDictKeyError:
+                # pas de nouvelle photo
+                pass
+
+            # maj photo
+            if not imported_photo:
+                new_photo_id = request.POST.get('photo_id', None)
+                if new_photo_id:
+                    if new_photo_id.isdigit() and preparation.photo and new_photo_id != preparation.photo.id:
+                        preparation.photo = Photo.objects.get(pk=new_photo_id)
+                    elif new_photo_id == "NONE":
+                        preparation.photo = None
+
+            # maj categorie
+            new_categorie = request.POST.get('categorie', None)
+            if new_categorie:
+                try:
+                    queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="PREP") & Q(owner=request.user.username))
+                    if queryset.count() == 1:
+                        preparation.categorie = queryset.first()
+                    else:
+                        queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="PREP") & Q(acces='PUB'))
+                        if queryset.count() == 1:
+                            preparation.categorie = queryset.first()
+                        else:
+                            return HttpResponseServerError('{ "message" : "saisie incomplète,  catégorie inconnues" }')
+                except:
+                    just_the_string = traceback.format_exc()
+                    LOGGER.debug("preparation_modification/categorie_obj/{}".format(just_the_string))
+
+
+            # maj des champs standards
+            for label in ('code',
+                          'description',
+                          'bonasavoir',
+                          'acces'):
+                setattr(preparation, label, form.cleaned_data[label])
+
+            # cas spécifique du code qui est en lettres majuscules
+            setattr(preparation, 'code', form.cleaned_data['code'].upper())
+
+            preparation.save()
+            return HttpResponse('{ "message" : "OK" }')
+
+        except IntegrityError:
+            just_the_string = traceback.format_exc()
+            LOGGER.debug(just_the_string)
+            return HttpResponseServerError('{ "message" : "modification impossible" }')
+        except Exception as error:
+            just_the_string = traceback.format_exc()
+            LOGGER.debug(just_the_string)
+            return HttpResponseServerError('{ "message" : "erreur inattendue" }')
+
+    # Création d'une préparation
+    def put(self, request, preparation_id=None):
+        """
+        Modification d'une préparation
+        """
+        if not request.user.is_authenticated:
+            return HttpResponseServerError('{ "status " : -1, "message" : "Il faut être authentifié pour modifier une préparation" }')
+
+        if preparation_id is not None:
+            return HttpResponseServerError('{ "status" : -1, "message" : "Il faut pas indiquer une numéro de préparation" }')
+
+        preparation = Preparation()
+        preparation.owner = request.user
+        
+        try:
+            form = PreparationForm(request.POST)
+            if not form.is_valid():
+                champs = ""
+                for error in form.errors:
+                    champs = champs + error + ", "
+                return HttpResponseServerError('{{ "status" : -1, "message" : "saisie erronée: {}" }}'.format(champs))    
+
+            # chargement photo si il y a lieu
+            imported_photo = False
+            try:
+                myfile = request.FILES['photo']
+                name = myfile.name
+                LOGGER.debug(u"PhotoFileName {}".format(name))
+                fs = FileSystemStorage()
+                filename = fs.save(name, myfile)
+
+                try:
+                    img = Image.open(u"{}/photos/{}".format(settings.BASE_DIR, filename))
+                    img = get_thumbnail(img)
+                    photo = Photo()
+                    img = get_thumbnail(img)
+                    # sauvegarde photo
+                    fic = io.BytesIO()
+                    img.save(fic, "PNG")
+                    fic.seek(0)
+                    photo.thumbnail = fic.read1(-1)
+                    photo.owner = preparation.owner
+                    photo.acces = "PRIV"
+                    photo.code = "I{}".format(math.trunc(time.time()))
+                    photo.description = "Importée depuis formulaire ingrédient"
+                    if preparation.photo and  preparation.photo.categorie:
+                        photo.categorie = preparation.photo.categorie
+                    else:
+                        photo.categorie = Categorie.objects.filter(Q(groupe="PREP") & Q(categorie="aucune")).first()
+                    photo.save()
+                    preparation.photo = photo
+                    imported_photo = True
+                except IOError:
+                    pass
+
+            except MultiValueDictKeyError:
+                # pas de nouvelle photo
+                pass
+
+            # maj photo
+            if not imported_photo:
+                new_photo_id = request.POST.get('photo_id', None)
+                if new_photo_id:
+                    if new_photo_id.isdigit() and preparation.photo and new_photo_id != preparation.photo.id:
+                        preparation.photo = Photo.objects.get(pk=new_photo_id)
+                    elif new_photo_id == "NONE":
+                        preparation.photo = None
+
+            # maj categorie
+            new_categorie = request.POST.get('categorie', None)
+            if new_categorie:
+                try:
+                    queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="PREP") & Q(owner=request.user.username))
+                    if queryset.count() == 1:
+                        preparation.categorie = queryset.first()
+                    else:
+                        queryset = Categorie.objects.filter(Q(categorie=new_categorie) & Q(groupe="PREP") & Q(acces='PUB'))
+                        if queryset.count() == 1:
+                            preparation.categorie = queryset.first()
+                        else:
+                            return HttpResponseServerError('{ "message" : "saisie incomplète,  catégorie inconnues" }')
+                except:
+                    just_the_string = traceback.format_exc()
+                    LOGGER.debug("preparation_modification/categorie_obj/{}".format(just_the_string))
+
+
+            # maj des champs standards
+            for label in ('description',
+                          'bonasavoir',
+                          'acces'):
+                setattr(preparation, label, form.cleaned_data[label])
+
+            # cas spécifique du code qui est en lettres majuscules
+            setattr(preparation, 'code', form.cleaned_data['code'].upper())
+
+            preparation.save()
+            return HttpResponse('{ "message" : "OK" }')
+
+        except IntegrityError:
+            just_the_string = traceback.format_exc()
+            LOGGER.debug(just_the_string)
+            return HttpResponseServerError('{ "message" : "création impossible, code déjà utilisé" }')
+        except Exception as error:
+            just_the_string = traceback.format_exc()
+            LOGGER.debug(just_the_string)
+            return HttpResponseServerError('{ "message" : "erreur inattendue" }')
+
+
+    
     #
-    # Suppresion d'un ingrédient
+    # Suppresion d'une préparation
     #
     def delete(self, request, preparation_id=None):
         if not request.user.is_authenticated:
@@ -105,13 +332,14 @@ class PreparationRest(View):
         if preparation.owner.username != request.user.username:
             return HttpResponseForbidden('{ "message" : "seul le propriétaire peu supprimer sa preparation" }')
 
-
-        #time.sleep(3)
-        nbref = len(preparation.element_set.all())
-
-        LOGGER.debug("Cette ingrédient est utilisé  {} fois".format(nbref))
+        
+        nbref = len(preparation.preparationrecette_set.all())
+        if nbref == 0:
+            nbref = len(preparation.basepreparation_set.all())
+            
+        LOGGER.debug("Cette préparation est déja utilisé {} fois".format(nbref))
         if nbref != 0:
-            return HttpResponseForbidden("{{ \"message\" : \"Suppression impossible, la preparation est referencée {} fois\" }}".format(nbref))
+            return HttpResponseForbidden("{{ \"status\": -1, \"message\" : \"Suppression impossible, la preparation est referencée {} fois\" }}".format(nbref))
         try:
             preparation.delete()
             return HttpResponse('{ "message" : "Suppression rélalisée" }')

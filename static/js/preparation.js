@@ -1,8 +1,9 @@
-var current_no_ingredient;
+var current_no_preparation;
 var VIEW_PREP='detail'
 var EDIT_PREP='edit'
 var NEW_PREP='new'
-var current_moode = VIEW_PREP;
+var DEL_PREP='del'
+var current_mode = VIEW_PREP;
 
 function loadPhotosDescriptionAtWork(categorie, message, select, current) {
     
@@ -197,21 +198,41 @@ function remplissage(preparation) {
 }
 
 function remplissage_vide() {
-    $("#id_detail_preparation_form")[0].reset();    
+    $('#id_detail_preparation_form').find('input:text, input:password, select, textarea').val('');
+    $('#id_detail_preparation_form').find('input:radio, input:checkbox').prop('checked', false);
+    current_no_preparation = -1;
 }
 
 function enable_disable_edit_mode() {
+    $('#id_detail_preparation_allergene').prop("disabled", true);
+    
     if (current_mode == VIEW_PREP) {
         $('#id_prep_tabs input').prop("disabled", true);
         $('#id_prep_tabs textarea').prop("disabled", true);
         $('#id_prep_tabs select').prop("disabled", true);
         $('.add-remove').hide();
+        $('#id_prep_tabs').show();
     }
     else if (current_mode == EDIT_PREP) {
         $('#id_prep_tabs input').prop("disabled", false);
         $('#id_prep_tabs textarea').prop("disabled", false);
         $('#id_prep_tabs select').prop("disabled", false);
         $('.add-remove').show();
+        $('#id_prep_tabs').show();
+    }
+
+    else if (current_mode == NEW_PREP) {
+        $('#id_prep_tabs').hide();
+    }
+    else if (current_mode == DEL_PREP) {
+        $('#id_prep_tabs input').prop("disabled", true);
+        $('#id_prep_tabs textarea').prop("disabled", true);
+        $('#id_prep_tabs select').prop("disabled", true);
+        $('.add-remove').hide();
+        $('#id_detail_preparation_form textarea').prop("disabled", true);
+        $('#id_detail_preparation_form select').prop("disabled", true);
+        $('#id_detail_preparation_form input').prop("disabled", true);
+        $('#id_prep_tabs').hide();
     }
 }
 
@@ -241,10 +262,6 @@ function ask_detail_preparation(id) {
     $('#id_preparation_modal_edit_header').hide();
     
 
-
-
-
-
     $('#id_detail_preparation_form input').prop("disabled", true);
     $('#id_detail_preparation_form textarea').prop("disabled", true);
     $('#id_detail_preparation_form select').prop("disabled", true);
@@ -256,8 +273,7 @@ function ask_detail_preparation(id) {
 }
 
 function ask_new_preparation() {
-    // FAT
-    return;
+    current_mode = NEW_PREP;
      
     remplissage_vide();
     $('#id_delete_preparation_id').text(-1);
@@ -270,7 +286,8 @@ function ask_new_preparation() {
     $('#id_preparation_modal_edit_header').css("display", "none");
     $('#id_preparation_modal_edit_footer').css("display", "block");
     $('#id_preparation_modal_new_header').css("display", "block");
-
+    $("#id_preparation_modal_nav_footer").hide();
+    
     loadCategoriesAtWork("PREP",
                          $("#id_edit_preparation_message"),
                          $("#id_detail_categorie"),
@@ -297,7 +314,7 @@ function ask_new_preparation() {
     $("#id_detail_preparation_img").attr("src",
                                         "/mesrecettes/photos/".concat("?" + new Date().getTime()));
     
-    
+    enable_disable_edit_mode();
     $('#id_detail_preparation_modal').modal('show');
 }
 
@@ -306,10 +323,9 @@ function ask_new_preparation() {
 // Suppression d'un preparation
 //
 function ask_delete_preparation(id) {
-    // FAT ///////////////////////////////////////////////
-    return;
-    
+    current_mode = DEL_PREP;    
     var preparation = getPreparation(id);
+    
     remplissage(preparation);
 
     $("#id_preparation_modal_nav_footer").css("display", "none");
@@ -325,8 +341,9 @@ function ask_delete_preparation(id) {
     $('#id_preparation_form input').prop("disabled", true);
     $('#id_preparation_form textarea').prop("disabled", true);
     $('#id_preparation_form select').prop("disabled", true);
-    
-    $('#id_preparation_modal').modal('show');
+
+    enable_disable_edit_mode();
+    $('#id_detail_preparation_modal').modal('show');
     
 };
 
@@ -359,7 +376,7 @@ function ask_edit_preparation(id) {
     $('#id_detail_preparation_form input').prop("disabled", false);
     $('#id_detail_preparation_form textarea').prop("disabled", false);
     $('#id_detail_preparation_form select').prop("disabled", false);
-
+    $('#id_detail_preparation_allergene').prop("disabled", true);
     $('#id_detail_preparation_form .btn').removeClass("disabled");
     
     $('#id_detail_preparation_modal').modal('show');
@@ -368,29 +385,19 @@ function ask_edit_preparation(id) {
 };
 
 
-function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
+function handleFileSelect(inp) {
+    var files = inp.get(0).files; // FileList object
 
     var msg_id = '#id_edit_photo_message';
-    var img_target_id = '#id_edit_photo_img'
+    var img_target_id = "#id_detail_preparation_img"
 
-    if (evt.target.id.match(/import/)) {
-        msg_id = '#id_import_photo_message';
-        img_target_id = '#id_import_photo_img'
-    }
-    
     if (files.length !=1) {
         $(msg_id).text("Il faut sélectionner un fichier");
         return false;
     }
 
 
-    // files is a FileList of File objects. List some properties.
     var f = files[0];
-    // output.push(escape(f.name), ' ', f.type || 'n/a', ' - ',
-    //            f.size, ' bytes, last modified: ',
-    //            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
-
     var error = "";
     if (f.size == 0 || f.size > 300000) {
            error = f.name.concat(", fichier trop gros 300000 caractères au maximum");
@@ -1456,12 +1463,127 @@ function loadEtapes(preparation, affichage) {
 }
 
 //
+// Sauvegarde preparation
+//
+function savePreparation(){
+    //event.preventDefault();
+    $("#id_edit_preparation_message").text("");
+    var formdata = new FormData($("#id_detail_preparation_form")[0]);
+    $("#id_loader").css("display","block");
+    var csrftoken = getCookie('csrftoken');
+    var u = "/mesrecettes/preparation/";
+    var prep_id = $("#id_detail_preparation_id").val();
+    if (prep_id == -1) {
+        t = 'put';
+    }
+    else {
+        t  = 'post';
+        u = u.concat(prep_id).concat("/");
+    }
+    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
+        processData: false,
+        contentType: false,
+        'type': t,
+        'url': u,
+        data: formdata,
+        
+        'success': function(response)
+        {
+            $("#id_loader").css("display","none");
+            window.location.reload();
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                console.log('Error on modifying preparation:', jqXHR, textStatus, errorThrown);
+	        $("#id_loader").css("display","none");
+                $("#id_edit_preparation_message").text(JSON.parse(jqXHR.responseText).message);
+            }
+            catch(error) {
+                $("#id_edit_preparation_message").text("erreur interne");
+            }
+        }
+    });
+}
+
+function deletePreparation(){
+    var preparation = getPreparation(current_no_preparation);    
+    $("#id_delete_preparation").attr("disabled", true);
+    $("#id_delete_preparation_abandon").attr("disabled", true);
+    $("#id_edit_preparation_message").text("");
+    $("#id_loader").css("display","block");
+    var u = '/mesrecettes/preparation/'.concat(preparation.id).concat('/');
+    var csrftoken = getCookie('csrftoken');
+    $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
+    $.ajax({
+        'type': 'delete',
+        'url': u,
+        
+        'success': function(response)
+        {
+	    window.location.reload()
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                console.log('Error on deleting preparation:', jqXHR, textStatus, errorThrown);
+	        $("#id_loader").css("display","none");
+	        $("#id_delete_preparation").removeAttr("disabled");
+	        $("#id_delete_preparation_abandon").removeAttr("disabled");
+                $("#id_edit_preparation_message").text(JSON.parse(jqXHR.responseText).message);
+            }
+            catch(error) {
+                $("#id_edit_preparation_message").text("erreur interne");
+            }
+            
+        }
+    });    
+}
+
+// gestion choix photo
+$(document).on('change', ':file', function() {
+    var input = $(this);
+    var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+    var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    input.trigger('fileselect', [numFiles, label]);
+    handleFileSelect(input);
+    
+    // remplissage Categorie Photo
+    var categorie_photo = $("#id_detail_categorie_photo");
+    categorie_photo.empty();
+    for (i=0; i < categories_photos.length; i++) {
+        categorie_photo.append('<option selected value="' + categories_photos[i].value + '">' + categories_photos[i].description + '</option>');
+    }
+
+    // selection categorie
+    $('#id_detail_id_photo').empty();
+    $('#id_detail_id_photo').append('<option selected value="NONE">Choisir</option>');
+
+    $('#id_detail_categorie_photo OPTION[value="NONE"]').prop('selected', true);
+    $('#id_detail_id_photo OPTION[value="NONE"]').prop('selected', true);
+    
+});
+
+                
+//
 // Au Chargement.......
 //
 $(document).ready(
     function () {
         // activation tooltip bootstrap
         $('[data-toggle="tooltip"]').tooltip();
+
+        // affichage non photo
+        $(':file').on('fileselect', function(event, numFiles, label) {
+            var input = $(this).parents('.input-group').find(':text');
+            if ( input.length ) {
+                var log = numFiles > 1 ? numFiles + ' files selected' : label;
+                input.val(log);
+            }
+        });
 
         // activation affichage des tabs
         $('a[href="#id_nutrition_tab"]').on('show.bs.tab', displayNutrition);
@@ -1553,84 +1675,10 @@ $(document).ready(
         });
         
 
-        // soumission modification
-        $("#id_edit_preparation").click(
-            function(){
-                //event.preventDefault();
-                $("#id_edit_preparation_message").text("");
-                var formdata = new FormData($("#id_detail_preparation_form")[0]);
-                $("#id_loader").css("display","block");
-                var csrftoken = getCookie('csrftoken');
-                var u = "/mesrecettes/preparation/";;
-                if ($("#id_detail_preparation_id").val() == -1) {
-                    t = 'put';
-                }
-                else {
-                    t  = 'post';
-                }
-                
-                $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-                $.ajax({
-                    //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
-                    processData: false,
-                    contentType: false,
-                    'type': t,
-                    'url': u,
-                    data: formdata,
-                    
-                    'success': function(response)
-                    {
-                        $("#id_loader").css("display","none");
-                        window.location.reload();
-                    },
-                    'error': function(jqXHR, textStatus, errorThrown)
-                    {
-                        try {
-                            console.log('Error on modifying preparation:', jqXHR, textStatus, errorThrown);
-	                    $("#id_loader").css("display","none");
-                            $("#id_edit_preparation_message").text(JSON.parse(jqXHR.responseText).message);
-                        }
-                        catch(error) {
-                            $("#id_edit_preparation_message").text("erreur interne");
-                        }
-                    }
-                });    
-            });
-                
-	
-        $("#id_delete_preparation").click(
-	    function(){
-	        $("#id_delete_preparation").attr("disabled", true);
-	        $("#id_delete_preparation_abandon").attr("disabled", true);
-	        $("#id_delete_preparation_message").text("");
-                $("#id_loader").css("display","block");
-                var u = getGetPreparationUrl().concat($('#id_delete_preparation_id').text());
-                var csrftoken = getCookie('csrftoken');
-                $.ajaxSetup({   headers: {  "X-CSRFToken": csrftoken  }  });
-                $.ajax({
-                    'type': 'delete',
-                    'url': u,
+        // soumission modification preparation du serveur
+        $("#id_edit_preparation").click(savePreparation);
 
-                    'success': function(response)
-                    {
-	                window.location.reload()
-                    },
-                    'error': function(jqXHR, textStatus, errorThrown)
-                    {
-                        try {
-                            console.log('Error on deleting preparation:', jqXHR, textStatus, errorThrown);
-	                    $("#id_loader").css("display","none");
-	                    $("#id_delete_preparation").removeAttr("disabled");
-	                    $("#id_delete_preparation_abandon").removeAttr("disabled");
-                            $("#id_delete_preparation_message").text(JSON.parse(jqXHR.responseText).message);
-                        }
-                        catch(error) {
-                            $("#id_delete_preparation_message").text("erreur interne");
-                        }
-                        
-                    }
-                });    
-            });
-        
-        
+	// suppresstion préparation du serveur
+        $("#id_delete_preparation").click(deletePreparation);
+                
     }); // fin document ready

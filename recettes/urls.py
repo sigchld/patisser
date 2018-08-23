@@ -53,8 +53,9 @@ urlpatterns = [
     url(r'^listp$', views.list_ingredients, name='preparation_create'),
     url(r'^listpreparations/owner/(?P<owner>[a-z]+)$', views.list_preparations, name='list_preparations_owner'),
     url(r'^listpreparations/acces/(?P<acces>[a-z]+)$', views.list_preparations, name='list_preparations_acces'),
-    url(r'^preparation/(?P<ingredient_id>[0-9]+)$', ingredientrest.IngredientRest.as_view(), name='preparation'),
-    url(r'^preparation/$', ingredientrest.IngredientRest.as_view(), name='preparation_empty'),
+    
+    url(r'^preparation/(?P<preparation_id>[0-9]+)/$', preparationrest.PreparationRest.as_view(), name='preparation'),
+    url(r'^preparation/$', preparationrest.PreparationRest.as_view(), name='preparation_empty'),
     url(r'^preparation/(?P<preparation_id>[0-9]+)/nutrition/$', preparationrest.PreparationEnergieEconomat.as_view(), name='preparation_nutriton'),
 
     url(r'^preparation/(?P<preparation_id>[0-9]+)/ingredient/$', preparationrest.PreparationElement.as_view(), name='preparation_element'),

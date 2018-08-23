@@ -700,7 +700,9 @@ def get_categorie(request):
     if request.POST:
         LOGGER.debug("categorie POST présent")
         #return HttpResponseServerError("{ \"message\" : \"méthode non supportée\" }")
-    groupe = request.POST.get('groupe', None)
+        groupe = request.POST.get('groupe', None)
+
+        
     LOGGER.debug("categorie {}".format( groupe))
 
     if  groupe is None or [] == [ item for item in Categorie.GROUPE if item[0] == groupe]:
