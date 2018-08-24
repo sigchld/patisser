@@ -45,6 +45,13 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
     });    
 }
 
+function formatNumber(len, number) {
+    var s = number.toString();
+    var l = s.length;
+    if (l >= len) return s;
+    return s.padStart(len, ' '); 
+}
+
 function displayNutrition() {
     // déjà chargées ?
     var preparation = getPreparation(current_no_preparation);
@@ -54,22 +61,21 @@ function displayNutrition() {
         return;
     }
     
-    $("#id_detail_preparation_kcalories").text(preparation.nutrition.kcalories);
-    $("#id_detail_preparation_kjoules").text(preparation.nutrition.kjoules);
+    $("#id_detail_preparation_kcalories").text(formatNumber(10, preparation.nutrition.kcalories));
+    $("#id_detail_preparation_kjoules").text(formatNumber(10, preparation.nutrition.kjoules));
     
-    $("#id_detail_preparation_matieres_grasses").text(preparation.nutrition.matieres_grasses);
-    $("#id_detail_preparation_matieres_grasses_saturees").text(preparation.nutrition.matieres_grasses_saturees);
+    $("#id_detail_preparation_matieres_grasses").text(formatNumber(10, preparation.nutrition.matieres_grasses));
+    $("#id_detail_preparation_matieres_grasses_saturees").text(formatNumber(10, preparation.nutrition.matieres_grasses_saturees));
         
-    $("#id_detail_preparation_glucides").text(preparation.nutrition.glucides);
-    $("#id_detail_preparation_glucides_dont_sucres").text(preparation.nutrition.glucides_dont_sucres);
+    $("#id_detail_preparation_glucides").text(formatNumber(10, preparation.nutrition.glucides));
+    $("#id_detail_preparation_glucides_dont_sucres").text(formatNumber(10, preparation.nutrition.glucides_dont_sucres));
         
-    $("#id_detail_preparation_fibres").text(preparation.nutrition.fibres_alimentaires);
+    $("#id_detail_preparation_fibres").text(formatNumber(10, preparation.nutrition.fibres_alimentaires));
     
-    $("#id_detail_preparation_proteines").text(preparation.nutrition.proteines);
-    $("#id_detail_preparation_sel").text(preparation.nutrition.sel);
+    $("#id_detail_preparation_proteines").text(formatNumber(10, preparation.nutrition.proteines));
+    $("#id_detail_preparation_sel").text(formatNumber(10, preparation.nutrition.sel));
         
     $("#id_detail_preparation_prix_ingredients").text(preparation.nutrition.cout);
-    $("#id_detail_preparation_prix_poids").text(preparation.nutrition.pp);    
 }
 
 function loadNutrition(preparation, affichage) {
@@ -147,11 +153,8 @@ function remplissage(preparation) {
     $("#id_detail_preparation_form")[0].reset();
     
     current_no_preparation = preparation.idloop;
-    $('#id_delete_preparation_id').text(preparation.id);
-    $("#id_detail_preparation_id").val(preparation.id)
-    
+    $("#id_detail_preparation_id").val(preparation.id)    
     $('#id_detail_preparation_code').val(preparation.code);
-    $('#id_detail_preparation_id').text(preparation.id);
     $("#id_detail_preparation_description").text(preparation.description);
     $("#id_detail_preparation_bonasavoir").text(preparation.bonasavoir);
     $("#id_detail_preparation_owner").text(preparation.owner)
@@ -248,7 +251,7 @@ function ask_detail_preparation(id) {
     
     var categorie = $("#id_detail_categorie");
     categorie.empty();
-    categorie.append('<option selected value="' + preparation.categorie_categorie + '">' + preparation.categorie_description + '</option>');
+    categorie.append('<option selected value="' + preparation.categorie + '">' + preparation.categorie_description + '</option>');
     categorie.change();
 
     $("#id_preparation_modal_nav_footer").show();
@@ -276,7 +279,6 @@ function ask_new_preparation() {
     current_mode = NEW_PREP;
      
     remplissage_vide();
-    $('#id_delete_preparation_id').text(-1);
     $("#id_detail_preparation_id").val(-1)
     
     $("#id_preparation_modal_view_footer").css("display", "none");
@@ -352,6 +354,11 @@ function ask_delete_preparation(id) {
 // Modification d'un preparation
 //
 function ask_edit_preparation(id) {
+    do_ask_edit_preparation(id);
+    $('#id_detail_preparation_modal').modal('show');
+}
+
+function do_ask_edit_preparation(id) {
     var preparation = getPreparation(id);
     current_mode = EDIT_PREP;    
     remplissage(preparation);
@@ -368,7 +375,7 @@ function ask_edit_preparation(id) {
     loadCategoriesAtWork("PREP",
                          $("#id_edit_preparation_message"),
                          $("#id_detail_categorie"),
-                         preparation.categorie_categorie
+                         preparation.categorie
                         );
 
     enable_disable_edit_mode();
@@ -378,8 +385,6 @@ function ask_edit_preparation(id) {
     $('#id_detail_preparation_form select').prop("disabled", false);
     $('#id_detail_preparation_allergene').prop("disabled", true);
     $('#id_detail_preparation_form .btn').removeClass("disabled");
-    
-    $('#id_detail_preparation_modal').modal('show');
     $('#id-span-button-file').removeClass('disabled')
     $('.nav-tabs a[href="#id_nutrition_tab"]').tab('show')
 };
@@ -448,11 +453,11 @@ function displayEconomat() {
     economat.append(d1);
 
     preparation.nutrition.ingredients.forEach(function(element) {
-        d1 = $("<div class=\"no-margin row\"></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
+        var d1 = $("<div class=\"no-margin row\"></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span >" + element.code + "</span></div>");
         d1.append("<div class=\"colprep col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.quantite + "</span></div>");
-        d1.append("<div class=\"colprep col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.cout + "</span></div>");
+        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2 economat\"><span >" + formatNumber(10, element.quantite) + "</span></div>");
+        d1.append("<div class=\"colprep col-lg-2 col-xs-2 col-md-2 col-sm-2 economat\"><span>" + formatNumber(10, element.cout) + "</span></div>");
         economat.append(d1);
     });
 }
@@ -504,7 +509,7 @@ function removeElement(href, message) {
 function addEventListenerIngredients() {
     var message = $("#id_edit_preparation_message");
     
-    $('.add_ingredient-remove').on('click', function (e) {
+    $('.add-ingredient-remove').on('click', function (e) {
         removeElement(this, message); 
     });
 
@@ -533,6 +538,15 @@ function addEventListenerIngredients() {
 
 }
 
+function buildIngredientDiv(code, description, element_id, quantite) {
+    var d1 = $("<div class=\"no-margin row\" ></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + code + "</span></div>");
+    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + description + "</span></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-ingredient\" value=\""
+              + quantite + "\" data-elem=\"" + element_id +"\" ></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add-remove add-ingredient-remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+    return d1;
+}
 
 function addIngredientSave(message, ingredient, quantite) {
     var csrftoken = getCookie('csrftoken');
@@ -555,13 +569,7 @@ function addIngredientSave(message, ingredient, quantite) {
             else {
                 var element_id = response.element_id;
                 var ingredients=$("#id_add_ingredients_div");
-                var d1 = $("<div class=\"no-margin row\" ></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + ingredient.code + "</span></div>");
-                d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + ingredient.description + "</span></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-ingredient\" value=\""
-                          + quantite + "\"></div>");
-                d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" class=\"text-danger add-ingredient-remove\" data-elem=\"" + element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span> supprimer</a></div>");
-                
+                var d1 = buildIngredientDiv(ingredient.code, ingredient.description, element_id, quantite);
                 $(d1).insertBefore("#id_add_ingredients_div");
                             
                 // reset des select
@@ -717,15 +725,8 @@ function displayIngredients() {
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"></div>");
     ingredients.append(d1);
     
-    preparation.ingredients.forEach(function(element) {
-        d1 = $("<div class=\"no-margin row\" ></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><span>" + element.code + "</span></div>");
-        d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><span>" + element.description + "</span></div>");
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-ingredient\" value=\""
-                  + element.quantite + "\" data-elem=\"" + element.element_id +"\"></div>");
-
-        d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-ingredient-remove add-remove\" data-elem=\"" + element.element_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
-               
+    preparation.ingredients.forEach(function(ingredient) {
+	var d1 = buildIngredientDiv(ingredient.code, ingredient.description, ingredient.element_id, ingredient.quantite);
         ingredients.append(d1);
     });
 
@@ -884,7 +885,7 @@ function removeBase(href, message) {
 function addEventListenerBases() {
     var message = $("#id_edit_preparation_message");
     
-    $('.add-ingredient-remove').on('click', function (e) {
+    $('.add-base-remove').on('click', function (e) {
         removeBase(this, message); 
     });
 
@@ -920,7 +921,7 @@ function buildBaseDiv(code, description, quantite, base_id) {
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input  class=\"form-control input-sm auto-save-base\" value=\""
               + quantite + "\" data-base=\"" + base_id +"\"></div>");
     
-    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-ingredient-remove  add-remove\" data-base=\"" + base_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-base-remove  add-remove\" data-base=\"" + base_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
     return d1;
 }
 
@@ -1065,7 +1066,7 @@ function displayBases() {
     bases.append(d1);
     
     preparation.bases.forEach(function(base) {
-        d1 = buildBaseDiv(base.code, base.description, base.quantite, base.base_id);               
+        var d1 = buildBaseDiv(base.code, base.description, base.quantite, base.base_id);               
         bases.append(d1);
     });
 
@@ -1493,7 +1494,31 @@ function savePreparation(){
         'success': function(response)
         {
             $("#id_loader").css("display","none");
-            window.location.reload();
+		try {
+		    response = JSON.parse(response);
+		    if (prep_id == -1) {
+			// on passe dans le mode modification ssi on est en création
+			//window.location.reload();
+			var id;
+			var prep = response.preparation;
+			var preparation_id = prep.preparation_id;
+			current_mode = EDIT_PREP;
+			current_no_preparation = id;
+			prep.ingredients = [];
+			prep.bases = [];
+			prep.etapes = [];
+			prep.nutrition = {};
+			prep.nutrition.cout = "0.00";
+			prep.id = preparation_id;
+			id = addObjPreparation(prep);
+			$("#id_detail_preparation_id").val(preparation_id)
+			do_ask_edit_preparation(id);
+		    }
+		}
+		catch(error) {
+                    $("#id_edit_preparation_message").text("erreur interne");
+		}
+
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
@@ -1607,6 +1632,7 @@ $(document).ready(
 
         });
 
+	// pour eviter la mise en cache ajout d'un param à la fin
         $('#id_detail_id_photo').change(function(event) {
             $("#id_detail_preparation_img").attr("src",
                                                 "/mesrecettes/photos/".concat($('#id_detail_id_photo').val()).concat("?" + new Date().getTime()));
@@ -1623,7 +1649,7 @@ $(document).ready(
             var new_preparation = getPreparation(next_idx);
             var categorie = $("#id_detail_categorie");
             categorie.empty();
-            categorie.append('<option selected value="' + new_preparation.categorie_categorie + '">' + new_preparation.categorie_description + '</option>');
+            categorie.append('<option selected value="' + new_preparation.categorie + '">' + new_preparation.categorie_description + '</option>');
             categorie.change();
             
             remplissage(new_preparation);
@@ -1638,7 +1664,7 @@ $(document).ready(
             var new_preparation = getPreparation(next_idx);
             var categorie = $("#id_detail_categorie");
             categorie.empty();
-            categorie.append('<option selected value="' + new_preparation.categorie_categorie + '">' + new_preparation.categorie_description + '</option>');
+            categorie.append('<option selected value="' + new_preparation.categorie + '">' + new_preparation.categorie_description + '</option>');
             categorie.change();
             
             remplissage(new_preparation);

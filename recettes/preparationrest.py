@@ -6,6 +6,7 @@ import time
 import math
 import json
 import re
+from decimal import Decimal, ROUND_DOWN,  getcontext
 
 from PIL import Image
 from PIL import ImageMath
@@ -22,7 +23,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect, HttpResponseBadRequest
 from django.http import HttpResponseNotModified, HttpResponseServerError
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
@@ -211,13 +212,13 @@ class PreparationRest(View):
     # Création d'une préparation
     def put(self, request, preparation_id=None):
         """
-        Modification d'une préparation
+        Création d'une préparation
         """
         if not request.user.is_authenticated:
-            return HttpResponseServerError('{ "status " : -1, "message" : "Il faut être authentifié pour modifier une préparation" }')
+            return HttpResponseForbidden('{ "status " : -1, "message" : "Il faut être authentifié pour créer une préparation" }')
 
         if preparation_id is not None:
-            return HttpResponseServerError('{ "status" : -1, "message" : "Il faut pas indiquer une numéro de préparation" }')
+            return HttpResponseBadRequest('{ "status" : -1, "message" : "Il faut pas indiquer une numéro de préparation" }')
 
         preparation = Preparation()
         preparation.owner = request.user
@@ -228,7 +229,7 @@ class PreparationRest(View):
                 champs = ""
                 for error in form.errors:
                     champs = champs + error + ", "
-                return HttpResponseServerError('{{ "status" : -1, "message" : "saisie erronée: {}" }}'.format(champs))    
+                return HttpResponseServerError('{{ "status" : -1, "message" : "saisie erronée: {}" }}'.format(champs))
 
             # chargement photo si il y a lieu
             imported_photo = False
@@ -304,7 +305,8 @@ class PreparationRest(View):
             setattr(preparation, 'code', form.cleaned_data['code'].upper())
 
             preparation.save()
-            return HttpResponse('{ "message" : "OK" }')
+            #return HttpResponse('{{ "status" : 0, "message" : "OK", "preparation_id" : {} }}'.format(preparation.id))
+            return PreparationRest.get(self, request, preparation.id)
 
         except IntegrityError:
             just_the_string = traceback.format_exc()
@@ -434,17 +436,24 @@ class PreparationEnergieEconomat(View):
          fibres_alimentaires, proteines,
          sel, economat, cout) = calcul_ingredients_preparation(preparation)
 
-        json_string = json.dumps({'cout':cout,
-                                  'kcalories':kcalories,
-                                  'kjoules':kjoules,
+        getcontext().rouding=ROUND_DOWN
+        getcontext().prec = 12
+        for element in economat:
+            element['quantite'] = element['quantite'].quantize(Decimal('0.01'))
+            element['cout'] = element['cout'].quantize(Decimal('0.01'))
+            pass
+            
+        json_string = json.dumps({'cout': cout.quantize(Decimal('0.01')),
+                                  'kcalories': kcalories.quantize(Decimal('0')),
+                                  'kjoules':kjoules.quantize(Decimal('0')),
                                   'allergene':allergene,
-                                  'matieres_grasses':matieres_grasses,
-                                  'matieres_grasses_saturees':matieres_grasses_saturees,
-                                  'glucides':glucides,
-                                  'glucides_dont_sucres':glucides_dont_sucres,
-                                  'fibres_alimentaires':fibres_alimentaires,
+                                  'matieres_grasses': matieres_grasses.quantize(Decimal('0.001')),
+                                  'matieres_grasses_saturees':matieres_grasses_saturees.quantize(Decimal('0.001')),
+                                  'glucides':glucides.quantize(Decimal('0.001')),
+                                  'glucides_dont_sucres':glucides_dont_sucres.quantize(Decimal('0.001')),
+                                  'fibres_alimentaires':fibres_alimentaires.quantize(Decimal('0.001')),
                                   'proteines':proteines,
-                                  'sel':sel,
+                                  'sel':sel.quantize(Decimal('0.001')),
                                   'ingredients': economat},
                                  cls=DjangoJSONEncoder)
         return HttpResponse("{{ \"status\":0, \"message\": \"ok\", \"valeurs\":{} }}".format(json_string))
@@ -452,7 +461,7 @@ class PreparationEnergieEconomat(View):
 
 class PreparationElement(View):
     """
-    REst module pour les elements d'une préparation
+    Rest module pour les elements d'une préparation
     """
     def __init__(self):
         """

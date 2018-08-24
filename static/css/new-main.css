@@ -458,3 +458,14 @@ opacity:1;
 
     
 .colprep{ background-color: #faf5f5;}
+
+.energie {
+    font-family: monospace;
+    text-align: text-right;
+    white-space:pre;
+}
+.economat {
+    font-family: monospace;
+    text-align: text-right;
+    white-space:pre;
+}

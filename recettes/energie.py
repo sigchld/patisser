@@ -145,15 +145,15 @@ def calcul_ingredients(preparation):
         if tmp is None:
             tmp = {}
             tmp['quantite'] = Decimal(0)
-            tmp['kjoules'] = Decimal(0)
-            tmp['kcalories'] = Decimal(0)
-            tmp['matieres_grasses'] = Decimal(0)
-            tmp['matieres_grasses_saturees'] = Decimal(0)
-            tmp['glucides'] = Decimal(0)
-            tmp['glucides_dont_sucre'] = Decimal(0)
-            tmp['fibres_alimentaires'] = Decimal(0)
-            tmp['proteines'] = Decimal(0)
-            tmp['sel'] = Decimal(0)
+            #tmp['kjoules'] = Decimal(0)
+            #tmp['kcalories'] = Decimal(0)
+            #tmp['matieres_grasses'] = Decimal(0)
+            #tmp['matieres_grasses_saturees'] = Decimal(0)
+            #tmp['glucides'] = Decimal(0)
+            #tmp['glucides_dont_sucre'] = Decimal(0)
+            #tmp['fibres_alimentaires'] = Decimal(0)
+            #tmp['proteines'] = Decimal(0)
+            #tmp['sel'] = Decimal(0)
             tmp['description'] = ingredient.description
             tmp['code'] = ingredient.code
             tmp['id'] = ingredient.id
@@ -161,15 +161,15 @@ def calcul_ingredients(preparation):
             ingredients[ingredient.id] = tmp
 
         tmp['quantite'] += element.quantite
-        tmp['kjoules'] += kjoules
-        tmp['kcalories'] += kcalories
-        tmp['matieres_grasses'] += matieres_grasses
-        tmp['matieres_grasses_saturees'] += matieres_grasses_saturees
-        tmp['glucides'] += glucides
-        tmp['glucides_dont_sucre'] += glucides_dont_sucres
-        tmp['fibres_alimentaires'] += fibres_alimentaires
-        tmp['proteines'] += proteines
-        tmp['sel'] += sel
+        #tmp['kjoules'] += kjoules
+        #tmp['kcalories'] += kcalories
+        #tmp['matieres_grasses'] += matieres_grasses
+        #tmp['matieres_grasses_saturees'] += matieres_grasses_saturees
+        #tmp['glucides'] += glucides
+        #tmp['glucides_dont_sucre'] += glucides_dont_sucres
+        #tmp['fibres_alimentaires'] += fibres_alimentaires
+        #tmp['proteines'] += proteines
+        #tmp['sel'] += sel
         tmp['cout'] += cout
 
 
@@ -208,8 +208,8 @@ def calcul_ingredients_recette(recette):
             tmp = economat.get(ingredient.id)
             if tmp is None:
                 tmp = {}
-                tmp['quantite'] = 0
-                tmp['energie'] = 0
+                tmp['quantite'] = Decimal(0)
+                tmp['energie'] = Decimal(0)
                 tmp['nom'] = ingredient.description
                 economat[ingredient.id] = tmp
 

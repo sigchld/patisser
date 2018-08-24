@@ -260,8 +260,14 @@ class Preparation(models.Model):
     def to_json(self):
         valeurs = {}
         valeurs['preparation_id'] = self.id
+        valeurs['code'] = self.code
         valeurs['description'] = self.description
         valeurs['bonasavoir'] = self.bonasavoir
+        valeurs['owner'] = self.owner.username
+        valeurs['acces'] = self.acces
+        valeurs['categorie'] = self.categorie.categorie
+        valeurs['categorie_description'] = self.categorie.description
+        valeurs['groupe'] = self.categorie.groupe
         return json.dumps(valeurs, cls=DjangoJSONEncoder)
 
 class PreparationRecette(models.Model):

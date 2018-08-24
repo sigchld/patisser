@@ -391,9 +391,6 @@
                       <span class="font-weight-bold">Coût ingredients </span>
                       <span xlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_preparation_prix_ingredients"></span>
                       <span class="font-weight-bold">&euro;</span>
-                      <!-- span> pour </span>
-                           <input class="text-right" name="pp" maxlength="8" style="width:8em;" id="id_detail_preparation_prix_poids">
-                           <span class="font-weight-bold">g</span -->
                     </div>
                   </div>
                   
@@ -467,8 +464,9 @@
                       <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">
                         <span>energie</span>
                       </div>
+		      
                       <div>
-                        <span id="id_detail_preparation_kjoules"></span>
+                        <span class="energie" id="id_detail_preparation_kjoules"></span>
                         <span>kj</span>
                       </div>
                     </div>
@@ -478,7 +476,7 @@
                         <span>&nbsp;</span>
                       </div>
                       <div>
-                        <span id="id_detail_preparation_kcalories"></span>
+                        <span  class="energie"  id="id_detail_preparation_kcalories"></span>
                         <span>kcal</span>
                       </div>
                     </div>
@@ -489,7 +487,7 @@
                         <span>maitères grasses<span>
                       </div>
                       <div>
-                        <span id="id_detail_preparation_matieres_grasses"></span>
+                        <span class="energie"  id="id_detail_preparation_matieres_grasses"></span>
                         <span>g</span>
                       </div>
                     </div>
@@ -500,7 +498,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_matieres_grasses_saturees_inf"></span -->
-                        <span  id="id_detail_preparation_matieres_grasses_saturees"></span>
+                        <span class="energie"   id="id_detail_preparation_matieres_grasses_saturees"></span>
                         <span>g</span>
                       </div>
                     </div>
@@ -511,7 +509,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_glucides_inf"></span -->
-                        <span id="id_detail_preparation_glucides"></span>
+                        <span class="energie"  id="id_detail_preparation_glucides"></span>
                         <span> g<span>
                       </div>
                     </div>
@@ -522,7 +520,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_glucides_dont_sucres_inf"></span -->
-                        <span  id="id_detail_preparation_glucides_dont_sucres"></span>
+                        <span class="energie"  id="id_detail_preparation_glucides_dont_sucres"></span>
                         <span>g</span>
                       </div>
                     </div>
@@ -533,8 +531,8 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_fibre_inf"></span -->
-                        <span id="id_detail_preparation_fibres"></span>
-                      <span> g</span>
+                        <span class="energie"  id="id_detail_preparation_fibres"></span>
+                      <span>g</span>
                       </div>
                     </div>
                       
@@ -544,7 +542,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_proteines_inf"></span -->
-                        <span  id="id_detail_preparation_proteines"></span>
+                        <span class="energie"  id="id_detail_preparation_proteines"></span>
                         <span> g</span>
                       </div>
                     </div>
@@ -555,7 +553,7 @@
                       </div>
                       <div>
                         <!-- span id="id_detail_preparation_sel_inf"></span -->
-                        <span  id="id_detail_preparation_sel"></span>
+                        <span  class="energie" id="id_detail_preparation_sel"></span>
                         <span>g</span>
                       </div>
                     </div>
@@ -634,12 +632,12 @@
   "date_modification" : "{{preparation.date_modification|date:"l j F o H:i"}}",
   {% if preparation.categorie %}
   "categorie_description" : "{{preparation.categorie.description|escapejs}}",
-  "categorie_groupe" : "{{preparation.categorie.groupe|escapejs}}",
-  "categorie_categorie" : "{{preparation.categorie.categorie|escapejs}}",
+  "groupe" : "{{preparation.categorie.groupe|escapejs}}",
+  "categorie" : "{{preparation.categorie.categorie|escapejs}}",
   {% else %}
   "categorie_description" : "",
-  "categorie_groupe" : "",
-  "categorie_categorie" : "",
+  "groupe" : "",
+  "categorie" : "",
   {% endif %}
   {% if preparation.photo and preparation.photo.id and preparation.photo.id != '%s' %}
     "photo_id" : "{{preparation.photo.id|escapejs}}",
@@ -667,8 +665,16 @@
   {% endfor %}
 
   function getPreparation(no) {
-  return preparations[no];
+      return preparations[no];
   }
+
+  function addObjPreparation(prep) {
+      var no = Object.keys(preparations).length;
+      prep.idloop = no;
+      preparations[no] = prep;
+      return no;
+  }
+  
   function getNbPreparation() {
   return Object.keys(preparations).length;
 
