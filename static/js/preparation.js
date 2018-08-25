@@ -1276,9 +1276,59 @@ function removeEtape(href, message) {
 }
 
 function buildEtapeDiv(nom, description, ordre, etape_id) {
-    d1 = $("<div class=\"no-margin row\" ></div>");
+    var d1 = $("<div class=\"no-margin row\" ></div>");
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input type=\"text\" class=\"form-control\ auto-save-etape\" data-name=\"nom\" data-etape=\"" + etape_id +"\"value=\"" + nom + "\"></span></div>");
-    d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><textarea class=\"form-control auto-save-etape\" rows=\"2\" data-name=\"description\" data-etape=\"" + etape_id +"\">" + description + "</textarea></div>");
+    if (current_mode == VIEW_PREP) {
+        var converter = new showdown.Converter();
+       //converter.makeHtml(text);
+
+        var d2 = $("<div class=\"\more\">"+ description + "</div>");
+        var d3 = $("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6 etape-description\"></div>");
+
+        var showChar = 50,
+            ellipsesText =  "...",
+	    moretext = "plus",
+	    lessText = "moins";
+        
+	if(description.length > showChar) {
+	    var c = description.substr(0, showChar);
+	    var h = description.substr(showChar-1, description.length - showChar);
+            
+	    var html = "<span class=\"startcontent\">" + converter.makeHtml(c) + "</span>" + '<span class="moreellipses">'
+                + ellipsesText+ '&nbsp;</span><span class="morecontent"><span>'
+                + converter.makeHtml(description) + '</span>&nbsp;&nbsp;<a href="" class="morelink">'
+                + moretext + '</a></span>';
+
+            $(d2).html(html);
+            /*
+	var showChar = 100;
+	var ellipsestext = "...";
+	var moretext = "more";
+	var lesstext = "less";
+
+	$(".morelink").click(function(){
+		if($(this).hasClass("less")) {
+			$(this).removeClass("less");
+			$(this).html(moretext);
+		} else {
+			$(this).addClass("less");
+			$(this).html(lesstext);
+		}
+		$(this).parent().prev().toggle();
+		$(this).prev().toggle();
+		return false;
+	});
+*/
+  
+        }
+        d3.append(d2);
+        d1.append(d3);
+
+  
+    }
+    else {
+        d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><textarea class=\"form-control auto-save-etape\" rows=\"2\" data-name=\"description\" data-etape=\"" + etape_id +"\">" + description + "</textarea></div>");
+    }
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input type=\"text\" class=\"form-control auto-save-etape\" data-name=\"ordre\" data-etape=\"" + etape_id +"\"value=\"" + ordre + "\"></span></div>");
     
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-etape-remove add-remove\" data-etape=\"" + etape_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
@@ -1334,7 +1384,7 @@ function displayEtapes() {
     
     // activation des inputs
     enable_disable_edit_mode();
-
+    enableShortenText();          
 }
 
 function addEventListenerEtapes() {
@@ -1592,7 +1642,25 @@ $(document).on('change', ':file', function() {
     
 });
 
-                
+function enableShortenText() {
+	var moretext = "plus";
+	var lesstext = "moins";
+
+	$(".morelink").click(function(){
+		if($(this).hasClass("less")) {
+			$(this).removeClass("less");
+			$(this).html(moretext);
+		} else {
+			$(this).addClass("less");
+			$(this).html(lesstext);
+		}
+	    $(this).parent().prev().toggle();
+            $(this).parent().prev().prev().toggle();
+		$(this).prev().toggle();
+		return false;
+	});
+}
+
 //
 // Au Chargement.......
 //

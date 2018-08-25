@@ -48,14 +48,14 @@ class PreparationRest(View):
     """
     def __init__(self):
         self.http_method_names = ['delete', 'post', 'put', 'get']
-       
+
     def http_method_not_allowed(self, request, *args, **kwargs):
         LOGGER.warning(
             'Method Not Allowed (%s): %s', request.method, request.path,
             extra={'status_code': 405, 'request': request}
         )
         return http.HttpResponseNotAllowed(self._allowed_methods(), '{ "message" : "Méthode non supportée" }')
-   
+
     def get(self, request, preparation_id=None, categorie_id=None):
         """
         retourne une préparation
@@ -102,7 +102,7 @@ class PreparationRest(View):
 
         if not preparation_id:
             return HttpResponseServerError('{ "status" : -1, "message" : "Il faut indiquer une numéro de préparation" }')
-                    
+
         try:
             form = PreparationForm(request.POST)
             if not form.is_valid():
@@ -110,7 +110,7 @@ class PreparationRest(View):
                 for error in form.errors:
                     champs = champs + error + ", "
                 return HttpResponseServerError('{{ "status" : -1, "message" : "saisie erronée: {}" }}'.format(champs))
-            
+
             preparation2_id = request.POST.get('id', None)
             preparation = None
             try:
@@ -222,7 +222,7 @@ class PreparationRest(View):
 
         preparation = Preparation()
         preparation.owner = request.user
-        
+
         try:
             form = PreparationForm(request.POST)
             if not form.is_valid():
@@ -318,7 +318,7 @@ class PreparationRest(View):
             return HttpResponseServerError('{ "message" : "erreur inattendue" }')
 
 
-    
+
     #
     # Suppresion d'une préparation
     #
@@ -334,11 +334,11 @@ class PreparationRest(View):
         if preparation.owner.username != request.user.username:
             return HttpResponseForbidden('{ "message" : "seul le propriétaire peu supprimer sa preparation" }')
 
-        
+
         nbref = len(preparation.preparationrecette_set.all())
         if nbref == 0:
             nbref = len(preparation.basepreparation_set.all())
-            
+
         LOGGER.debug("Cette préparation est déja utilisé {} fois".format(nbref))
         if nbref != 0:
             return HttpResponseForbidden("{{ \"status\": -1, \"message\" : \"Suppression impossible, la preparation est referencée {} fois\" }}".format(nbref))
@@ -442,7 +442,7 @@ class PreparationEnergieEconomat(View):
             element['quantite'] = element['quantite'].quantize(Decimal('0.01'))
             element['cout'] = element['cout'].quantize(Decimal('0.01'))
             pass
-            
+
         json_string = json.dumps({'cout': cout.quantize(Decimal('0.01')),
                                   'kcalories': kcalories.quantize(Decimal('0')),
                                   'kjoules':kjoules.quantize(Decimal('0')),
@@ -496,7 +496,7 @@ class PreparationElement(View):
             res = res + PreparationElement.element_to_json(element)
         res = res + "], \"nb_elements\":" + str(nb_elements) + "}"
         return res
-    
+
     def put(self, request, preparation_id, element_id=None):
         """
         /preparation/no/elenent/no|none|all
@@ -544,7 +544,7 @@ class PreparationElement(View):
 
         preparation_id = int(preparation_id)
         element_id = int(element_id)
-        
+
         try:
             body = json.loads(request.body)
             quantite = body['quantite']
@@ -558,7 +558,7 @@ class PreparationElement(View):
             if element.preparation <> preparation:
                 LOGGER.error("Loading element appartient pas preparation/{}/{}".format(preparation_id, element_id))
                 return HttpResponse("{ \"status\":-2, \"message\": \"préparation et/ou element erronés\" }")
-                
+
         except Preparation.DoesNotExist:
             LOGGER.error("Loading preparation inconnue/{}".format(preparation_id))
             return HttpResponse("{ \"status\":-3, \"message\": \"préparation inconnue\" }")
@@ -811,9 +811,9 @@ class PreparationEtape(View):
                 response = PreparationElement.elements_to_json_response([etape])
             except EtapePreparation.DoesNotExist:
                 return HttpResponse("{ \"status\":-2 }")
-            
+
             return HttpResponse(response)
-        
+
         # il faut charger la prération pour retrouver les ingredients
         preparation = None
         try:
@@ -881,7 +881,7 @@ class PreparationBase(View):
 
     @staticmethod
     def is_cycle(preparation, base_preparation):
-        
+
         trouve = False
         if isinstance(preparation, BasePreparation):
             preparations = preparation.base
@@ -891,7 +891,7 @@ class PreparationBase(View):
         LOGGER.debug("cycle ? : prep{} / paseprep{}".format(preparations.id, base_preparation.id))
         if preparations == base_preparation:
             return True
-            
+
         for prep in preparations.bases.all():
             if prep == base_preparation:
                 LOGGER.debug("cycle : {}".format(prep.id))
@@ -954,7 +954,7 @@ class PreparationBase(View):
 
         preparation_id = int(preparation_id)
         base_id = int(base_id)
-        
+
         try:
             body = json.loads(request.body)
             quantite = body['quantite']
@@ -971,7 +971,7 @@ class PreparationBase(View):
             if base.preparation <> preparation:
                 LOGGER.error("Loading base appartient pas preparation/{}/{}".format(preparation_id, base_id))
                 return HttpResponse("{ \"status\":-2, \"message\": \"préparation et/ou base erronés\" }")
-                
+
         except Preparation.DoesNotExist:
             LOGGER.error("Loading preparation inconnue/{}".format(preparation_id))
             return HttpResponse("{ \"status\":-3, \"message\": \"préparation inconnue\" }")
