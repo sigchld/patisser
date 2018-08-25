@@ -1,13 +1,52 @@
+function loadCategoriesAtWork(groupe, message, select, current) {
+    
+    var csrftoken = getCookie('csrftoken');
+    var u = "/mesrecettes/categorie/".concat(groupe).concat("/");
+    message.text(" ");    
+    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
+    $.ajax({
+        'type' : 'get',
+        'url' : u,
+        'dataType': 'json',
+        'success' : function(res)
+        {
+            select.empty();
+            if (res.status == 0) {            
+                select.append('<option value="NONE" selected>Choisir..</option>');
+                for (var idx=0; idx < res.categories.length; idx++) { 
+                    var element = res.categories[idx];
+                    if (element.categorie == current) {
+                        select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
+                        select.val(current);
+                    } else {
+                        select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+                    }
+                }
+            }
+            select.change();
+        },
+        'error': function(jqXHR, textStatus, errorThrown)
+        {
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
+        }
+    });    
+}
+
+
 function loadCategoriesPopOver(event){
     event.preventDefault();
     loadCategoriesPopOverAtWork();
 }
 
 function loadCategoriesPopOverAtWork() {
-    $("#id_popover_message").text(" ");
+    var message = $("#id_popover_message");
 
-    var csrftoken = getCookie('csrftoken');
-    var u = $("#id_popover_categorie_form").data('cat-action');
+    $(message).text(" ");
     var groupe = $("#id_popover_groupe");
 
     if (groupe.val() == "ALL") {
@@ -15,29 +54,39 @@ function loadCategoriesPopOverAtWork() {
         return ;
     }
     
+    var csrftoken = getCookie('csrftoken');
+    // var u = $("#id_popover_categorie_form").data('cat-action');
+    var u = "/mesrecettes/categorie/".concat(groupe.val()).concat("/");
+
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
     $.ajax({
-        //processData: true,
-        //contentType: true,
-        'type' : 'post',
+        'type' : 'get',
         'url' : u,
-        'data' : $("#id_popover_categorie_form").serialize(),        
-        'success' : function(response)
+        'dataType': 'json',
+        'success' : function(res)
         {
-            $select = $("#id_popover_categorie");
-            $select.empty();
-            var res = JSON.parse(response).message;
-            $select.append('<option value="ALL">toutes</option>');
-            for (var idx=0; idx < res.length; idx++) { 
-                var element = res[idx];
-                $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+            var select = $('#id_popover_categorie');
+            $(select).empty();
+            if (res.status == 0) {            
+                $(select).append('<option value="ALL" selected>Toutes..</option>');
+                for (var idx=0; idx < res.categories.length; idx++) { 
+                    var element = res.categories[idx];
+                    $(select).append('<option value=' + element.categorie + '>' + element.description + '</option>');
+                }
             }
+            $(select).change();
         },
         'error': function(jqXHR, textStatus, errorThrown)
         {
-            $("#id_popover_message").text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            try {
+                message.text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
+            }
+            catch(error) {
+                message.text("erreur interne");
+            }
         }
     });    
+    
 }
 
 function getCookie(name) {

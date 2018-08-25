@@ -58,22 +58,23 @@ class PhotoRest(View):
 
 
     # Mofification d'une photo
-    def post(self, request):
+    def post(self, request, photo_id=None):
         if not request.user.is_authenticated:
-            return HttpResponseForbidden('{ "message" : "il fat se logger" }')
+            return HttpResponseForbidden('{ "message" : "il faut se logger" }')
 
+        if not photo_id or not photo_id.isdigit():
+            return HttpResponseForbidden('{ "message" : "il faut l\'id de la photo" }')
         try:
             form = PhotoForm(request.POST)
             #if not form.is_valid():
             #    return HttpResponseServerError('{ "message" : "saisie incomplète" }')
             groupe = form['groupe'].value()
-            categorie  = form['categorie'].value()
+            categorie = form['categorie'].value()
 
 
             if groupe is None or categorie is None or groupe == "NONE" or categorie == "NONE":
                 return HttpResponseServerError('{ "message" : "saisie incomplète, il manque le groupe ou la catégorie" }')
 
-            photo_id = request.POST.get('id', None)
             photo = None
             try:
                 photo = Photo.objects.get(pk=photo_id)
@@ -252,7 +253,7 @@ class PhotoRest(View):
                     if queryset.count() == 1:
                         photo.categorie = queryset.first()
                     else:
-                        return HttpResponseServerError('{ "message" : "saisie incomplète, groupe er catégorie inconnus" }')
+                        return HttpResponseServerError('{ "message" : "saisie incomplète, groupe ou catégorie inconnus" }')
 
 
                 try:

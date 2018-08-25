@@ -74,6 +74,15 @@ class Categorie(models.Model):
     def __unicode__(self):
         return "%s" % (self.description)
 
+    def to_json(self):
+        valeurs = {}
+        valeurs['id'] = self.id
+        valeurs['description'] = self.description
+        valeurs['groupe'] = self.groupe
+        valeurs['categorie'] = self.categorie
+
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+
 
 class Ingredient(models.Model):
     """
@@ -138,10 +147,10 @@ class Ingredient(models.Model):
         valeurs['matieres_grasses_saturees'] = self.matieres_grasses_saturees
         valeurs['kcalories'] = self.kcalories
         valeurs['kjoules'] = self.kjoules
-        
+
         return json.dumps(valeurs, cls=DjangoJSONEncoder)
-    
-    
+
+
     class Meta:
         unique_together = (("owner", "code"),)
 
@@ -203,7 +212,7 @@ class BasePreparation(models.Model):
         valeurs['description'] = self.base.description
         valeurs['code'] = self.base.code
         return json.dumps(valeurs, cls=DjangoJSONEncoder)
-    
+
 class EtapePreparation(models.Model):
     """
     Étapes de réalisation d'une préparation
@@ -226,7 +235,7 @@ class EtapePreparation(models.Model):
         valeurs['nom'] = self.nom
         valeurs['ordre'] = self.ordre
         return json.dumps(valeurs, cls=DjangoJSONEncoder)
-    
+
     def __unicode__(self):
         return self.nom
 

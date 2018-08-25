@@ -292,34 +292,34 @@
   
   {% if request.user.is_authenticated %}
   <!-- Modal Creation/importation d'une photo -->
-  <div id="id_import_photo_modal" class="modal fade">
+  <div id="id_photo_modal" class="modal fade">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	  <h3 class="modal-title text-center" id="id_import_titre_modal"></h4>	
+	  <h3 class="modal-title text-center" id="id_photo_titre_modal"></h4>	
         </div>
         <div class="modal-body">
-	  <form id="id_import_photo_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
+	  <form id="id_photo_form" enctype="multipart/form-data" method="POST" class="post-form" action="{% url 'photo_create' %}">
 	    {% csrf_token %}
 	    <div class="form-group">
 
               <div class="form-group row">              
 	        <label class="col-sm-2 col-form-label" for="code">Code:</label>
                 <div class="col-sm-4">
-	          <input type="text" class="form-control" id="id_code" name="code" placeholder="Code" required="required" maxlength="20">
+	          <input type="text" class="form-control" id="id_photo_code" name="code" placeholder="Code" required="required" maxlength="20">
 	        </div>
               </div>
               
 	      <div class="form-group">
 	        <label for="description">Description:</label>
-	        <textarea rows="5" class="form-control" id="id_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
+	        <textarea rows="5" class="form-control" id="id_photo_description" name="description" placeholder="Description" required="required" maxlength="200"></textarea>
 	      </div>
 
               <div class="form-group row">              
 	        <label for="acces"  class="col-sm-2 col-form-label" >Accès:</label>
                 <div class="col-sm-10">
-	          <select class="form_control" name="acces" id="id_acces">
+	          <select class="form_control" name="acces" id="id_photo_acces">
 		    <option value="PUB" selected>public</option>
 		    <option value="PRIV">privé</option>
 	          </select>
@@ -329,7 +329,7 @@
               <div class="form-group row">              
 	        <label class="col-sm-2 col-form-label" for="groupe">Groupe:</label>
                 <div class="col-sm-10">
-                  <select class="" required  style="min-width: 40px;" id="id_import_groupe" name="groupe" placeholder="groupe">
+                  <select class="" required  style="min-width: 40px;" id="id_photo_groupe" name="groupe" placeholder="groupe">
                     <option value="NONE" selected>Choisir..</option>
                     <option value="REC" >recettes</option>
 	            <option value="PREP">preparations</option>
@@ -342,7 +342,7 @@
               <div class="form-group row">              
 	        <label class="col-sm-2 col-form-label" for="categorie">Catégorie:</label>
                 <div class="col-sm-10">
-                  <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_import_categorie" name="categorie" placeholder="categorie">
+                  <select class="" required data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_photo_categorie" name="categorie" placeholder="categorie">
 	            <option selected>Choisir..</option>
 	          </select>
                 </div>
@@ -354,7 +354,7 @@
 	          <div class="input-group">
                     <label class="input-group-btn">
                       <span class="btn btn-primary glyphicon glyphicon-folder-open" >
-                        <input type="file" style="display: none;" name="photo" id="id_import_photo" >
+                        <input type="file" style="display: none;" name="photo" id="id_photo_photo" >
                       </span>
                     </label>
                     <input type="text" class="form-control" id="toto" readonly>
@@ -363,19 +363,21 @@
               </div>
               
 	      <div>
-                <img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_import_photo_img">
+                <img style="height:128px;display:block;margin-right:auto;margin-left:auto;" id="id_photo_img">
               </div>
               
 	      <div class="form-group text-right">
 	        <button id="id_submit_photo" type="submit"  class="btn btn-primary btn-md">Engegistrer</button>
 	      </div>
 
+              <span style="display:none;" id="id_photo_id"></span>
+              
 	    </div>
 	  </form>
 	</div>
         <div class="modal-footer">
           <div class="alert-warning text-center" >
-            <span id="id_import_photo_message"></span>
+            <span id="id_photo_message"></span>
           </div>
 	</div>
       </div>

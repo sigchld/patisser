@@ -8,48 +8,49 @@ function ask_delete_photo(id) {
 };
 
 function ask_edit_photo(id) {
-    $('#id_import_photo_code').val($('#id_photo_code_'.concat(id)).text());
-    $('#id_import_photo_description').val($('#id_photo_description_'.concat(id)).text());
-    $('#id_import_photo_acces').val($('#id_photo_acces_'.concat(id)).text());
-    $('#id_import_photo_message').text("");
-    $('#id_import_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
-    $('#id_import_photo_id').val(id);
+    $('#id_photo_code').val($('#id_photo_code_'.concat(id)).text());
+    $('#id_photo_description').val($('#id_photo_description_'.concat(id)).text());
+    $('#id_photo_acces').val($('#id_photo_acces_'.concat(id)).text());
+    $('#id_photo_message').text("");
+    $('#id_photo_img').attr('src', $('#id_photo_img_'.concat(id)).attr('src'));
+    $('#id_photo_id').text(id);
 
-    $('#id_import_groupe').val($('#id_groupe_'.concat(id)).text());
-    $('#id_import_categorie').data("current", $('#id_categorie_'.concat(id)).text());
+    $('#id_photo_groupe').val($('#id_groupe_'.concat(id)).text());
+    $('#id_photo_categorie').data("current", $('#id_categorie_'.concat(id)).text());
 
-    $('#id_import_photo_label').text('');
-    $('#id_import_photo_message').text('');
-
-    loadCategoriesAtWork();
-
-    $("#id_import_photo_form").submit(submit_modification_photo);
-    $("#id_import_titre_modal").text("Modifier une photo");
-    $("#id_import_photo_modal").modal("show")
+    loadCategoriesAtWork($('#id_photo_groupe').val(),
+                         $('#id_photo_message'),
+                         $('#id_photo_categorie'),
+                         $('#id_photo_categorie').data('current')
+                        );
+    
+    $("#id_photo_form").submit(submit_modification_photo);
+    $("#id_photo_titre_modal").text("Modifier une photo");
+    $("#id_photo_modal").modal("show")
 };
 
 function ask_import_photo() {
-    $('#id_import_photo_form').get(0).reset();
-    $('#id_import_photo_img').attr('src', blank_photo);
-    $('#id_import_photo_message').text('');    
-    var selected = $('#id_import_categorie');
+    $('#id_photo_form').get(0).reset();
+    $('#id_photo_img').attr('src', blank_photo);
+    $('#id_photo_message').text('');    
+    var selected = $('#id_photo_categorie');
     
     selected.empty();
     selected.append("<option value='NONE'>Choisir..</option>");
 
     // soumission de l'import de la photo
-    $("#id_import_photo_form").submit(submit_creation_photo);
-    $("#id_import_titre_modal").text("Ajouter une photo");
-    $('#id_import_photo_modal').modal('show');
+    $("#id_photo_form").submit(submit_creation_photo);
+    $("#id_photo_titre_modal").text("Ajouter une photo");
+    $('#id_photo_modal').modal('show');
 };
 
 
 function handleFileSelect(inp) {
     var files = inp.get(0).files; // FileList object    
-    var msg_id = '#id_import_photo_message';
-    var img_target_id = '#id_import_photo_img'
+    var msg_id = '#id_photo_message';
+    var img_target_id = '#id_photo_img'
 
-    $('#id_import_photo_img').attr('src', blank_photo);
+    $('#id_photo_img').attr('src', blank_photo);
     
     if (files.length !=1) {
         $(msg_id).text("Il faut sélectionner un fichier");
@@ -91,76 +92,22 @@ function handleFileSelect(inp) {
 
 function loadCategories(event) {
     event.preventDefault();
-    loadCategoriesAtWork();
-}
-
-function loadCategoriesAtWork() {
-    
-    var id_msg = '#id_import_photo_message';
-    var id_groupe = "#id_import_groupe";
-    var id_img_target = '#id_import_photo_img'
-    var id_categorie = '#id_import_categorie';
-
-    $(id_msg).text(" ");
-    
-    var csrftoken = getCookie('csrftoken');
-    var u = "/mesrecettes/categories"; //$("#id_popover_categorie_form").data('action');
-    var groupe = $(id_groupe);
-    
-    if (groupe.val() == "NONE" || !groupe.val()) {
-        var selected = $(id_categorie);
-        selected.empty();
-        selected.append("<option value='NONE' selected>Choisir..</option>");
-        selected.val("NONE");
-        selected.data("current", "NONE");
-        return ;
-    }
-    
-    $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-    $.ajax({
-        'type' : 'post',
-        'url' : u,
-        'data' : "groupe=".concat($(id_groupe).val()),
-           'success' : function(response)
-           {
-               $select = $(id_categorie);
-               var val = $select.data("current");
-               $select.empty();
-               var res = JSON.parse(response).message;
-               $select.append("<option value='NONE' selected>Choisir..</option>");
-               for (var idx=0; idx < res.length; idx++) { 
-                   var element = res[idx];
-                   if (element.categorie == val) {
-                       $select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
-                   } else {
-                       $select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
-                   }
-               }
-               if (val) {
-                   $select.val(val);
-               }
-               
-               $select.change();
-               //$(id_categorie.concat(" option[value=").concat(val).concat("]")).attr("disabled", false);
-
-           },
-           'error': function(jqXHR, textStatus, errorThrown)
-           {
-               $(id_msg).text(JSON.stringify(JSON.parse(jqXHR.responseText).message));
-           }
-          });    
+    loadCategoriesAtWork($('#id_photo_groupe').val(),
+                         $('#id_photo_message'),
+                         $('#id_photo_categorie'),
+                         $('#id_photo_categorie').data('current')
+                        );
 }
 
 function submit_creation_photo(event){
     event.preventDefault();
-    $("#id_import_photo_message").text("");
+    $("#id_photo_message").text("");
     var formdata = new FormData($(this)[0]);
     $("#id_loader").css("display","block");
     var csrftoken = getCookie('csrftoken');
     var u = getPhotoCreateUrl();
     
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-    //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
     $.ajax({
         //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
         processData: false,
@@ -177,21 +124,20 @@ function submit_creation_photo(event){
         {
             console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
 	    $("#id_loader").css("display","none");
-            $("#id_import_photo_message").text(JSON.parse(jqXHR.responseText).message);
+            $("#id_photo_message").text(JSON.parse(jqXHR.responseText).message);
         }
     });    
 }
 
 function submit_modification_photo(event){
     event.preventDefault();
-    $("#id_edit_photo_message").text("");
+    $("#id_photo_message").text("");
     var formdata = new FormData($(this)[0]);
     $("#id_loader").css("display","block");
     var csrftoken = getCookie('csrftoken');
-    var u = getPhotoCreateUrl();
+    var u = getPhotoCreateUrl().concat($("#id_photo_id").text());
     
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
-    //$ajaxSetup({   headers: {  "X-CSRFToken": csrftoken, "Content-Type": "multipart/form-data"  }  });
     $.ajax({
         //https://stackoverflow.com/questions/13240664/how-to-set-a-boundary-on-a-multipart-form-data-request-while-using-jquery-ajax-
         processData: false,
@@ -208,7 +154,7 @@ function submit_modification_photo(event){
         {
             console.log('Error on deleting photo:', jqXHR, textStatus, errorThrown);
 	    $("#id_loader").css("display","none");
-            $("#id_edit_photo_message").text(JSON.parse(jqXHR.responseText).message);
+            $("#id_photo_message").text(JSON.parse(jqXHR.responseText).message);
         }
     });        
 }
@@ -234,10 +180,8 @@ $(document).ready(
         });
         
 
-        $('#id_edit_photo').change(handleFileSelect);
-//        $('#id_import_photo').change(handleFileSelect);
-        $('#id_import_groupe').on('change', loadCategories);
-//        $('#id_edit_groupe').on('change', loadCategories);
+        $('#id_photo_photo').change(handleFileSelect);
+        $('#id_photo_groupe').on('change', loadCategories);
 
         $('#id_owner_sel').on('change', function (e) {
             var optionSelected = $("option:selected", this);

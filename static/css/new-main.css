@@ -476,6 +476,9 @@ opacity:1;
     border-color: lightgrey;
     bottop-padding: 2px;
     margin-bottom: 2px;
+    /* https://www.alsacreations.com/tuto/lire/1038-gerer-debordement-contenu-et-cesures-css.html */
+    /* overflow: hidden; trop brutal*/
+    overflow-wrap:break-word;
 }
 
 a.morelink {

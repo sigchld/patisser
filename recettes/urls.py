@@ -9,6 +9,7 @@ from . import views
 from . import photorest
 from . import ingredientrest
 from . import preparationrest
+from . import categorierest
 
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.http import HttpResponseNotModified, HttpResponseServerError
@@ -71,4 +72,5 @@ urlpatterns = [
     url(r'^detailp/(?P<preparation_id>[0-9]+)$', views.detail_preparation, name='detail_preparation'),
 
     url('^categories$', views.get_categorie, name='get_category'),
+    url('^categorie/(?P<categorie_id>[A-Za-z0-9]+)/$', categorierest.CategorieRest.as_view(), name='categoryrest'),
 ]

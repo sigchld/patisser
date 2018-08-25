@@ -34,7 +34,7 @@ function loadPhotosDescriptionAtWork(categorie, message, select, current) {
           });    
 }
 
-
+/*
 function loadCategoriesAtWork(groupe, message, select, current) {
     
     var csrftoken = getCookie('csrftoken');
@@ -68,7 +68,7 @@ function loadCategoriesAtWork(groupe, message, select, current) {
           });    
 }
 
-
+*/
 function remplissage(ingredient) {
 
     $("#id_detail_ingredient_form")[0].reset();

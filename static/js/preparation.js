@@ -108,29 +108,30 @@ function loadNutrition(preparation, affichage) {
     });    
     
 }
-
+/*
 function loadCategoriesAtWork(groupe, message, select, current) {
     
     var csrftoken = getCookie('csrftoken');
-    var u = "/mesrecettes/categories";
+    var u = "/mesrecettes/categorie/".concat(groupe).concat("/");
     message.text(" ");    
     $.ajaxSetup({headers:{"X-CSRFToken": csrftoken}});
     $.ajax({
-        'type' : 'post',
+        'type' : 'get',
         'url' : u,
-        'data' : "groupe=".concat(groupe),
-        'success' : function(response)
+        'dataType': 'json',
+        'success' : function(res)
         {
             select.empty();
-            var res = JSON.parse(response).message;
-            select.append('<option value="NONE" selected>Choisir..</option>');
-            for (var idx=0; idx < res.length; idx++) { 
-                var element = res[idx];
-                if (element.categorie == current) {
-                    select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
-                    select.val(current);
-                } else {
-                    select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+            if (res.status == 0) {            
+                select.append('<option value="NONE" selected>Choisir..</option>');
+                for (var idx=0; idx < res.categories.length; idx++) { 
+                    var element = res.categories[idx];
+                    if (element.categorie == current) {
+                        select.append('<option selected value=' + element.categorie + '>' + element.description + '</option>');
+                        select.val(current);
+                    } else {
+                        select.append('<option value=' + element.categorie + '>' + element.description + '</option>');
+                    }
                 }
             }
             select.change();
@@ -147,7 +148,7 @@ function loadCategoriesAtWork(groupe, message, select, current) {
     });    
 }
 
-
+*/
 function remplissage(preparation) {
 
     $("#id_detail_preparation_form")[0].reset();
@@ -203,6 +204,7 @@ function remplissage(preparation) {
 function remplissage_vide() {
     $('#id_detail_preparation_form').find('input:text, input:password, select, textarea').val('');
     $('#id_detail_preparation_form').find('input:radio, input:checkbox').prop('checked', false);
+    $("#id_detail_preparation_prix_ingredients").text("");
     current_no_preparation = -1;
 }
 
@@ -289,7 +291,7 @@ function ask_new_preparation() {
     $('#id_preparation_modal_edit_footer').css("display", "block");
     $('#id_preparation_modal_new_header').css("display", "block");
     $("#id_preparation_modal_nav_footer").hide();
-    
+
     loadCategoriesAtWork("PREP",
                          $("#id_edit_preparation_message"),
                          $("#id_detail_categorie"),
@@ -1286,52 +1288,28 @@ function buildEtapeDiv(nom, description, ordre, etape_id) {
         var d3 = $("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6 etape-description\"></div>");
 
         var showChar = 50,
-            ellipsesText =  "...",
-	    moretext = "plus",
-	    lessText = "moins";
+	    moretext = "&hellip;",
+	    lessText = "--";
         
 	if(description.length > showChar) {
 	    var c = description.substr(0, showChar);
 	    var h = description.substr(showChar-1, description.length - showChar);
             
-	    var html = "<span class=\"startcontent\">" + converter.makeHtml(c) + "</span>" + '<span class="moreellipses">'
-                + ellipsesText+ '&nbsp;</span><span class="morecontent"><span>'
+	    var html = "<span class=\"startcontent\">" + converter.makeHtml(c) + "</span>" + '<span class="morecontent"><span>'
                 + converter.makeHtml(description) + '</span>&nbsp;&nbsp;<a href="" class="morelink">'
                 + moretext + '</a></span>';
 
             $(d2).html(html);
-            /*
-	var showChar = 100;
-	var ellipsestext = "...";
-	var moretext = "more";
-	var lesstext = "less";
-
-	$(".morelink").click(function(){
-		if($(this).hasClass("less")) {
-			$(this).removeClass("less");
-			$(this).html(moretext);
-		} else {
-			$(this).addClass("less");
-			$(this).html(lesstext);
-		}
-		$(this).parent().prev().toggle();
-		$(this).prev().toggle();
-		return false;
-	});
-*/
-  
         }
         d3.append(d2);
-        d1.append(d3);
-
-  
+        d1.append(d3); 
     }
     else {
-        d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><textarea class=\"form-control auto-save-etape\" rows=\"2\" data-name=\"description\" data-etape=\"" + etape_id +"\">" + description + "</textarea></div>");
+        d1.append("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"><textarea class=\"form-control auto-save-etape auto-size-textarea\" rows=\"1\" data-name=\"description\" data-etape=\"" + etape_id +"\">" + description + "</textarea></div>");
     }
     d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><input type=\"text\" class=\"form-control auto-save-etape\" data-name=\"ordre\" data-etape=\"" + etape_id +"\"value=\"" + ordre + "\"></span></div>");
     
-    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-etape-remove add-remove\" data-etape=\"" + etape_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
+    d1.append("<div class=\"col-lg-2 col-xs-2 col-md-2 col-sm-2 t\"><a href=\"#\" title=\"supprimer\" class=\"text-danger add-etape-remove add-remove\" data-etape=\"" + etape_id +"\"><span class=\"glyphicon glyphicon-remove-sign\"></span></a></div>");
     return d1;           
 }
 
@@ -1362,7 +1340,7 @@ function displayEtapes() {
     d1.append(d2);
     
     d2 = $("<div class=\"col-lg-6 col-xs-6 col-md-6 col-sm-6\"></div>");
-    s1 = $("<textarea id=\"id_add_etape_description\"  class=\"form-control\" rows=\"3\"></textarea>");
+    s1 = $("<textarea id=\"id_add_etape_description\"  class=\"form-control auto-size-textarea\" rows=\"1\"></textarea>");
     d2.append(s1);
     d1.append(d2);
 
@@ -1415,6 +1393,20 @@ function addEventListenerEtapes() {
             updateEtape( $(myinput).data("etape"), $(myinput).data("name"), $(myinput).val());
         }, 1000); 
         $(this).data("timer", timer);
+    });
+
+    $('.auto-size-textarea').on('focus', function(e) {
+        var myinput = $(this);
+        if ($(myinput).attr('rows')) {
+            $(myinput).attr('rows', 15);
+        }
+    });
+
+    $('.auto-size-textarea').on('blur', function(e) {
+        var myinput = $(this);
+        if ($(myinput).attr('rows')) {
+            $(myinput).attr('rows', 1);
+        }
     });
 
 }
@@ -1643,8 +1635,8 @@ $(document).on('change', ':file', function() {
 });
 
 function enableShortenText() {
-	var moretext = "plus";
-	var lesstext = "moins";
+	var moretext = "&hellip;";
+	var lesstext = "--";
 
 	$(".morelink").click(function(){
 		if($(this).hasClass("less")) {
@@ -1654,8 +1646,9 @@ function enableShortenText() {
 			$(this).addClass("less");
 			$(this).html(lesstext);
 		}
-	    $(this).parent().prev().toggle();
-            $(this).parent().prev().prev().toggle();
+	    //$(this).parent().prev().toggle();
+            //$(this).parent().prev().prev().toggle();
+            $(this).parent().prev().toggle();
 		$(this).prev().toggle();
 		return false;
 	});
