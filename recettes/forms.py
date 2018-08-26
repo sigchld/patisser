@@ -5,6 +5,7 @@ from django import forms
 from .models import Photo
 from .models import Ingredient
 from .models import Preparation
+from .models import Recette
 
 class PhotoForm(forms.ModelForm):
     groupe = forms.CharField(label='groupe', max_length=20)
@@ -35,8 +36,7 @@ class IngredientForm(forms.ModelForm):
                   'sel',
                   'fibres_alimentaires',
                   'allergene',
-                  'acces',
-        ]
+                  'acces',]
 
 class PreparationForm(forms.ModelForm):
     """
@@ -48,5 +48,16 @@ class PreparationForm(forms.ModelForm):
                   'code',
                   'description',
                   'bonasavoir',
-                  'acces',
-        ]
+                  'acces',]
+
+class RecetteForm(forms.ModelForm):
+    """
+    Données du formulaire
+    """
+    class Meta:
+        model = Recette
+        fields = ['id',
+                  'code',
+                  'description',
+                  'bonasavoir',
+                  'acces',]

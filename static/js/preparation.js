@@ -1301,6 +1301,10 @@ function buildEtapeDiv(nom, description, ordre, etape_id) {
 
             $(d2).html(html);
         }
+        else {
+            $(d2).html(converter.makeHtml(description));
+        }
+        
         d3.append(d2);
         d1.append(d3); 
     }
@@ -1540,7 +1544,6 @@ function savePreparation(){
 		    response = JSON.parse(response);
 		    if (prep_id == -1) {
 			// on passe dans le mode modification ssi on est en création
-			//window.location.reload();
 			var id;
 			var prep = response.preparation;
 			var preparation_id = prep.preparation_id;
@@ -1555,7 +1558,9 @@ function savePreparation(){
 			id = addObjPreparation(prep);
 			$("#id_detail_preparation_id").val(preparation_id)
 			do_ask_edit_preparation(id);
-		    }
+		    } else {
+                        window.location.reload();
+                    }
 		}
 		catch(error) {
                     $("#id_edit_preparation_message").text("erreur interne");

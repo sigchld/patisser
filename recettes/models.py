@@ -279,6 +279,36 @@ class Preparation(models.Model):
         valeurs['groupe'] = self.categorie.groupe
         return json.dumps(valeurs, cls=DjangoJSONEncoder)
 
+
+
+class ElementRecette(models.Model):
+    """
+    Ingrédients nécessaires á la réalisation de la recette en plus de ceux de la préparation
+    """
+    quantite = models.DecimalField(default=0, max_digits=6, decimal_places=2)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.SET_NULL, null=True)
+    recette = models.ForeignKey('Recette', related_name='elements')
+
+    owner = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, to_field='username', default=User.objects.get(username='anonyme').username)
+    acces = models.CharField(max_length=4, choices=ACCES, default="PRIV")
+
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+
+    def to_json(self):
+        valeurs = {}
+        valeurs['element_id'] = self.id;
+        valeurs['recette_id'] = self.recette.id
+        valeurs['ingredient_id'] = self.ingredient.id
+        valeurs['description'] = self.ingredient.description
+        valeurs['code'] = self.ingredient.code
+        valeurs['quantite'] = self.quantite
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+
+    def __unicode__(self):
+        return "%s %s" % (self.ingredient.code, self.quantite)
+
+
 class PreparationRecette(models.Model):
     """
     Association des Préparation à une recette
@@ -296,6 +326,17 @@ class PreparationRecette(models.Model):
     def __unicode__(self):
         return "{}".format(self.preparation.code)
 
+    def to_json(self):
+        valeurs = {}
+        valeurs['preparation_recette_id'] = self.id;
+        valeurs['preparation_id'] = self.preparation.id
+        valeurs['recette_id'] = self.recette.id
+        valeurs['quantite'] = self.quantite
+        valeurs['description'] = self.preparation.description
+        valeurs['code'] = self.preparation.code
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+
+    
 class EtapeRecette(models.Model):
     """
     Les étapes de réalisation d'une recette
@@ -303,7 +344,8 @@ class EtapeRecette(models.Model):
     recette = models.ForeignKey('Recette', related_name='etapes')
     nom = models.CharField(max_length=200, default='')
     description = models.TextField(max_length=5000, default='')
-
+    ordre = models.IntegerField(default=0)
+    
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -312,6 +354,16 @@ class EtapeRecette(models.Model):
 
     def __unicode__(self):
         return self.nom
+
+    def to_json(self):
+        valeurs = {}
+        valeurs['etape_id'] = self.id;
+        valeurs['precette_id'] = self.recette.id
+        valeurs['description'] = self.description
+        valeurs['nom'] = self.nom
+        valeurs['ordre'] = self.ordre
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+
 
 class Recette(models.Model):
     """
@@ -350,3 +402,17 @@ class Recette(models.Model):
 
     def __unicode__(self):
         return "{}-{}".format(self.code, self.description)
+
+    def to_json(self):
+        valeurs = {}
+        valeurs['recette_id'] = self.id
+        valeurs['code'] = self.code
+        valeurs['description'] = self.description
+        valeurs['bonasavoir'] = self.bonasavoir
+        valeurs['owner'] = self.owner.username
+        valeurs['acces'] = self.acces
+        valeurs['categorie'] = self.categorie.categorie
+        valeurs['categorie_description'] = self.categorie.description
+        valeurs['groupe'] = self.categorie.groupe
+        return json.dumps(valeurs, cls=DjangoJSONEncoder)
+    

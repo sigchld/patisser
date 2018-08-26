@@ -223,7 +223,7 @@
         <td><span >{{recette.get_acces_display}}</span></td>
         <td style="display:none"><span id="id_recette_acces_{{recette.id}}">{{recette.acces}}</span></td>
         <td>
-	  <a href="javascript:detail_recette({{forloop.counter0}});" title="détail de l'ingrédient" >
+	  <a href="javascript:ask_detail_recette({{forloop.counter0}});" title="détail de l'ingrédient" >
             {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
             {% if recette.photo and recette.photo.id and recette.photo.id != '%s' %}
             <img id="id_recette_img_{{recette.id}}" src="{% url 'photo' recette.photo.id %}" >
@@ -253,7 +253,7 @@
           <div class="container-fluid" >
             <div class="row sticky-top" style="text-align:center;"><span id="id_recette_code_{{recette.id}}" >{{recette.code}}</span></div>
             <div class="row" style="text-align:center;height:128px;">
-	      <a href="javascript:detail_recette({{forloop.counter0}});" title="détail de l'ingrédient" >
+	      <a href="javascript:ask_detail_recette({{forloop.counter0}});" title="détail de l'ingrédient" >
 
                 {% comment %} on teste a %s cat c'est la valeur retourne par django quand la foreign key n'existe pas{% endcomment %}
             {% if recette.photo and recette.photo.id and recette.photo.id != '%s' %}
@@ -322,21 +322,21 @@
   <!-- Modal detail/modification d'un recette -->
   <div id="id_detail_recette_modal" class="modal fade">
     <span id="id_detail_recette_no" style="display:none"></span>
-    <div class="modal-dialog ">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header" id="id_detail_recette_modal_view_header">
+        <div class="modal-header" id="id_recette_modal_view_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 	  <h4 class="modal-title text-center">Détail recette</h4>
         </div>
-        <div class="modal-header" id="id_detail_recette_modal_delete_header">
+        <div class="modal-header" id="id_recette_modal_delete_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title text-center">Suppression recette</h4>
         </div>
-        <div class="modal-header" id="id_detail_recette_modal_edit_header">
+        <div class="modal-header" id="id_recette_modal_edit_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title text-center">Modification recette</h4>
         </div>
-        <div class="modal-header" id="id_detail_recette_modal_new_header">
+        <div class="modal-header" id="id_recette_modal_new_header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title text-center">Création recette</h4>
         </div>
@@ -344,221 +344,259 @@
         <div class="modal-body col-lg-12">
           <div class="container-fluid">
             <form id="id_detail_recette_form" action="">
-
               <div class="row">
-                <div class="greybox" >
-<div>
-                  <label for="code">Code</label>
-                  <input  name="code" type="text" id="id_detail_recette_code">
-</div>
-<div>
-                  <label for="allergene">Allergene</label>
-                <input name="allergene" type="checkbox" id="id_detail_recette_allergene">
-	        <label for="acces">Accès</label>
-	        <select name="acces" id="id_detail_recette_acces">
-		  <option value="PUB">public</option>
-		  <option value="PRIV">privé</option>
-	        </select>
-	        </div>
-</div>
-              </div>
-
-            <div class="row">
-              <div class="greybox">
-                <div>
-                <span class="font-weight-bold">Date création</span>
-                <span id="id_detail_recette_date_creation"></span>
-                </div>
-                <div>
-                <span class="font-weight-bold">Date dernière modification </span>
-                <span id="id_detail_recette_date_modification"></span>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="greybox">
-                <span class="font-weight-bold">Catégorie  </span>
-                <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_detail_categorie" name="categorie" placeholder="categorie">
-	        <option value="NONE" selected>Choisir..</option>
-	      </select>
-              </div>
-            </div>
-            
-            <div class="row">
-              <div class="greybox">
-                <span class="font-weight-bold">Prix </span>
-                <input maxlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_recette_prix_unitaire">
-                <span class="font-weight-bold">&euro;</span>
-                <span> pour </span>
-                <input class="text-right" name="pp" maxlength="8" style="width:8em;" id="id_detail_recette_prix_poids">
-                <span class="font-weight-bold">g</span>
-              </div>
-            </div>
-            
-            <div class="row">
-              <div class="greybox" style="min-height: 75px;">                
-	          <label for="description">Description</label>
-	          <textarea disabled rows="2" class="form-control" id="id_detail_recette_description" name="description" required="required" maxlength="200"></textarea>
-              </div>
-            </div>
-            <div class="row">
-              <div class="greybox" style="min-height: 75px;">                
-	        <label for="bonasavoir">Bon à savoir</label>
-	        <textarea disabled rows="2" class="form-control" id="id_detail_recette_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-lg-8 col-xs-8 greybox">
-                <div class="no-margin row">
-                  <div class="col-border col-lg-12 col-xs-12" style="display:inline-block;"><p class="font-lighter">Valeurs nutritionnelles moyennes pour 100g</p>
-                  </div>
-                </div>
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7"><span>energie</span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <div>
-                      <input disabled class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kjoules" id="id_detail_recette_kjoules">
-                      <span style="display:inline">kj</span>
+                <div class="col-lg-8 col-md-8 col-xs-8 col-sm-8">
+                  <div class="row">
+                    <div class="col-lg-12 greybox" >
+                      <div>
+                        <label for="code">Code</label>
+                        <input  name="code" type="text" id="id_detail_recette_code">
+                      </div>
+                      <div>
+                        <label for="allergene">Allergene</label>
+                        <input name="allergene" type="checkbox" id="id_detail_recette_allergene">
+	                <label for="acces">Accès</label>
+	                <select name="acces" id="id_detail_recette_acces">
+		          <option value="PUB">public</option>
+		          <option value="PRIV">privé</option>
+	                </select>
+	              </div>
                     </div>
-                    <div>
-                      <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="kcalories" id="id_detail_recette_kcalories">
-                      <span style="display:inline;">kcal</span>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="greybox col-lg-12">
+                      <div>
+                        <span class="font-weight-bold">Date création</span>
+                        <span id="id_detail_recette_date_creation"></span>
+                      </div>
+                      <div>
+                        <span class="font-weight-bold">Date dernière modification </span>
+                        <span id="id_detail_recette_date_modification"></span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox">
+                      <span class="font-weight-bold">Catégorie  </span>
+                      <select class="" data-show-subtext="true" style="min-width:350px;" data-live-search="true" id="id_detail_categorie" name="categorie" placeholder="categorie">
+	                <option value="NONE" selected>Choisir..</option>
+	              </select>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox">
+                      <span class="font-weight-bold">Coût ingredients </span>
+                      <span xlength="8" name="pu" class="text-right" style="width:8em;" id="id_detail_recette_prix_ingredients"></span>
+                      <span class="font-weight-bold">&euro;</span>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox" style="min-height: 75px;">                
+	              <label for="description">Description</label>
+	              <textarea disabled rows="2" class="form-control" id="id_detail_recette_description" name="description" required="required" maxlength="200"></textarea>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-lg-12 greybox" style="min-height: 75px;">                
+	              <label for="bonasavoir">Bon à savoir</label>
+	              <textarea disabled rows="2" class="form-control" id="id_detail_recette_bonasavoir" name="bonasavoir" required="required" maxlength="200"></textarea>
                     </div>
                   </div>
                 </div>
                 
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>maitères grasses<span>
+                <div class="col-lg-4 col-md-4 col-xs-4 col-sm-4">
+                  <div class="row">
+                    <div class="col-lg-12 col-xs-12">
+                      <span class="font-weight-bold text-center" style="display:block;">Photo</span>
+                      <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_recette_img">
+                    </div>
                   </div>
-                  <div  class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_recette_matieres_grasses_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses" id="id_detail_recette_matieres_grasses">
-                    <span>g</span>
-                  </div>
+                  <div class="row">
+                    <div class="col-lg-12 col-xs-12">
+                      <span style="display:block;">Catégorie</span>
+                      <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
+                        <option value="NONE" selected>Choisir..</option>
+                      </select>
+                      <span style="display:block;">Nom</span>
+                      <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
+                        <option value="NONE" selected>Choisir..</option>
+                      </select>
+                      <span class="add-remove" style="display:block;">Nouvelle</span>
+                      <div class="input-group add-remove">
+                        <label class="input-group-btn">
+                          <span id=\"id-span-button-file"\ class="btn btn-primary glyphicon glyphicon-folder-open">
+                            <input type="file" style="display: none;" name="photo" id="id_import_photo" >
+                          </span>
+                        </label>
+                        <input type="text" class="form-control" readonly>
+                      </div>
+                    </div>
+                  </div>                          
                 </div>
-                
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>dont acides gras saturés<span>
-                  </div>
-                  <div class="col-border col-5 col-xs-5">
-                    <!-- span id="id_detail_recette_matieres_grasses_saturees_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="matieres_grasses_saturees" id="id_detail_recette_matieres_grasses_saturees">
-                    <span>g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>Glucides<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_recette_glucides_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides" id="id_detail_recette_glucides">
-                    <span> g<span>
-                  </div>
-                </div>
-                
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>dont sucres<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_recette_glucides_dont_sucres_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="glucides_dont_sucres" id="id_detail_recette_glucides_dont_sucres">
-                    <span>g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>fibres<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_recette_fibre_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="fibres_alimentaires" id="id_detail_recette_fibres"></span>
-                    <span> g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>proteines<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_recette_proteines_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="proteines"  id="id_detail_recette_proteines">
-                    <span> g</span>
-                  </div>
-                </div>
-
-                <div class="no-margin row">
-                  <div class="col-border col-lg-7 col-xs-7">
-                    <span>sel<span>
-                  </div>
-                  <div class="col-border col-lg-5 col-xs-5">
-                    <!-- span id="id_detail_recette_sel_inf"></span -->
-                    <input class="input-sm" maxlength="5" style="width:5em;display:inline;" name="sel" id="id_detail_recette_sel">
-                    <span>g</span>
-                  </div>
-                </div>
-                
-                
               </div>
-              <div class="col-lg-4 col-xs-4">
-                <span class="font-weight-bold text-center">Photo</span>
-                <img style="width:150px;height:150px;border-right: 0px solid black;margin-right:5px;" id="id_detail_recette_img">
-              </div>
-              
-              <div class="row">
-              <div class="col-lg-4 col-xs-4">
-                <span >Catégorie</span>
-                <select style="width:150px;" id="id_detail_categorie_photo"  placeholder="categorie">
-	        <option value="NONE" selected>Choisir..</option>
-	        </select>
-                <span >Nom</span>
-                <select style="width:150px;" id="id_detail_id_photo"  placeholder="id" name="photo_id">
-	          <option value="NONE" selected>Choisir..</option>
-	        </select>
-                
-              </div>
-              </div>                          
-            </div>
-            <input type="hidden" id="id_detail_recette_id" name="id">
+              <input type="hidden" id="id_detail_recette_id" name="id">
             </form>
+            <div id="id_prep_tabs">
+              <div class="row">
+                <ul id="diveInfo" class="nav nav-tabs nav-justified" role="tablist">
+                  <li class="xactive"><a href="#id_nutrition_tab" role="tab" data-toggle="tab">Nutrition</a></li>
+                  <li><a href="#id_ingredients_tab" role="tab" data-toggle="tab">Ingredients</a></li>
+                  <li><a href="#id_etapes_tab" role="tab" data-toggle="tab">Etapes</a></li>
+                  <li><a href="#id_bases_tab" role="tab" data-toggle="tab">Préparations</a></li>
+                  <li><a href="#id_economat_tab" role="tab" data-toggle="tab">Coût</a></li>
+                </ul>
+              </div>
+
+              <div class="row">                
+                <div class="tab-content greybox2">                  
+                  <div class="tab-pane fade" id="id_economat_tab">
+                    <div class="no-margin row">
+                    </div>
+                  </div>
+
+                  <div class="tab-pane  fade in xactive" id="id_nutrition_tab">
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">
+                        <span>energie</span>
+                      </div>
+		      
+                      <div>
+                        <span class="energie" id="id_detail_recette_kjoules"></span>
+                        <span>kj</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">
+                        <span>&nbsp;</span>
+                      </div>
+                      <div>
+                        <span  class="energie"  id="id_detail_recette_kcalories"></span>
+                        <span>kcal</span>
+                      </div>
+                    </div>
+                    
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                      
+                        <span>maitères grasses<span>
+                      </div>
+                      <div>
+                        <span class="energie"  id="id_detail_recette_matieres_grasses"></span>
+                        <span>g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                      
+                        <span>dont acides gras saturés<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_recette_matieres_grasses_saturees_inf"></span -->
+                        <span class="energie"   id="id_detail_recette_matieres_grasses_saturees"></span>
+                        <span>g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                            
+                        <span>Glucides<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_recette_glucides_inf"></span -->
+                        <span class="energie"  id="id_detail_recette_glucides"></span>
+                        <span> g<span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>dont sucres<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_recette_glucides_dont_sucres_inf"></span -->
+                        <span class="energie"  id="id_detail_recette_glucides_dont_sucres"></span>
+                        <span>g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>fibres<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_recette_fibre_inf"></span -->
+                        <span class="energie"  id="id_detail_recette_fibres"></span>
+                      <span>g</span>
+                      </div>
+                    </div>
+                      
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>proteines<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_recette_proteines_inf"></span -->
+                        <span class="energie"  id="id_detail_recette_proteines"></span>
+                        <span> g</span>
+                      </div>
+                    </div>
+                    
+                    <div class="no-margin row">
+                      <div class="col-lg-4 col-xs-4 col-md-4 col-sm-4">                                              
+                        <span>sel<span>
+                      </div>
+                      <div>
+                        <!-- span id="id_detail_recette_sel_inf"></span -->
+                        <span  class="energie" id="id_detail_recette_sel"></span>
+                        <span>g</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane" id="id_ingredients_tab">
+                    <div class="no-margin row">
+                    </div>
+                  </div>
+                  <div class="tab-pane" id="id_etapes_tab">
+                  </div>
+                  <div class="tab-pane" id="id_bases_tab">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="modal-footer" id="id_detail_recette_modal_view_footer">
-          <a id="id_detail_recette_previous" href="#"><span class="step-link glyphicon glyphicon-arrow-left"></span></a>
-	  <a id="id_detail_recette_next" href="#"><span class="step-link glyphicon glyphicon-arrow-right"></span></a>
-        </div>
-        <div class="modal-footer" id="id_detail_recette_modal_delete_footer" style="display:none">
-          <div>
+        
+        <div class="modal-footer">
+          <div id="id_recette_modal_nav_footer">
+            <a id="id_detail_recette_previous" href="#"><span class="step-link glyphicon glyphicon-arrow-left"></span></a>
+	    <a id="id_detail_recette_next" href="#"><span class="step-link glyphicon glyphicon-arrow-right"></span></a>
+          </div>
+
+          <div id="id_recette_modal_delete_footer">
             <span style="display:none;" id="id_delete_recette_id"></span>
             <button type="button" class="btn btn-default" data-dismiss="modal" id="id_delete_recette_abandon" >Abandon</button>
             <button type="button" id="id_delete_recette" class="btn btn-warning">Suppression</button>
           </div>
-          <div class="alert-error text-center" >
-            <span id="id_delete_recette_message">&nbsp;</span>
-          </div>
-        </div>
 
-        <div class="modal-footer" id="id_detail_recette_modal_edit_footer" style="display:none">
-          <div>
+          <div id="id_recette_modal_edit_footer">
             <span style="display:none;" id="id_edit_recette_id"></span>
             <button type="button" id="id_edit_recette" class="btn btn-primary">Enregistrer</button>
           </div>
-          <div class="alert-error text-center" >
-            <span id="id_edit_recette_message">&nbsp;</span>
+
+          <div class="alert-danger text-center">
+            <p id="id_edit_recette_message"></p>
           </div>
         </div>
-
       </div>
     </div>
   </div>
-  
+
 <script type="text/javascript" src="{% static "js/recette.js" %}"></script>
 <script  type="text/javascript">
 
@@ -569,6 +607,15 @@
   "description" : "{{categorie.1}}",
   };
   {% endfor %}
+
+  var categories_ingredients = [];
+  {% for categorie in  categories_ingredients %}
+  categories_ingredients[ {{ forloop.counter0 }} ] = {
+  "value" : "{{categorie.0}}",
+  "description" : "{{categorie.1}}",
+  };
+  {% endfor %}
+  
   
   var recettes = {};
   {% for recette in recettes %}
@@ -585,12 +632,12 @@
   "date_modification" : "{{recette.date_modification|date:"l j F o H:i"}}",
   {% if recette.categorie %}
   "categorie_description" : "{{recette.categorie.description|escapejs}}",
-  "categorie_groupe" : "{{recette.categorie.groupe|escapejs}}",
-  "categorie_categorie" : "{{recette.categorie.categorie|escapejs}}",
+  "groupe" : "{{recette.categorie.groupe|escapejs}}",
+  "categorie" : "{{recette.categorie.categorie|escapejs}}",
   {% else %}
   "categorie_description" : "",
-  "categorie_groupe" : "",
-  "categorie_categorie" : "",
+  "groupe" : "",
+  "categorie" : "",
   {% endif %}
   {% if recette.photo and recette.photo.id and recette.photo.id != '%s' %}
     "photo_id" : "{{recette.photo.id|escapejs}}",
@@ -618,8 +665,16 @@
   {% endfor %}
 
   function getRecette(no) {
-  return recettes[no];
+      return recettes[no];
   }
+
+  function addObjRecette(prep) {
+      var no = Object.keys(recettes).length;
+      prep.idloop = no;
+      recettes[no] = prep;
+      return no;
+  }
+  
   function getNbRecette() {
   return Object.keys(recettes).length;
 

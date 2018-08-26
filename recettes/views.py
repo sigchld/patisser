@@ -648,10 +648,23 @@ def list_recettes(request, owner='me', acces=None, filter=None):
     #categories.append(('PREP','PRÉPARATIONS'))
     #categories.append(('MAT', 'USTENSILES'))
     categorie_ing = Categorie.objects.filter(groupe="PREP").order_by(Lower('description'))
+
+    
+    # constitution de lq liste des catégories des ingrédients
+    categories_ingredients = []
+    categories_ingredients.append(('NONE', 'Choisir..'))
+    categorie_ing = Categorie.objects.filter(groupe="ING").order_by(Lower('description'))
+    for cat in categorie_ing:
+        categories_ingredients.append((cat.id, cat.description))
+
+        
     for cat in categorie_ing:
         categories.append((cat.id, cat.description))
 
-    return HttpResponse(template.render({'filter' : filter, 'recettes' : recettes, 'remplissage': remplissage, 'owner': owner, 'acces' : acces, 'detail' : detail, "msg_error" : "", "categories_photos" : categories}, request))
+    return HttpResponse(template.render({'filter' : filter, 'recettes' : recettes,
+                                         'remplissage': remplissage, 'owner': owner,
+                                         'acces' : acces, 'detail' : detail, "msg_error" : "", "categories_photos" : categories,
+                                         'categories_ingredients' : categories_ingredients}, request))
 
 
 

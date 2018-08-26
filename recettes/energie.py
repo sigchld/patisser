@@ -18,6 +18,7 @@ LOGGER = logging.getLogger('fees')
 
 
 def getDict(elements):
+    LOGGER.debug(u"....................................................getdict {}".format(elements))
     res = {}
     for elem in elements:
         res[elem['id']] = elem
@@ -28,7 +29,7 @@ def addIng(ing1, ing2) :
     res = {}
     for key in ing1.keys():
         res[key] = add(ing1[key], ing2[key])
-        LOGGER.debug("....................................................ing1 {} + ing2 {} = {}".format(ing1, ing2, res))
+        LOGGER.debug(u"....................................................ing1 {} + ing2 {} = {}".format(ing1, ing2, res))
     return res
 
 def addDict(dict1, dict2):
@@ -50,23 +51,33 @@ def addDict(dict1, dict2):
         else:
             res.append(addIng(ing1, ing2))
 
-    LOGGER.debug("....................................................d1 {} + d2 {} = {}".format(dict1, dict2, res))
+    LOGGER.debug(u"....................................................d1 {} + d2 {} = {}".format(dict1, dict2, res))
     return res
 
 def add(vals1, vals2):
+    LOGGER.debug(u"....................................................vals1 {}".format(vals1))
+    LOGGER.debug(u"....................................................vals2 {}".format(vals2))
+    
+    if vals1 == []:
+        return vals2
+    if vals2 == []:
+        return vals1
+
     if type(vals1) == tuple:
         result = []
         for var in range(len(vals1)):
             val1 = vals1[var]
             val2 = vals2[var]
             result.append(add(val1, val2))
-        return result
+        return tuple(result)
     elif type(vals1) in (int, Decimal, float):
         return vals1+vals2
     elif type(vals1) == bool:
         return vals1 or vals2
     elif type(vals1) == list:
+        LOGGER.debug(u"....................................................getdict vals1 {}".format(vals1))
         dict1 = getDict(vals1)
+        LOGGER.debug(u".................................................... vals2 {}".format(vals2))
         dict2 = getDict(vals2)
         return addDict(dict1, dict2)
     elif type(vals1) == str and type(vals2) == str:
@@ -74,23 +85,7 @@ def add(vals1, vals2):
     elif type(vals1) == unicode and type(vals2) == unicode:
         return vals1
     else:
-        LOGGER.debug("/////////////////////////////////++++++++++++++++++type {}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(type(vals1)))
-
-#
-# calcul cout ingredient allergene pour une preparation et ses bases
-#
-def calcul_ingredients_preparation(preparation):
-    """
-    Valeur nutritionnelle et prix d'une préparation et ses bases
-    """
-
-    #LOGGER.debug("/////////////////////////////////++++++++++++++++++{}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(preparation.id))
-    res = calcul_ingredients(preparation)
-
-    for base_preparation in preparation.bases.all():
-        res = add(res, calcul_ingredients_preparation(base_preparation.base))
-    #LOGGER.debug(".......{} ".format(res))
-    return res
+        LOGGER.debug(u"/////////////////////////////////++++++++++++++++++type {}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(type(vals1)))
 
 
 
@@ -98,6 +93,7 @@ def calcul_ingredients(preparation):
     """
     Valeur nutritionnelle et prix d'une préparation et ses bases
     """
+    LOGGER.debug(u"/////////////////////////////////++++++++++++++++++preparation calcul_ingredient preparation {}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(preparation.id))
     getcontext().prec = 4
     ingredients = {}
     allergene = False
@@ -116,7 +112,7 @@ def calcul_ingredients(preparation):
     for element in preparation.elements.all():
         ingredient = element.ingredient
         allergene = allergene or ingredient.allergene
-
+        LOGGER.debug(u"/////////////////////////////////++++++++++++++++++preparation calcul_ingredient {}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(ingredient.id))
         # pour chaque ingrédient
         cout = ((element.quantite * ingredient.pu)/Decimal(ingredient.pp))
         kjoules = (((element.quantite)/Decimal(100)) * ingredient.kjoules)
@@ -180,40 +176,50 @@ def calcul_ingredients(preparation):
             sel_total, ingredients.values(),
             cout_total)
 
+#
+# calcul cout ingredient allergene pour une preparation et ses bases
+#
+def calcul_ingredients_preparation(preparation):
+    """
+    Valeur nutritionnelle et prix d'une préparation et ses bases
+    """
+
+    LOGGER.debug(u"/////////////////////////////////++++++++++++++++++preparation {}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(preparation.id))
+    res = calcul_ingredients(preparation)
+
+    for base_preparation in preparation.bases.all():
+        res = add(res, calcul_ingredients_preparation(base_preparation.base))
+    LOGGER.debug(u".......{} ".format(res))
+    return res
+
+
+
+#
+# calcul cout ingredient allergene pour la preparation d'une recette et ses bases
+#
+def calcul_ingredients_preparation_recette(preparation_recette):
+    """
+    Valeur nutritionnelle et prix d'une préparation dúne recette et ses bases
+    """
+
+    LOGGER.debug(u"/////////////////////////////////++++++++++++++++++preparation recette {}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(preparation_recette.id))
+    res = calcul_ingredients(preparation_recette.preparation)
+
+    for base_preparation in preparation_recette.preparation.bases.all():
+        res = add(res, calcul_ingredients_preparation(base_preparation.base))
+    LOGGER.debug(u".......{} ".format(res))
+    return res
+
 
 def calcul_ingredients_recette(recette):
     """
-    Valeur nutritionnelle cout  d'une recette ingredients et economat
+    Valeur nutritionnelle cout d'une recette ingredients et economat, bases incluses
     """
-    getcontext().prec = 4
-    economat = {}
-    allergene = False
-    energie = 0
-    cout = Decimal(0)
-    preparations = recette.preparations.all()
 
-    for preparationRecette in recette.preparations.all():
-        preparation = preparationRecette.preparation
-        quantite = preparationRecette.quantite
+    LOGGER.debug(u"/////////////////////////////////++++++++++++++++++recette{}++++++++++++++++++\\\\\\\\\\\\\\\\\\\\".format(recette.id))
+    res = calcul_ingredients(recette)
 
-        for element in preparation.elements.all():
-            ingredient = element.ingredient
-            allergene = allergene or ingredient.allergene
-
-            cout += (quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))
-            energie_ingredient = (quantite/Decimal(100)) * (((element.quantite)/Decimal(100)) * ingredient.calorie)
-            energie += energie_ingredient
-
-            LOGGER.debug(u"ingredient :{}/{}/{}/{}".format(ingredient.description, ingredient.pu, element.quantite, (quantite/Decimal(100)) * ((element.quantite * ingredient.pu)/Decimal(1000))))
-            tmp = economat.get(ingredient.id)
-            if tmp is None:
-                tmp = {}
-                tmp['quantite'] = Decimal(0)
-                tmp['energie'] = Decimal(0)
-                tmp['nom'] = ingredient.description
-                economat[ingredient.id] = tmp
-
-            tmp['quantite'] += element.quantite
-            tmp['energie'] += energie_ingredient
-
-    return (energie, allergene, economat.values(), preparations, cout)
+    for preparation_recette in recette.preparations.all():
+        res = add(res, calcul_ingredients_preparation_recette(preparation_recette))
+    LOGGER.debug(u".......{} ".format(res))
+    return res

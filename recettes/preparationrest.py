@@ -63,7 +63,7 @@ class PreparationRest(View):
         if not preparation_id or (preparation_id == "all" and categorie_id is None):
             return HttpResponse("{ \"status\":-1 }")
 
-        if preparation_id == "all":
+        if preparation_id.lower() == "all":
             return get_preparation_list(request, categorie_id)
 
         # il faut charger l'preparation...
@@ -123,7 +123,7 @@ class PreparationRest(View):
             if preparation.owner.username != request.user.username:
                 return HttpResponseServerError('{ "message" : "La préparation ne vous appartient pas" }')
 
-            # chargement photo si il y a lieu
+            # changement photo si il y a lieu
             imported_photo = False
             try:
                 myfile = request.FILES['photo']
@@ -163,9 +163,17 @@ class PreparationRest(View):
             # maj photo
             if not imported_photo:
                 new_photo_id = request.POST.get('photo_id', None)
+                LOGGER.debug("preparation_modification/not imported/w_photo_id/{}/".format(new_photo_id))
+                
                 if new_photo_id:
-                    if new_photo_id.isdigit() and preparation.photo and new_photo_id != preparation.photo.id:
-                        preparation.photo = Photo.objects.get(pk=new_photo_id)
+                    if new_photo_id.isdigit() and (preparation.photo is None or new_photo_id != preparation.photo.id) :
+                        LOGGER.debug("preparation_modification/new_photo_id/{}/".format(new_photo_id))
+                        try:
+                            preparation.photo = Photo.objects.get(pk=new_photo_id)
+                            LOGGER.debug("preparation_modification/new_photo_id/{}/loaded".format(new_photo_id))
+                        except Preparation.DoesNotExist:
+                            LOGGER.debug("preparation_modification/new_photo_id/{}/not found".format(new_photo_id))
+                            pass
                     elif new_photo_id == "NONE":
                         preparation.photo = None
 
@@ -428,7 +436,7 @@ class PreparationEnergieEconomat(View):
 
         except:
             LOGGER.error("Loading IOError /preparations/{}".format(preparation_id))
-            return HttpResponse("{ \"status\":-, \"message\": \"erreur interne\" }")
+            return HttpResponse("{ \"status\":-2, \"message\": \"erreur interne\" }")
 
         (kcalories, kjoules, allergene,
          matieres_grasses, matieres_grasses_saturees,
@@ -642,7 +650,7 @@ class PreparationElement(View):
 
         except:
             LOGGER.error("Loading IOError /preparations/{}".format(preparation_id))
-            return HttpResponse("{ \"status\":-, \"message\": \"erreur interne\" }")
+            return HttpResponse("{ \"status\":-2, \"message\": \"erreur interne\" }")
 
         #for element in preparation.elements:
         response = PreparationElement.elements_to_json_response(preparation.elements.all())
@@ -833,7 +841,7 @@ class PreparationEtape(View):
 
         except:
             LOGGER.error("Loading IOError /preparations/{}".format(preparation_id))
-            return HttpResponse("{ \"status\":-, \"message\": \"erreur interne\" }")
+            return HttpResponse("{ \"status\":-2, \"message\": \"erreur interne\" }")
 
         #for element in preparation.elements:
         response = PreparationEtape.etape_to_json_response(preparation.etapes.all())
@@ -1055,7 +1063,7 @@ class PreparationBase(View):
 
         except:
             LOGGER.error("Loading IOError /preparations/{}".format(preparation_id))
-            return HttpResponse("{ \"status\":-, \"message\": \"erreur interne\" }")
+            return HttpResponse("{ \"status\":-2, \"message\": \"erreur interne\" }")
 
         response = PreparationBase.bases_to_json_response(preparation.bases.all())
         return HttpResponse(response)

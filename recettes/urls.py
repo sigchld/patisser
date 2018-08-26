@@ -10,6 +10,7 @@ from . import photorest
 from . import ingredientrest
 from . import preparationrest
 from . import categorierest
+from . import recetterest
 
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.http import HttpResponseNotModified, HttpResponseServerError
@@ -37,8 +38,19 @@ urlpatterns = [
     url(r'^listr$', views.list_ingredients, name='recette_create'),
     url(r'^listrecettes/owner/(?P<owner>[a-z]+)$', views.list_recettes, name='list_recettes_owner'),
     url(r'^listrecettes/acces/(?P<acces>[a-z]+)$', views.list_recettes, name='list_recettes_acces'),
-    url(r'^recette/(?P<ingredient_id>[0-9a-zA-Z._ -]+)$', ingredientrest.IngredientRest.as_view(), name='recette'),
-    url(r'^recette/$', ingredientrest.IngredientRest.as_view(), name='recette_empty'),
+
+    url(r'^recette/$', recetterest.RecetteRest.as_view(), name='recette_empty'),
+    url(r'^recette/(?P<recette_id>[0-9]+)/$', recetterest.RecetteRest.as_view()),
+    url(r'^recette/(?P<recette_id>all)/categorie/(?P<categorie_id>[0-9a-zA-Z]+)/$', recetterest.RecetteRest.as_view()),
+    url(r'^recette/(?P<recette_id>[0-9]+)/ingredient/$', recetterest.RecetteElement.as_view()),
+    url(r'^recette/(?P<recette_id>[0-9]+)/ingredient/(?P<element_id>[0-9a-zA-Z._ -]+)/$', recetterest.RecetteElement.as_view()),
+    url(r'^recette/(?P<recette_id>[0-9]+)/preparation/$', recetterest.RecettePreparation.as_view()),
+    url(r'^recette/(?P<recette_id>[0-9]+)/preparation/(?P<preparation_id>[0-9a-zA-Z._ -]+)/$', recetterest.RecettePreparation.as_view()),
+
+    url(r'^recette/(?P<recette_id>[0-9]+)/etape/$', recetterest.RecetteEtape.as_view(), name='recette_element'),
+    url(r'^recette/(?P<recette_id>[0-9]+)/etape/(?P<etape_id>[0-9a-zA-Z._ -]+)/$', recetterest.RecetteEtape.as_view(), name='recette_element'),
+    url(r'^recette/(?P<recette_id>all)/categorie/(?P<categorie_id>[0-9a-zA-Z]+)$', recetterest.RecetteRest.as_view(), name='recette_cat'),
+    url(r'^recette/(?P<recette_id>[0-9]+)/nutrition/$', recetterest.RecetteEnergieEconomat.as_view(), name='recette_nutriton'),
 
     url(r'^listi$', views.list_ingredients, name='list_ingredients'),
     url(r'^listi$', views.list_ingredients, name='ingredient_create'),
@@ -54,7 +66,7 @@ urlpatterns = [
     url(r'^listp$', views.list_ingredients, name='preparation_create'),
     url(r'^listpreparations/owner/(?P<owner>[a-z]+)$', views.list_preparations, name='list_preparations_owner'),
     url(r'^listpreparations/acces/(?P<acces>[a-z]+)$', views.list_preparations, name='list_preparations_acces'),
-    
+
     url(r'^preparation/(?P<preparation_id>[0-9]+)/$', preparationrest.PreparationRest.as_view(), name='preparation'),
     url(r'^preparation/$', preparationrest.PreparationRest.as_view(), name='preparation_empty'),
     url(r'^preparation/(?P<preparation_id>[0-9]+)/nutrition/$', preparationrest.PreparationEnergieEconomat.as_view(), name='preparation_nutriton'),
@@ -71,6 +83,7 @@ urlpatterns = [
 
     url(r'^detailp/(?P<preparation_id>[0-9]+)$', views.detail_preparation, name='detail_preparation'),
 
-    url('^categories$', views.get_categorie, name='get_category'),
-    url('^categorie/(?P<categorie_id>[A-Za-z0-9]+)/$', categorierest.CategorieRest.as_view(), name='categoryrest'),
+    #url('^categories$', views.get_categorie, name='get_category'),
+    url('^categorie/(?P<categorie_id>[A-Za-z0-9]+)/$', categorierest.CategorieRest.as_view(), name='get_category_rest'),
+    url('^categorie/$', categorierest.CategorieRest.as_view(), name='get_category'),
 ]
